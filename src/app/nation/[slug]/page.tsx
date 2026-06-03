@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { getFixturesByNationSlug } from "@/app/data/fixtures";
 
 type NationData = {
   slug: string;
@@ -247,6 +248,9 @@ export default async function NationPage({
   const normalizedSlug = slug?.toLowerCase();
   const nation = normalizedSlug ? nationDetails[normalizedSlug] : null;
 
+  // Official fixtures for this nation, pulled from local fixture data only.
+  const fixtures = normalizedSlug ? getFixturesByNationSlug(normalizedSlug) : [];
+
   if (!nation) {
     return (
       <main className="min-h-screen bg-[#040406] px-6 py-16 text-white">
@@ -324,6 +328,39 @@ export default async function NationPage({
                 </div>
               ))}
             </div>
+          </section>
+
+          <section>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-sm uppercase tracking-[0.35em] text-emerald-300">Official fixtures</p>
+                <h2 className="mt-3 text-3xl font-black text-white sm:text-4xl">{nation.country} at the World Cup</h2>
+              </div>
+              <p className="max-w-xl text-sm text-slate-400">Official schedule data — source: FIFA. No match footage, just the fixtures.</p>
+            </div>
+
+            {fixtures.length === 0 ? (
+              <div className="mt-8 rounded-[1.75rem] border border-white/10 bg-[#08131d] p-8 text-center shadow-lg shadow-black/25">
+                <p className="text-sm leading-7 text-slate-400">Official fixtures will appear here once added.</p>
+              </div>
+            ) : (
+              <div className="mt-8 grid gap-6 sm:grid-cols-2">
+                {fixtures.map((fixture) => (
+                  <div key={fixture.id} className="rounded-[1.75rem] border border-white/10 bg-[#08131d] p-6 shadow-lg shadow-black/25">
+                    <div className="flex items-center justify-between gap-4">
+                      <p className="text-sm uppercase tracking-[0.35em] text-slate-400">{fixture.stage} · Group {fixture.group}</p>
+                      <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-200">{fixture.source}</span>
+                    </div>
+                    <h3 className="mt-4 text-2xl font-bold text-white">{fixture.teamA} vs {fixture.teamB}</h3>
+                    <div className="mt-5 space-y-2 text-sm text-slate-300">
+                      <p>{fixture.date} · {fixture.time}</p>
+                      <p>{fixture.venue}</p>
+                      <p className="text-slate-400">{fixture.city}, {fixture.country}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
 
           <section>
