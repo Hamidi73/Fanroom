@@ -870,7 +870,7 @@ export default function Home() {
                 </div>
                 <div className="mt-6 flex flex-col items-stretch gap-3 rounded-[1.5rem] bg-white/5 px-4 py-4 text-base text-white/70 sm:flex-row sm:items-center sm:justify-between">
                   <span>{country.rooms} fan rooms</span>
-                  <a href={`/nation/${country.slug}`} className="block w-full text-center text-emerald-300 sm:inline sm:w-auto">View nation rooms</a>
+                  <a href={`/nation/${country.country.toLowerCase().replace(/\s+/g, "-")}`} className="block w-full text-center text-emerald-300 sm:inline sm:w-auto">View nation rooms</a>
                 </div>
               </div>
             ))}
@@ -889,22 +889,25 @@ export default function Home() {
           </div>
 
           <div className="mt-10 grid gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-            {trendingRooms.map((room) => (
-              <div key={`${room.match}-${room.host}`} className="rounded-[2rem] border border-white/10 bg-[#08121d] p-5 shadow-sm shadow-black/20 transition hover:-translate-y-1 hover:border-emerald-400/30">
-                <div className="flex items-center justify-between text-base sm:text-sm text-white/60">
-                  <span className="font-semibold text-white">{room.match}</span>
-                  <span className={`rounded-full px-3 py-1 text-xs uppercase tracking-[0.25em] ${room.status === "Live" ? "bg-red-500/15 text-red-300 ring-1 ring-red-500/10" : "bg-slate-700/70 text-slate-200"}`}>
-                    {room.status}
-                  </span>
+            {trendingRooms.map((room) => {
+              const roomId = `${room.host.toLowerCase().replace(/\s+/g, "-")}-room`;
+              return (
+                <div key={`${room.match}-${room.host}`} className="rounded-[2rem] border border-white/10 bg-[#08121d] p-5 shadow-sm shadow-black/20 transition hover:-translate-y-1 hover:border-emerald-400/30">
+                  <div className="flex items-center justify-between text-base sm:text-sm text-white/60">
+                    <span className="font-semibold text-white">{room.match}</span>
+                    <span className={`rounded-full px-3 py-1 text-xs uppercase tracking-[0.25em] ${room.status === "Live" ? "bg-red-500/15 text-red-300 ring-1 ring-red-500/10" : "bg-slate-700/70 text-slate-200"}`}>
+                      {room.status}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-lg font-semibold text-white">Host: {room.host}</p>
+                  <p className="mt-2 text-base sm:text-sm text-white/70">{room.language} • {room.country} fanbase</p>
+                  <div className="mt-6 flex flex-col items-stretch gap-3 text-base text-white/70 sm:flex-row sm:items-center sm:justify-between">
+                    <span>{room.viewers} viewers</span>
+                    <a href={`/room/${roomId}`} className="block w-full text-center text-emerald-300 sm:inline sm:w-auto">Join room</a>
+                  </div>
                 </div>
-                <p className="mt-3 text-lg font-semibold text-white">Host: {room.host}</p>
-                <p className="mt-2 text-base sm:text-sm text-white/70">{room.language} • {room.country} fanbase</p>
-                <div className="mt-6 flex flex-col items-stretch gap-3 text-base text-white/70 sm:flex-row sm:items-center sm:justify-between">
-                  <span>{room.viewers} viewers</span>
-                  <a href="#apply" className="block w-full text-center text-emerald-300 sm:inline sm:w-auto">Join room</a>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

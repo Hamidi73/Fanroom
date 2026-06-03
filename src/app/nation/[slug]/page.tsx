@@ -335,20 +335,26 @@ export default async function NationPage({
               <p className="max-w-xl text-sm text-slate-400">Fans can choose rooms by match, host, and status without match footage.</p>
             </div>
             <div className="mt-8 space-y-4">
-              {nation.rooms.map((room) => (
-                <div key={room.title} className="rounded-[1.75rem] border border-white/10 bg-[#08131d] p-6 shadow-lg shadow-black/25 sm:flex sm:items-center sm:justify-between">
-                  <div className="space-y-3">
-                    <p className="text-sm uppercase tracking-[0.35em] text-slate-400">{room.match}</p>
-                    <h3 className="text-2xl font-bold text-white">{room.title}</h3>
-                    <p className="text-sm text-slate-300">Host: {room.host}</p>
+              {nation.rooms.map((room) => {
+                const roomId = room.title
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]+/g, "-")
+                  .replace(/^-|-$/g, "");
+                return (
+                  <div key={room.title} className="rounded-[1.75rem] border border-white/10 bg-[#08131d] p-6 shadow-lg shadow-black/25 sm:flex sm:items-center sm:justify-between">
+                    <div className="space-y-3">
+                      <p className="text-sm uppercase tracking-[0.35em] text-slate-400">{room.match}</p>
+                      <h3 className="text-2xl font-bold text-white">{room.title}</h3>
+                      <p className="text-sm text-slate-300">Host: {room.host}</p>
+                    </div>
+                    <div className="mt-6 flex flex-col gap-3 sm:mt-0 sm:items-end">
+                      <span className="rounded-full bg-white/5 px-4 py-2 text-sm text-slate-300">{room.status}</span>
+                      <span className="text-sm text-slate-300">{room.viewers} viewers</span>
+                      <a href={`/room/${roomId}`} className="inline-flex rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-black transition hover:bg-emerald-300">View room</a>
+                    </div>
                   </div>
-                  <div className="mt-6 flex flex-col gap-3 sm:mt-0 sm:items-end">
-                    <span className="rounded-full bg-white/5 px-4 py-2 text-sm text-slate-300">{room.status}</span>
-                    <span className="text-sm text-slate-300">{room.viewers} viewers</span>
-                    <a href="/#apply" className="inline-flex rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-black transition hover:bg-emerald-300">View room</a>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
 
