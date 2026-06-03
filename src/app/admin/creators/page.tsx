@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
@@ -20,7 +20,13 @@ type OfferTier =
   | "$50 paid game host"
   | "Premium partnership";
 
-type Platform = "Instagram" | "TikTok" | "YouTube" | "X (Twitter)" | "Twitch";
+type Platform =
+  | "Instagram"
+  | "TikTok"
+  | "YouTube"
+  | "X (Twitter)"
+  | "Twitch"
+  | "Other";
 
 type EngagementLevel = "Low" | "Medium" | "High" | "Very High";
 
@@ -28,6 +34,7 @@ interface Creator {
   id: number;
   name: string;
   platform: Platform;
+  profileLink?: string;
   country: string;
   flag: string;
   followers: string;
@@ -37,7 +44,13 @@ interface Creator {
   offerTier: OfferTier;
   priority: number; // 1–10
   nextAction: string;
+  notes?: string;
+  isLocal?: boolean; // true = added by user, saved in localStorage
 }
+
+// ─── localStorage KEY ─────────────────────────────────────────────────────────
+
+const STORAGE_KEY = "wcp_creator_leads_v1";
 
 // ─── DEMO DATA ────────────────────────────────────────────────────────────────
 
@@ -158,6 +171,35 @@ const DEMO_CREATORS: Creator[] = [
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
+const STATUS_OPTIONS: Status[] = [
+  "Not contacted",
+  "Contacted",
+  "Replied",
+  "Interested",
+  "Signed",
+  "Rejected",
+  "Follow up",
+];
+
+const OFFER_OPTIONS: OfferTier[] = [
+  "Free listing",
+  "Featured placement",
+  "$25 paid game host",
+  "$50 paid game host",
+  "Premium partnership",
+];
+
+const PLATFORM_OPTIONS: Platform[] = [
+  "Instagram",
+  "TikTok",
+  "YouTube",
+  "X (Twitter)",
+  "Twitch",
+  "Other",
+];
+
+const ENGAGEMENT_OPTIONS: EngagementLevel[] = ["Low", "Medium", "High", "Very High"];
+
 const STATUS_CONFIG: Record<Status, { color: string; dot: string }> = {
   "Not contacted": { color: "text-slate-400", dot: "bg-slate-500" },
   Contacted: { color: "text-blue-400", dot: "bg-blue-500" },
@@ -182,6 +224,7 @@ const PLATFORM_ICON: Record<Platform, string> = {
   YouTube: "▶️",
   "X (Twitter)": "𝕏",
   Twitch: "🟣",
+  Other: "🔗",
 };
 
 const FILTER_OPTIONS = [
@@ -194,13 +237,43 @@ const FILTER_OPTIONS = [
 
 type FilterOption = (typeof FILTER_OPTIONS)[number];
 
-const NEXT_ACTIONS = [
-  { icon: "🔍", task: "Find 50 creator leads today", done: false },
-  { icon: "📬", task: "Contact 20 high-priority pages", done: false },
-  { icon: "✍️", task: "Sign first 5 country representatives", done: false },
-  { icon: "🐦", task: "Prepare X launch post", done: false },
-  { icon: "🎮", task: "Schedule first test fan room", done: false },
+const NAV_LINKS = [
+  { label: "← Admin Dashboard", href: "/admin" },
+  { label: "Outreach Messages", href: "/admin/outreach" },
+  { label: "X Launch", href: "/admin/x-launch" },
 ];
+
+// ─── FORM STATE ───────────────────────────────────────────────────────────────
+
+interface FormState {
+  name: string;
+  platform: Platform;
+  profileLink: string;
+  country: string;
+  followers: string;
+  engagement: EngagementLevel;
+  contactMethod: string;
+  status: Status;
+  offerTier: OfferTier;
+  priority: number;
+  nextAction: string;
+  notes: string;
+}
+
+const EMPTY_FORM: FormState = {
+  name: "",
+  platform: "Instagram",
+  profileLink: "",
+  country: "",
+  followers: "",
+  engagement: "Medium",
+  contactMethod: "",
+  status: "Not contacted",
+  offerTier: "Free listing",
+  priority: 5,
+  nextAction: "",
+  notes: "",
+};
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -235,9 +308,7 @@ function engagementBadge(level: EngagementLevel) {
     "Very High": "bg-emerald-900/60 text-emerald-300",
   };
   return (
-    <span
-      className={`px-2 py-0.5 rounded-full text-xs font-medium ${map[level]}`}
-    >
+    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${map[level]}`}>
       {level}
     </span>
   );
@@ -248,23 +319,48 @@ function engagementBadge(level: EngagementLevel) {
 export default function CreatorsAdminPage() {
   const [activeFilter, setActiveFilter] = useState<FilterOption>("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [actionsDone, setActionsDone] = useState<boolean[]>(
-    NEXT_ACTIONS.map(() => false)
-  );
+  const [localLeads, setLocalLeads] = useState<Creator[]>([]);
+  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
-  // Derived metrics
-  const total = DEMO_CREATORS.length;
-  const contacted = DEMO_CREATORS.filter((c) =>
+  // Load saved leads from localStorage on first render
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Creator[];
+        if (Array.isArray(parsed)) setLocalLeads(parsed);
+      }
+    } catch {
+      // ignore corrupted storage
+    }
+  }, []);
+
+  // Save to localStorage and update state together
+  const persist = (leads: Creator[]) => {
+    setLocalLeads(leads);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(leads));
+    } catch {
+      // storage may be unavailable; fail quietly
+    }
+  };
+
+  // Combine saved + demo leads (saved ones first)
+  const allCreators: Creator[] = [...localLeads, ...DEMO_CREATORS];
+
+  // Derived metrics (based on combined list)
+  const total = allCreators.length;
+  const contacted = allCreators.filter((c) =>
     ["Contacted", "Replied", "Interested", "Signed"].includes(c.status)
   ).length;
-  const replies = DEMO_CREATORS.filter((c) =>
+  const replies = allCreators.filter((c) =>
     ["Replied", "Interested", "Signed"].includes(c.status)
   ).length;
-  const signed = DEMO_CREATORS.filter((c) => c.status === "Signed").length;
-  const countries = new Set(DEMO_CREATORS.map((c) => c.country)).size;
-  const paid = DEMO_CREATORS.filter((c) =>
-    c.offerTier.includes("$")
-  ).length;
+  const signed = allCreators.filter((c) => c.status === "Signed").length;
+  const countries = new Set(allCreators.map((c) => c.country.trim().toLowerCase())).size;
+  const paid = allCreators.filter((c) => c.offerTier.includes("$")).length;
 
   const metrics = [
     { label: "Total Leads", value: total, accent: "text-white" },
@@ -276,7 +372,7 @@ export default function CreatorsAdminPage() {
   ];
 
   // Filter logic
-  const filtered = DEMO_CREATORS.filter((c) => {
+  const filtered = allCreators.filter((c) => {
     const matchesSearch =
       searchQuery === "" ||
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -293,12 +389,51 @@ export default function CreatorsAdminPage() {
     return matchesSearch && matchesFilter;
   });
 
-  const toggleAction = (i: number) => {
-    setActionsDone((prev) => {
-      const next = [...prev];
-      next[i] = !next[i];
-      return next;
-    });
+  // Form field updater
+  const updateField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  // Submit handler
+  const handleSubmit = () => {
+    if (!form.name.trim()) {
+      alert("Please enter a creator / fan page name.");
+      return;
+    }
+    const newLead: Creator = {
+      id: Date.now(),
+      name: form.name.trim(),
+      platform: form.platform,
+      profileLink: form.profileLink.trim() || undefined,
+      country: form.country.trim() || "Unknown",
+      flag: "🏳️",
+      followers: form.followers.trim() || "—",
+      engagement: form.engagement,
+      contactMethod: form.contactMethod.trim() || "—",
+      status: form.status,
+      offerTier: form.offerTier,
+      priority: form.priority,
+      nextAction: form.nextAction.trim() || "—",
+      notes: form.notes.trim() || undefined,
+      isLocal: true,
+    };
+    persist([newLead, ...localLeads]);
+    setForm(EMPTY_FORM);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 2500);
+  };
+
+  // Delete a single saved lead
+  const deleteLocal = (id: number) => {
+    persist(localLeads.filter((l) => l.id !== id));
+  };
+
+  // Clear all saved leads
+  const clearAllLocal = () => {
+    if (localLeads.length === 0) return;
+    if (confirm(`Delete all ${localLeads.length} saved lead(s)? Demo leads will remain.`)) {
+      persist([]);
+    }
   };
 
   return (
@@ -310,7 +445,6 @@ export default function CreatorsAdminPage() {
         color: "#e2e8f0",
       }}
     >
-      {/* Google Fonts */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@600;700;800&display=swap');
 
@@ -345,16 +479,85 @@ export default function CreatorsAdminPage() {
           border-color: rgba(255,255,255,0.3);
           color: #fff;
         }
-        .creator-row {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 0;
+        .nav-link {
+          padding: 7px 16px;
+          border-radius: 8px;
+          font-size: 13px;
+          color: rgba(255,255,255,0.55);
+          border: 1px solid rgba(255,255,255,0.08);
+          text-decoration: none;
+          transition: all 0.15s;
+          font-family: inherit;
         }
-        @media (min-width: 1024px) {
-          .creator-row {
-            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
-          }
+        .nav-link:hover {
+          color: #fff;
+          border-color: rgba(255,255,255,0.25);
+          background: rgba(255,255,255,0.04);
         }
+        .form-input, .form-select, textarea.form-input {
+          width: 100%;
+          background: rgba(0,0,0,0.25);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 8px;
+          padding: 9px 12px;
+          color: #e2e8f0;
+          font-size: 13px;
+          font-family: inherit;
+          outline: none;
+          transition: border-color 0.15s;
+          box-sizing: border-box;
+        }
+        .form-input:focus, .form-select:focus {
+          border-color: rgba(250,204,21,0.4);
+        }
+        .form-input::placeholder { color: rgba(255,255,255,0.25); }
+        .form-select option { background: #0d1520; color: #e2e8f0; }
+        .form-label {
+          font-size: 11px;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.4);
+          margin-bottom: 5px;
+          display: block;
+        }
+        .btn-primary {
+          padding: 10px 22px;
+          border-radius: 9px;
+          font-size: 13px;
+          font-family: inherit;
+          cursor: pointer;
+          border: 1px solid rgba(250,204,21,0.4);
+          background: rgba(250,204,21,0.15);
+          color: #facc15;
+          transition: all 0.15s;
+          letter-spacing: 0.03em;
+          font-weight: 500;
+        }
+        .btn-primary:hover { background: rgba(250,204,21,0.25); }
+        .btn-ghost {
+          padding: 8px 16px;
+          border-radius: 8px;
+          font-size: 12px;
+          font-family: inherit;
+          cursor: pointer;
+          border: 1px solid rgba(255,255,255,0.12);
+          background: transparent;
+          color: rgba(255,255,255,0.6);
+          transition: all 0.15s;
+        }
+        .btn-ghost:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+        .btn-danger {
+          padding: 8px 16px;
+          border-radius: 8px;
+          font-size: 12px;
+          font-family: inherit;
+          cursor: pointer;
+          border: 1px solid rgba(239,68,68,0.3);
+          background: transparent;
+          color: rgba(248,113,113,0.9);
+          transition: all 0.15s;
+        }
+        .btn-danger:hover { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.5); }
         .scrollbar-thin::-webkit-scrollbar { height: 4px; }
         .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
         .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
@@ -362,13 +565,20 @@ export default function CreatorsAdminPage() {
 
       <div style={{ maxWidth: 1400, margin: "0 auto", padding: "32px 16px 80px" }}>
 
+        {/* ── NAV ── */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 28 }}>
+          {NAV_LINKS.map((link) => (
+            <a key={link.href} href={link.href} className="nav-link">
+              {link.label}
+            </a>
+          ))}
+        </div>
+
         {/* ── HEADER ── */}
-        <div style={{ marginBottom: 36 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-            <span style={{ fontSize: 11, letterSpacing: "0.15em", color: "rgba(255,255,255,0.3)", textTransform: "uppercase" }}>
-              Admin / Creator Ops
-            </span>
-          </div>
+        <div style={{ marginBottom: 32 }}>
+          <span style={{ fontSize: 11, letterSpacing: "0.15em", color: "rgba(255,255,255,0.3)", textTransform: "uppercase" }}>
+            Admin / Creator Ops
+          </span>
           <h1
             style={{
               fontFamily: "'Syne', sans-serif",
@@ -377,7 +587,7 @@ export default function CreatorsAdminPage() {
               letterSpacing: "-0.02em",
               color: "#fff",
               lineHeight: 1.1,
-              margin: 0,
+              margin: "6px 0 0",
             }}
           >
             Streamer Acquisition
@@ -394,19 +604,12 @@ export default function CreatorsAdminPage() {
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
             gap: 12,
-            marginBottom: 32,
+            marginBottom: 24,
           }}
         >
           {metrics.map((m) => (
             <div key={m.label} className="card-glow" style={{ padding: "18px 20px" }}>
-              <div
-                style={{
-                  fontSize: 28,
-                  fontWeight: 700,
-                  fontFamily: "'Syne', sans-serif",
-                }}
-                className={m.accent}
-              >
+              <div style={{ fontSize: 28, fontWeight: 700, fontFamily: "'Syne', sans-serif" }} className={m.accent}>
                 {m.value}
               </div>
               <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 4, letterSpacing: "0.08em", textTransform: "uppercase" }}>
@@ -416,23 +619,156 @@ export default function CreatorsAdminPage() {
           ))}
         </div>
 
-        {/* ── FILTERS + SEARCH ── */}
+        {/* ── LEAD COUNTS + ACTIONS ── */}
         <div
           style={{
             display: "flex",
             flexWrap: "wrap",
-            gap: 10,
+            gap: 12,
             alignItems: "center",
-            marginBottom: 20,
+            justifyContent: "space-between",
+            marginBottom: 24,
           }}
         >
+          <div style={{ display: "flex", gap: 18, flexWrap: "wrap", fontSize: 13 }}>
+            <span style={{ color: "rgba(255,255,255,0.5)" }}>
+              Total leads: <span style={{ color: "#fff", fontWeight: 600 }}>{total}</span>
+            </span>
+            <span style={{ color: "rgba(255,255,255,0.5)" }}>
+              Saved by you: <span style={{ color: "#34d399", fontWeight: 600 }}>{localLeads.length}</span>
+            </span>
+            <span style={{ color: "rgba(255,255,255,0.5)" }}>
+              Demo: <span style={{ color: "rgba(255,255,255,0.6)" }}>{DEMO_CREATORS.length}</span>
+            </span>
+          </div>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <button className="btn-primary" onClick={() => setShowForm((s) => !s)}>
+              {showForm ? "× Close form" : "+ Add Creator Lead"}
+            </button>
+            <button className="btn-danger" onClick={clearAllLocal}>
+              Clear saved leads
+            </button>
+          </div>
+        </div>
+
+        {/* ── ADD CREATOR LEAD FORM ── */}
+        {showForm && (
+          <div className="card-glow" style={{ padding: "26px", marginBottom: 28 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4, flexWrap: "wrap", gap: 8 }}>
+              <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, fontWeight: 700, color: "#fff", margin: 0 }}>
+                Add Creator Lead
+              </h2>
+              {showSuccess && (
+                <span style={{ fontSize: 13, color: "#34d399" }}>✓ Lead saved!</span>
+              )}
+            </div>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", marginBottom: 22 }}>
+              Saved to your browser only (localStorage). Nothing is sent anywhere.
+            </p>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                gap: 16,
+                marginBottom: 20,
+              }}
+            >
+              <div>
+                <label className="form-label">Creator / Fan Page Name *</label>
+                <input className="form-input" placeholder="e.g. Atlas Lions Fan HQ" value={form.name} onChange={(e) => updateField("name", e.target.value)} />
+              </div>
+
+              <div>
+                <label className="form-label">Platform</label>
+                <select className="form-select" value={form.platform} onChange={(e) => updateField("platform", e.target.value as Platform)}>
+                  {PLATFORM_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="form-label">Profile Link</label>
+                <input className="form-input" placeholder="https://instagram.com/…" value={form.profileLink} onChange={(e) => updateField("profileLink", e.target.value)} />
+              </div>
+
+              <div>
+                <label className="form-label">Country / Fanbase</label>
+                <input className="form-input" placeholder="e.g. Morocco" value={form.country} onChange={(e) => updateField("country", e.target.value)} />
+              </div>
+
+              <div>
+                <label className="form-label">Follower Count</label>
+                <input className="form-input" placeholder="e.g. 284K" value={form.followers} onChange={(e) => updateField("followers", e.target.value)} />
+              </div>
+
+              <div>
+                <label className="form-label">Engagement Level</label>
+                <select className="form-select" value={form.engagement} onChange={(e) => updateField("engagement", e.target.value as EngagementLevel)}>
+                  {ENGAGEMENT_OPTIONS.map((e) => <option key={e} value={e}>{e}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="form-label">Contact Method</label>
+                <input className="form-input" placeholder="e.g. Instagram DM" value={form.contactMethod} onChange={(e) => updateField("contactMethod", e.target.value)} />
+              </div>
+
+              <div>
+                <label className="form-label">Status</label>
+                <select className="form-select" value={form.status} onChange={(e) => updateField("status", e.target.value as Status)}>
+                  {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="form-label">Offer Tier</label>
+                <select className="form-select" value={form.offerTier} onChange={(e) => updateField("offerTier", e.target.value as OfferTier)}>
+                  {OFFER_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="form-label">Priority Score: {form.priority}</label>
+                <input
+                  type="range"
+                  min={1}
+                  max={10}
+                  value={form.priority}
+                  onChange={(e) => updateField("priority", Number(e.target.value))}
+                  style={{ width: "100%", accentColor: "#facc15", marginTop: 8 }}
+                />
+              </div>
+
+              <div>
+                <label className="form-label">Next Action</label>
+                <input className="form-input" placeholder="e.g. Send intro DM" value={form.nextAction} onChange={(e) => updateField("nextAction", e.target.value)} />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 22 }}>
+              <label className="form-label">Notes</label>
+              <textarea
+                className="form-input"
+                placeholder="Anything useful — best time to contact, mutual connections, content style…"
+                value={form.notes}
+                onChange={(e) => updateField("notes", e.target.value)}
+                rows={3}
+                style={{ resize: "vertical" }}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+              <button className="btn-primary" onClick={handleSubmit}>Save lead</button>
+              <button className="btn-ghost" onClick={() => setForm(EMPTY_FORM)}>Reset fields</button>
+            </div>
+          </div>
+        )}
+
+        {/* ── FILTERS + SEARCH ── */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", marginBottom: 20 }}>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {FILTER_OPTIONS.map((f) => (
-              <button
-                key={f}
-                className={`filter-btn ${activeFilter === f ? "active" : ""}`}
-                onClick={() => setActiveFilter(f)}
-              >
+              <button key={f} className={`filter-btn ${activeFilter === f ? "active" : ""}`} onClick={() => setActiveFilter(f)}>
                 {f}
               </button>
             ))}
@@ -460,110 +796,98 @@ export default function CreatorsAdminPage() {
 
         {/* ── TABLE (desktop) ── */}
         <div className="card-glow" style={{ overflow: "hidden", marginBottom: 32 }}>
-          {/* Table header */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "2fr 1fr 1.2fr 1fr 1fr 1.4fr 1.6fr",
-              padding: "10px 20px",
-              borderBottom: "1px solid rgba(255,255,255,0.06)",
-              background: "rgba(255,255,255,0.02)",
-            }}
-            className="hidden-mobile"
-          >
-            {["Creator / Page", "Platform", "Country", "Followers", "Engagement", "Status / Offer", "Next Action"].map((h) => (
-              <div
-                key={h}
-                style={{
-                  fontSize: 10,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  color: "rgba(255,255,255,0.25)",
-                }}
-              >
-                {h}
-              </div>
-            ))}
-          </div>
-
-          {/* Desktop rows */}
           <div className="scrollbar-thin" style={{ overflowX: "auto" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "2fr 1fr 1.2fr 1fr 1fr 1.4fr 1.6fr 0.4fr",
+                padding: "10px 20px",
+                borderBottom: "1px solid rgba(255,255,255,0.06)",
+                background: "rgba(255,255,255,0.02)",
+                minWidth: 1000,
+              }}
+            >
+              {["Creator / Page", "Platform", "Country", "Followers", "Engagement", "Status / Offer", "Next Action", ""].map((h, i) => (
+                <div key={i} style={{ fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)" }}>
+                  {h}
+                </div>
+              ))}
+            </div>
+
             {filtered.length === 0 && (
               <div style={{ padding: 40, textAlign: "center", color: "rgba(255,255,255,0.2)", fontSize: 14 }}>
                 No creators match this filter.
               </div>
             )}
+
             {filtered.map((creator, idx) => (
               <div
                 key={creator.id}
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "2fr 1fr 1.2fr 1fr 1fr 1.4fr 1.6fr",
+                  gridTemplateColumns: "2fr 1fr 1.2fr 1fr 1fr 1.4fr 1.6fr 0.4fr",
                   padding: "14px 20px",
                   borderBottom: idx < filtered.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
                   alignItems: "center",
-                  transition: "background 0.15s",
-                  minWidth: 900,
+                  minWidth: 1000,
                 }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "rgba(255,255,255,0.025)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = "transparent")
-                }
               >
-                {/* Name + Priority */}
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: "#f1f5f9", marginBottom: 4 }}>
-                    {creator.name}
+                  <div style={{ fontSize: 14, fontWeight: 500, color: "#f1f5f9", marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
+                    {creator.profileLink ? (
+                      <a href={creator.profileLink} target="_blank" rel="noopener noreferrer" style={{ color: "#f1f5f9", textDecoration: "none", borderBottom: "1px dotted rgba(255,255,255,0.3)" }}>
+                        {creator.name}
+                      </a>
+                    ) : (
+                      creator.name
+                    )}
+                    {creator.isLocal && (
+                      <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 4, background: "rgba(52,211,153,0.15)", color: "#34d399", letterSpacing: "0.05em" }}>
+                        SAVED
+                      </span>
+                    )}
                   </div>
                   {priorityBar(creator.priority)}
                 </div>
 
-                {/* Platform */}
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)" }}>
-                  {PLATFORM_ICON[creator.platform]}{" "}
-                  <span style={{ marginLeft: 4 }}>{creator.platform}</span>
+                  {PLATFORM_ICON[creator.platform]} <span style={{ marginLeft: 4 }}>{creator.platform}</span>
                 </div>
 
-                {/* Country */}
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)" }}>
                   {creator.flag} {creator.country}
                 </div>
 
-                {/* Followers */}
                 <div style={{ fontSize: 14, fontFamily: "'Syne', sans-serif", color: "#fff" }}>
                   {creator.followers}
                 </div>
 
-                {/* Engagement */}
                 <div>{engagementBadge(creator.engagement)}</div>
 
-                {/* Status + Offer */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <div
-                      className={`${STATUS_CONFIG[creator.status].dot}`}
-                      style={{ width: 7, height: 7, borderRadius: "50%", flexShrink: 0 }}
-                    />
-                    <span
-                      className={STATUS_CONFIG[creator.status].color}
-                      style={{ fontSize: 12 }}
-                    >
-                      {creator.status}
-                    </span>
+                    <div className={STATUS_CONFIG[creator.status].dot} style={{ width: 7, height: 7, borderRadius: "50%", flexShrink: 0 }} />
+                    <span className={STATUS_CONFIG[creator.status].color} style={{ fontSize: 12 }}>{creator.status}</span>
                   </div>
-                  <div
-                    className={OFFER_CONFIG[creator.offerTier]}
-                    style={{ fontSize: 11, opacity: 0.8 }}
-                  >
+                  <div className={OFFER_CONFIG[creator.offerTier]} style={{ fontSize: 11, opacity: 0.8 }}>
                     {creator.offerTier}
                   </div>
                 </div>
 
-                {/* Next Action */}
                 <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.4 }}>
                   {creator.nextAction}
+                </div>
+
+                <div style={{ textAlign: "right" }}>
+                  {creator.isLocal && (
+                    <button
+                      onClick={() => deleteLocal(creator.id)}
+                      title="Delete saved lead"
+                      style={{ background: "transparent", border: "none", color: "rgba(248,113,113,0.7)", cursor: "pointer", fontSize: 15, padding: 4 }}
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -573,231 +897,73 @@ export default function CreatorsAdminPage() {
         {/* ── MOBILE CARDS ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
           {filtered.map((creator) => (
-            <div
-              key={`mobile-${creator.id}`}
-              className="card-glow"
-              style={{ padding: "16px 18px" }}
-            >
+            <div key={`mobile-${creator.id}`} className="card-glow" style={{ padding: "16px 18px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: "#fff", marginBottom: 2 }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: "#fff", marginBottom: 2, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     {creator.flag} {creator.name}
+                    {creator.isLocal && (
+                      <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 4, background: "rgba(52,211,153,0.15)", color: "#34d399" }}>
+                        SAVED
+                      </span>
+                    )}
                   </div>
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
                     {PLATFORM_ICON[creator.platform]} {creator.platform} · {creator.country}
                   </div>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, color: "#fff" }}>
-                    {creator.followers}
-                  </div>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", letterSpacing: "0.08em" }}>
-                    FOLLOWERS
-                  </div>
+                  <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, color: "#fff" }}>{creator.followers}</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", letterSpacing: "0.08em" }}>FOLLOWERS</div>
                 </div>
               </div>
 
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10, alignItems: "center" }}>
                 {engagementBadge(creator.engagement)}
                 <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                  <div
-                    style={{ width: 7, height: 7, borderRadius: "50%", flexShrink: 0 }}
-                    className={STATUS_CONFIG[creator.status].dot}
-                  />
-                  <span className={STATUS_CONFIG[creator.status].color} style={{ fontSize: 12 }}>
-                    {creator.status}
-                  </span>
+                  <div style={{ width: 7, height: 7, borderRadius: "50%", flexShrink: 0 }} className={STATUS_CONFIG[creator.status].dot} />
+                  <span className={STATUS_CONFIG[creator.status].color} style={{ fontSize: 12 }}>{creator.status}</span>
                 </div>
-                <span className={OFFER_CONFIG[creator.offerTier]} style={{ fontSize: 11 }}>
-                  {creator.offerTier}
-                </span>
+                <span className={OFFER_CONFIG[creator.offerTier]} style={{ fontSize: 11 }}>{creator.offerTier}</span>
               </div>
 
               <div style={{ marginBottom: 8 }}>{priorityBar(creator.priority)}</div>
 
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 10 }}>
-                → {creator.nextAction}
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 10, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+                <span>→ {creator.nextAction}</span>
+                {creator.isLocal && (
+                  <button
+                    onClick={() => deleteLocal(creator.id)}
+                    style={{ background: "transparent", border: "none", color: "rgba(248,113,113,0.7)", cursor: "pointer", fontSize: 14, flexShrink: 0 }}
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             </div>
           ))}
         </div>
 
-        {/* ── BOTTOM GRID: Next Actions + Compliance ── */}
+        {/* ── COMPLIANCE ── */}
         <div
+          className="card-glow"
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: 20,
+            padding: "20px 24px",
+            borderColor: "rgba(251,191,36,0.2)",
+            background: "rgba(251,191,36,0.03)",
+            display: "flex",
+            gap: 14,
+            alignItems: "flex-start",
           }}
         >
-          {/* Next Actions */}
-          <div className="card-glow" style={{ padding: "24px" }}>
-            <div
-              style={{
-                fontFamily: "'Syne', sans-serif",
-                fontSize: 16,
-                fontWeight: 700,
-                color: "#fff",
-                marginBottom: 4,
-              }}
-            >
-              Next Actions
+          <span style={{ fontSize: 20, flexShrink: 0 }}>⚠️</span>
+          <div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: "#fbbf24", marginBottom: 4 }}>
+              Compliance Reminder
             </div>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", marginBottom: 18 }}>
-              Founder priority checklist
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", margin: 0, lineHeight: 1.6 }}>
+              Creators must not stream actual match footage. Rooms are for reactions, commentary, chat, and fan community only.
             </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {NEXT_ACTIONS.map((action, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: 12,
-                    cursor: "pointer",
-                    opacity: actionsDone[i] ? 0.4 : 1,
-                    transition: "opacity 0.2s",
-                  }}
-                  onClick={() => toggleAction(i)}
-                >
-                  <div
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: 6,
-                      border: `1.5px solid ${actionsDone[i] ? "#34d399" : "rgba(255,255,255,0.2)"}`,
-                      background: actionsDone[i] ? "rgba(52,211,153,0.15)" : "transparent",
-                      flexShrink: 0,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginTop: 1,
-                      transition: "all 0.15s",
-                    }}
-                  >
-                    {actionsDone[i] && (
-                      <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                        <path d="M1 4L3.5 6.5L9 1" stroke="#34d399" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                  </div>
-                  <div>
-                    <span style={{ fontSize: 13, color: actionsDone[i] ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.75)" }}>
-                      {action.icon} {action.task}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Status Legend */}
-          <div className="card-glow" style={{ padding: "24px" }}>
-            <div
-              style={{
-                fontFamily: "'Syne', sans-serif",
-                fontSize: 16,
-                fontWeight: 700,
-                color: "#fff",
-                marginBottom: 4,
-              }}
-            >
-              Status Key
-            </div>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", marginBottom: 18 }}>
-              Creator pipeline stages
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {(Object.entries(STATUS_CONFIG) as [Status, { color: string; dot: string }][]).map(
-                ([status, config]) => (
-                  <div key={status} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div
-                      className={config.dot}
-                      style={{ width: 8, height: 8, borderRadius: "50%", flexShrink: 0 }}
-                    />
-                    <span className={config.color} style={{ fontSize: 13 }}>
-                      {status}
-                    </span>
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-
-          {/* Compliance */}
-          <div
-            className="card-glow"
-            style={{
-              padding: "24px",
-              borderColor: "rgba(251,191,36,0.2)",
-              background: "rgba(251,191,36,0.03)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-              <span style={{ fontSize: 18 }}>⚠️</span>
-              <div
-                style={{
-                  fontFamily: "'Syne', sans-serif",
-                  fontSize: 16,
-                  fontWeight: 700,
-                  color: "#fbbf24",
-                }}
-              >
-                Compliance Reminder
-              </div>
-            </div>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", marginBottom: 16 }}>
-              Brief every signed creator before onboarding
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {[
-                "No live match footage in rooms — ever.",
-                "Rooms are for reactions, commentary & community.",
-                "Fan chat, predictions, and hype only.",
-                "Any footage violation = immediate removal.",
-                "Platform is watch-along, not broadcast.",
-              ].map((rule, i) => (
-                <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                  <span style={{ color: "#fbbf24", fontSize: 12, flexShrink: 0, marginTop: 1 }}>✕</span>
-                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>
-                    {rule}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ── OFFER TIERS LEGEND ── */}
-        <div className="card-glow" style={{ padding: "20px 24px", marginTop: 20 }}>
-          <div
-            style={{
-              fontFamily: "'Syne', sans-serif",
-              fontSize: 13,
-              fontWeight: 700,
-              color: "rgba(255,255,255,0.3)",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              marginBottom: 14,
-            }}
-          >
-            Offer Tiers
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-            {(Object.entries(OFFER_CONFIG) as [OfferTier, string][]).map(([tier, cls]) => (
-              <div
-                key={tier}
-                style={{
-                  padding: "6px 14px",
-                  borderRadius: 999,
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  fontSize: 12,
-                }}
-                className={cls}
-              >
-                {tier}
-              </div>
-            ))}
           </div>
         </div>
 
