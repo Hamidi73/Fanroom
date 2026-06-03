@@ -1,194 +1,443 @@
 "use client";
 
-import { useEffect, useState } from "react";
+// ─── TYPES ────────────────────────────────────────────────────────────────────
 
-const founderAgents = [
+interface ToolCard {
+  title: string;
+  href: string;
+  desc: string;
+  icon: string;
+  accent: string;
+}
+
+interface MvpItem {
+  label: string;
+  done: boolean;
+}
+
+// ─── ADMIN TOOL CARDS ─────────────────────────────────────────────────────────
+
+const TOOLS: ToolCard[] = [
   {
-    role: "Director Agent",
-    objective: "Keep the MVP launch focused.",
-    status: "Active",
-    roi: "Product + launch readiness",
-    next: "Align the team on top priorities.",
+    title: "Creator Acquisition",
+    href: "/admin/creators",
+    desc: "Track fan pages, streamers, creator leads, outreach status, and paid host offers.",
+    icon: "🎯",
+    accent: "#facc15",
   },
   {
-    role: "Research Agent",
-    objective: "Validate streamer demand.",
-    status: "Collecting insights",
-    roi: "Streamer acquisition",
-    next: "Share top creator needs.",
+    title: "Outreach Message Center",
+    href: "/admin/outreach",
+    desc: "Copy-ready DMs and creator recruitment messages.",
+    icon: "✉️",
+    accent: "#7dd3fc",
   },
   {
-    role: "Product Agent",
-    objective: "Shape the landing page and waitlist.",
-    status: "Designing MVP flows",
-    roi: "Signups + retention",
-    next: "Refine the streamer application UX.",
+    title: "X Launch Command Center",
+    href: "/admin/x-launch",
+    desc: "Launch timeline, X profile setup, content pillars, and launch posts.",
+    icon: "🚀",
+    accent: "#fda4af",
   },
   {
-    role: "Growth Agent",
-    objective: "Drive early fan interest.",
-    status: "Testing channels",
-    roi: "Waitlist growth",
-    next: "Build the early viewer funnel.",
+    title: "Agent Automation Command Center",
+    href: "/admin/agents",
+    desc: "Monitor research agents that find, score, and prepare outreach for World Cup streamers, fan pages, and creators.",
+    icon: "🤖",
+    accent: "#34d399",
   },
   {
-    role: "Operations Agent",
-    objective: "Keep the launch operations smooth.",
-    status: "Monitoring readiness",
-    roi: "Launch execution",
-    next: "Prepare launch coordination.",
+    title: "Public Homepage",
+    href: "/",
+    desc: "View the public fan-facing website.",
+    icon: "🌐",
+    accent: "#86efac",
   },
 ];
 
-const progressItems = [
-  { label: "Landing page", level: 90 },
-  { label: "Streamer signup form", level: 100 },
-  { label: "Fixture previews", level: 70 },
-  { label: "Admin dashboard", level: 60 },
+// ─── EXAMPLE PUBLIC ROUTES ────────────────────────────────────────────────────
+
+const NATION_LINKS = [
+  { label: "🇲🇦 Morocco", href: "/nation/morocco" },
+  { label: "🇧🇷 Brazil", href: "/nation/brazil" },
+  { label: "🇦🇷 Argentina", href: "/nation/argentina" },
 ];
 
-const riskItems = [
-  "No match footage compliance",
-  "Creator safety and chat moderation",
-  "Launch timing for World Cup momentum",
-  "Early data collection for streamer demand",
+const ROOM_LINKS = [
+  { label: "Room page", href: "/room/casablanca-watch-party" },
+  { label: "Live room", href: "/live/casablanca-watch-party" },
 ];
 
-const nextActions = [
-  "Confirm first 20 streamer signups.",
-  "Refine the waiting room UX for viewers.",
-  "Secure creator-friendly launch messaging.",
-  "Track local saved applications and agent status.",
+// ─── MVP STATUS ───────────────────────────────────────────────────────────────
+
+const MVP_STATUS: MvpItem[] = [
+  { label: "Homepage built", done: true },
+  { label: "Nation pages built", done: true },
+  { label: "Room pages built", done: true },
+  { label: "Live room demo built", done: true },
+  { label: "Creator tracker built", done: true },
+  { label: "Outreach messages built", done: true },
+  { label: "X launch center built", done: true },
+  { label: "Backend not connected yet", done: false },
 ];
 
-export default function AdminPage() {
-  const [applicationCount, setApplicationCount] = useState(0);
+// ─── ACQUISITION PRIORITIES ───────────────────────────────────────────────────
 
-  useEffect(() => {
-    const stored = localStorage.getItem("streamerApplications");
-    const parsed = stored ? JSON.parse(stored) : [];
-    const apps = Array.isArray(parsed) ? parsed : [];
-    setApplicationCount(apps.length);
-  }, []);
+const PRIORITIES = [
+  "Find 50 creator leads",
+  "Contact 20 high priority pages",
+  "Sign first 5 country representatives",
+  "Prepare X profile and first launch posts",
+  "Schedule first test live room",
+];
+
+// ─── NEXT 7 DAYS PLAN ─────────────────────────────────────────────────────────
+
+const SEVEN_DAYS = [
+  { day: "Day 1", task: "Build the creator lead list — aim for 50 fan pages & streamers." },
+  { day: "Day 2", task: "Set up the X profile and post the pinned launch announcement." },
+  { day: "Day 3", task: "Send the first 20 outreach DMs to high-priority pages." },
+  { day: "Day 4", task: "Follow up with non-repliers, post creator recruitment thread." },
+  { day: "Day 5", task: "Confirm first interested creators, send offers." },
+  { day: "Day 6", task: "Sign first country representatives, brief them on compliance." },
+  { day: "Day 7", task: "Announce and run the first test live fan room." },
+];
+
+// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
+
+export default function AdminDashboard() {
+  const builtCount = MVP_STATUS.filter((m) => m.done).length;
 
   return (
-    <main className="min-h-screen bg-[#030405] text-white">
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.12),transparent_40%)]" />
-        <div className="relative mx-auto max-w-7xl px-6 py-10 lg:px-8">
-          <header className="relative z-10 flex flex-col gap-6 rounded-[2rem] border border-white/10 bg-[#090c11]/90 p-8 shadow-2xl shadow-black/40 backdrop-blur">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <p className="text-sm uppercase tracking-[0.35em] text-emerald-300">Admin dashboard</p>
-                <h1 className="mt-3 text-4xl font-black tracking-tight text-white sm:text-5xl">
-                  Founder Command Center
-                </h1>
-              </div>
-              <a
-                href="/"
-                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm text-white/80 transition hover:bg-white/10"
-              >
-                Back to homepage
-              </a>
-            </div>
-            <p className="max-w-3xl text-white/70">
-              A premium, cinematic founder dashboard for tracking agent progress, platform metrics, MVP delivery, and compliance risks.
-            </p>
-          </header>
+    <div
+      style={{
+        fontFamily: "'DM Mono', 'Courier New', monospace",
+        background:
+          "linear-gradient(160deg, #080c12 0%, #0d1520 60%, #080c12 100%)",
+        minHeight: "100vh",
+        color: "#e2e8f0",
+      }}
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@600;700;800&display=swap');
 
-          <section className="mt-10 grid gap-6 xl:grid-cols-5">
-            {founderAgents.map((agent) => (
-              <div key={agent.role} className="rounded-[1.75rem] border border-white/10 bg-[#081017] p-6 shadow-sm shadow-black/20">
-                <p className="text-xs uppercase tracking-[0.35em] text-white/50">{agent.role}</p>
-                <h2 className="mt-4 text-xl font-semibold text-white">{agent.objective}</h2>
-                <div className="mt-5 space-y-3 text-sm text-white/70">
-                  <div>
-                    <span className="block text-white/50">Status</span>
-                    <span className="font-medium text-white">{agent.status}</span>
+        .card-glow {
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 12px;
+          transition: border-color 0.2s, background 0.2s, transform 0.2s;
+        }
+        .card-glow:hover {
+          background: rgba(255,255,255,0.05);
+          border-color: rgba(255,255,255,0.13);
+        }
+        .tool-card {
+          text-decoration: none;
+          display: block;
+        }
+        .tool-card:hover {
+          transform: translateY(-2px);
+        }
+        .pill-link {
+          padding: 7px 14px;
+          border-radius: 8px;
+          font-size: 13px;
+          color: rgba(255,255,255,0.6);
+          border: 1px solid rgba(255,255,255,0.08);
+          text-decoration: none;
+          transition: all 0.15s;
+          font-family: inherit;
+          display: inline-block;
+        }
+        .pill-link:hover {
+          color: #fff;
+          border-color: rgba(255,255,255,0.25);
+          background: rgba(255,255,255,0.04);
+        }
+      `}</style>
+
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 16px 80px" }}>
+
+        {/* ── HEADER ── */}
+        <div style={{ marginBottom: 36 }}>
+          <span style={{ fontSize: 11, letterSpacing: "0.15em", color: "rgba(255,255,255,0.3)", textTransform: "uppercase" }}>
+            Admin
+          </span>
+          <h1
+            style={{
+              fontFamily: "'Syne', sans-serif",
+              fontSize: "clamp(24px, 5vw, 40px)",
+              fontWeight: 800,
+              letterSpacing: "-0.02em",
+              color: "#fff",
+              lineHeight: 1.1,
+              margin: "6px 0 0",
+            }}
+          >
+            Founder <span style={{ color: "#facc15" }}>Command Center</span>
+          </h1>
+          <p style={{ marginTop: 8, color: "rgba(255,255,255,0.4)", fontSize: 14, maxWidth: 620 }}>
+            Your hub for building the World Cup fan watch-along platform — acquisition, outreach, launch, and live demos in one place.
+          </p>
+        </div>
+
+        {/* ── TOOL CARDS ── */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+            gap: 16,
+            marginBottom: 28,
+          }}
+        >
+          {TOOLS.map((tool) => (
+            <a key={tool.href} href={tool.href} className="card-glow tool-card" style={{ padding: "22px" }}>
+              <div
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 11,
+                  background: `${tool.accent}1a`,
+                  border: `1px solid ${tool.accent}33`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 20,
+                  marginBottom: 14,
+                }}
+              >
+                {tool.icon}
+              </div>
+              <h2
+                style={{
+                  fontFamily: "'Syne', sans-serif",
+                  fontSize: 17,
+                  fontWeight: 700,
+                  color: "#fff",
+                  margin: "0 0 6px",
+                }}
+              >
+                {tool.title}
+              </h2>
+              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", margin: "0 0 12px", lineHeight: 1.5 }}>
+                {tool.desc}
+              </p>
+              <span style={{ fontSize: 12, color: tool.accent }}>{tool.href} →</span>
+            </a>
+          ))}
+        </div>
+
+        {/* ── EXAMPLE PUBLIC ROUTES ── */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: 16,
+            marginBottom: 36,
+          }}
+        >
+          {/* Nation pages */}
+          <div className="card-glow" style={{ padding: "20px 22px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <span style={{ fontSize: 16 }}>🌍</span>
+              <h3 style={subHead}>Nation Pages</h3>
+            </div>
+            <p style={subDesc}>Example fan-facing country pages.</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {NATION_LINKS.map((n) => (
+                <a key={n.href} href={n.href} className="pill-link">
+                  {n.label}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Live room demo */}
+          <div className="card-glow" style={{ padding: "20px 22px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <span style={{ fontSize: 16 }}>🎬</span>
+              <h3 style={subHead}>Live Room Demo</h3>
+            </div>
+            <p style={subDesc}>Example watch-party room (Casablanca).</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {ROOM_LINKS.map((r) => (
+                <a key={r.href} href={r.href} className="pill-link">
+                  {r.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── MVP STATUS + ACQUISITION PRIORITIES ── */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gap: 20,
+            marginBottom: 20,
+          }}
+        >
+          {/* MVP Status */}
+          <div className="card-glow" style={{ padding: "24px 26px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+              <h2 style={blockTitle}>MVP Status</h2>
+              <span style={{ fontSize: 12, color: "#34d399" }}>{builtCount} / {MVP_STATUS.length} built</span>
+            </div>
+            <p style={{ ...subDesc, marginBottom: 18 }}>What's shipped so far.</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {MVP_STATUS.map((item) => (
+                <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div
+                    style={{
+                      width: 18,
+                      height: 18,
+                      borderRadius: 5,
+                      flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: item.done ? "rgba(52,211,153,0.15)" : "rgba(251,146,60,0.12)",
+                      border: `1px solid ${item.done ? "rgba(52,211,153,0.4)" : "rgba(251,146,60,0.4)"}`,
+                    }}
+                  >
+                    {item.done ? (
+                      <svg width="9" height="7" viewBox="0 0 10 8" fill="none">
+                        <path d="M1 4L3.5 6.5L9 1" stroke="#34d399" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    ) : (
+                      <span style={{ color: "#fb923c", fontSize: 11, fontWeight: 700, lineHeight: 1 }}>!</span>
+                    )}
                   </div>
-                  <div>
-                    <span className="block text-white/50">ROI focus</span>
-                    <span className="font-medium text-white">{agent.roi}</span>
-                  </div>
-                  <div>
-                    <span className="block text-white/50">Next action</span>
-                    <span className="font-medium text-white">{agent.next}</span>
-                  </div>
+                  <span style={{ fontSize: 13, color: item.done ? "rgba(255,255,255,0.7)" : "#fb923c" }}>
+                    {item.label}
+                  </span>
                 </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Acquisition Priorities */}
+          <div className="card-glow" style={{ padding: "24px 26px" }}>
+            <h2 style={blockTitle}>Acquisition Priorities</h2>
+            <p style={{ ...subDesc, marginBottom: 18 }}>The needle-movers right now.</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {PRIORITIES.map((p, i) => (
+                <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                  <div
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: 6,
+                      background: "rgba(250,204,21,0.12)",
+                      border: "1px solid rgba(250,204,21,0.25)",
+                      color: "#facc15",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {i + 1}
+                  </div>
+                  <span style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.5 }}>{p}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── NEXT 7 DAYS PLAN ── */}
+        <div className="card-glow" style={{ padding: "24px 26px", marginBottom: 20 }}>
+          <h2 style={blockTitle}>Next 7 Days Plan</h2>
+          <p style={{ ...subDesc, marginBottom: 18 }}>One focused move per day.</p>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+              gap: 12,
+            }}
+          >
+            {SEVEN_DAYS.map((d) => (
+              <div
+                key={d.day}
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  alignItems: "flex-start",
+                  padding: "12px 14px",
+                  background: "rgba(0,0,0,0.2)",
+                  borderRadius: 8,
+                  border: "1px solid rgba(255,255,255,0.04)",
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "'Syne', sans-serif",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#facc15",
+                    flexShrink: 0,
+                    minWidth: 38,
+                  }}
+                >
+                  {d.day}
+                </span>
+                <span style={{ fontSize: 12.5, color: "rgba(255,255,255,0.6)", lineHeight: 1.5 }}>{d.task}</span>
               </div>
             ))}
-          </section>
-
-          <section className="mt-12 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-[1.75rem] border border-white/10 bg-[#081017] p-6">
-              <p className="text-sm uppercase tracking-[0.35em] text-white/50">Saved streamer applications</p>
-              <p className="mt-4 text-3xl font-semibold text-white">{applicationCount}</p>
-              <p className="mt-2 text-sm text-white/60">Live from localStorage.</p>
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-[#081017] p-6">
-              <p className="text-sm uppercase tracking-[0.35em] text-white/50">Scheduled fan rooms</p>
-              <p className="mt-4 text-3xl font-semibold text-white">5</p>
-              <p className="mt-2 text-sm text-white/60">Visual project target.</p>
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-[#081017] p-6">
-              <p className="text-sm uppercase tracking-[0.35em] text-white/50">Target viewer waitlist</p>
-              <p className="mt-4 text-3xl font-semibold text-white">100</p>
-              <p className="mt-2 text-sm text-white/60">Initial MVP goal.</p>
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-[#081017] p-6">
-              <p className="text-sm uppercase tracking-[0.35em] text-white/50">MVP progress</p>
-              <p className="mt-4 text-3xl font-semibold text-white">68%</p>
-              <p className="mt-2 text-sm text-white/60">Visual progress snapshot.</p>
-            </div>
-          </section>
-
-          <section className="mt-12 rounded-[2rem] border border-white/10 bg-[#06101a]/80 p-8 shadow-inner shadow-black/30">
-            <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-              <div className="lg:max-w-xl">
-                <p className="text-sm uppercase tracking-[0.35em] text-emerald-300">MVP Build Progress</p>
-                <h2 className="mt-3 text-3xl font-black text-white">Where the product stands</h2>
-                <p className="mt-4 text-white/70">
-                  Track the current build milestones and the remaining work needed to turn the landing page into a working streamer/viewer MVP.
-                </p>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
-                {progressItems.map((item) => (
-                  <div key={item.label} className="rounded-3xl border border-white/10 bg-[#081421] p-5">
-                    <p className="text-sm text-white/50">{item.label}</p>
-                    <div className="mt-4 h-3 overflow-hidden rounded-full bg-white/10">
-                      <div className="h-full rounded-full bg-emerald-400" style={{ width: `${item.level}%` }} />
-                    </div>
-                    <p className="mt-3 text-sm font-semibold text-white">{item.level}% complete</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section className="mt-12 grid gap-6 lg:grid-cols-3">
-            <div className="rounded-[1.75rem] border border-white/10 bg-[#081017] p-6">
-              <p className="text-sm uppercase tracking-[0.35em] text-emerald-300">Risks & Compliance</p>
-              <ul className="mt-5 space-y-3 text-sm text-white/70">
-                {riskItems.map((risk) => (
-                  <li key={risk} className="rounded-2xl bg-white/5 px-4 py-3">
-                    {risk}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-[1.75rem] border border-white/10 bg-[#081017] p-6 lg:col-span-2">
-              <p className="text-sm uppercase tracking-[0.35em] text-emerald-300">Next Actions</p>
-              <div className="mt-5 space-y-3 text-sm text-white/70">
-                {nextActions.map((action) => (
-                  <div key={action} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4">
-                    <p className="font-medium text-white">{action}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
+          </div>
         </div>
+
+        {/* ── COMPLIANCE REMINDER ── */}
+        <div
+          className="card-glow"
+          style={{
+            padding: "20px 24px",
+            borderColor: "rgba(251,191,36,0.25)",
+            background: "rgba(251,191,36,0.04)",
+            display: "flex",
+            gap: 14,
+            alignItems: "flex-start",
+          }}
+        >
+          <span style={{ fontSize: 20, flexShrink: 0 }}>⚠️</span>
+          <div>
+            <h2 style={{ ...blockTitle, color: "#fbbf24", margin: "0 0 6px" }}>Compliance Reminder</h2>
+            <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.6)", margin: 0, lineHeight: 1.6 }}>
+              <span style={{ color: "#fff", fontWeight: 500 }}>No match footage.</span>{" "}
+              Creator rooms are only for reactions, commentary, live chat, and community.
+            </p>
+          </div>
+        </div>
+
       </div>
-    </main>
+    </div>
   );
 }
+
+// ─── SHARED STYLES ────────────────────────────────────────────────────────────
+
+const blockTitle: React.CSSProperties = {
+  fontFamily: "'Syne', sans-serif",
+  fontSize: 18,
+  fontWeight: 700,
+  color: "#fff",
+  margin: 0,
+};
+
+const subHead: React.CSSProperties = {
+  fontFamily: "'Syne', sans-serif",
+  fontSize: 15,
+  fontWeight: 700,
+  color: "#fff",
+  margin: 0,
+};
+
+const subDesc: React.CSSProperties = {
+  fontSize: 12,
+  color: "rgba(255,255,255,0.35)",
+  margin: "0 0 14px",
+};
