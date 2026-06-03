@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, ChangeEvent, FormEvent } from "react";
+import { getUpcomingFixtures } from "@/app/data/fixtures";
 
 const languages = ["English", "Arabic", "Spanish", "French", "Portuguese"];
 
@@ -92,36 +93,13 @@ const translations: Record<string, Record<string, string>> = {
   },
 };
 
-const upcomingFixtures = [
-  {
-    teams: "France vs Germany",
-    date: "Sun 24 Nov · 8:00 PM GMT",
-    rooms: 12,
-    tag: "Group D",
-  },
-  {
-    teams: "Brazil vs Japan",
-    date: "Tue 26 Nov · 10:30 PM GMT",
-    rooms: 18,
-    tag: "Group E",
-  },
-  {
-    teams: "Morocco vs Spain",
-    date: "Wed 27 Nov · 7:00 PM GMT",
-    rooms: 9,
-    tag: "Group B",
-  },
-  {
-    teams: "England vs USA",
-    date: "Fri 29 Nov · 6:30 PM GMT",
-    rooms: 15,
-    tag: "Group C",
-  },
-];
+// Upcoming official fixtures now come from local FIFA fixture data (src/app/data/fixtures.ts).
+// Pull the soonest 8 so the homepage shows a healthy preview row.
+const upcomingFixtures = getUpcomingFixtures(8);
 
 const countryCards = [
   {
-    flag: "�🇦",
+    flag: "🇨🇦",
     country: "Canada",
     languages: "English, French",
     topStreamers: "MapleMode, NorthGate",
@@ -501,7 +479,7 @@ const countryCards = [
     accentColor: "rgba(255,255,255,0.1)",
   },
   {
-    flag: "�🇧",
+    flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
     country: "Scotland",
     languages: "English, Scots",
     topStreamers: "TartanTide, HighlandHype",
@@ -945,25 +923,34 @@ export default function Home() {
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-emerald-300">Fixture preview</p>
+              <p className="text-sm uppercase tracking-[0.35em] text-emerald-300">Upcoming Official Fixtures</p>
               <h2 className="mt-3 text-4xl font-black text-white sm:text-5xl">Browse the next fan-ready matches.</h2>
             </div>
-            <p className="max-w-xl text-sm text-white/70">Preview the next matches with demo room counts so fans can quickly find what to join.</p>
+            <p className="max-w-xl text-sm text-white/70">Official World Cup schedule — source: FIFA. No match footage, just the fixtures fans can rally around.</p>
           </div>
 
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-            {upcomingFixtures.map((fixture) => (
-              <div key={fixture.teams} className="group overflow-hidden rounded-[1.75rem] border border-slate-700/40 bg-[radial-gradient(circle_at_top_left,rgba(30,64,175,0.08),transparent_45%),#02060d] p-6 shadow-[0_30px_60px_-40px_rgba(0,0,0,0.8)] transition hover:scale-[1.01] hover:border-emerald-400/30">
-                <p className="text-sm uppercase tracking-[0.35em] text-slate-400">{fixture.tag}</p>
-                <p className="mt-4 text-2xl font-bold text-white">{fixture.teams}</p>
-                <p className="mt-3 text-sm text-slate-300">{fixture.date}</p>
-                <div className="mt-6 flex items-center justify-between text-sm text-slate-300">
-                  <span>{fixture.rooms} rooms</span>
-                  <span className="rounded-full bg-slate-900/70 px-3 py-1 text-xs uppercase tracking-[0.25em] text-slate-200">Preview</span>
+          {upcomingFixtures.length === 0 ? (
+            <div className="mt-10 rounded-[1.75rem] border border-slate-700/40 bg-[#02060d] p-8 text-center">
+              <p className="text-sm leading-7 text-slate-300">Official fixtures will appear here once added.</p>
+            </div>
+          ) : (
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+              {upcomingFixtures.map((fixture) => (
+                <div key={fixture.id} className="group overflow-hidden rounded-[1.75rem] border border-slate-700/40 bg-[radial-gradient(circle_at_top_left,rgba(30,64,175,0.08),transparent_45%),#02060d] p-6 shadow-[0_30px_60px_-40px_rgba(0,0,0,0.8)] transition hover:scale-[1.01] hover:border-emerald-400/30">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm uppercase tracking-[0.35em] text-slate-400">{fixture.stage} · Group {fixture.group}</p>
+                    <span className="rounded-full bg-slate-900/70 px-3 py-1 text-xs uppercase tracking-[0.25em] text-emerald-200">{fixture.source}</span>
+                  </div>
+                  <p className="mt-4 text-2xl font-bold text-white">{fixture.teamA} vs {fixture.teamB}</p>
+                  <p className="mt-3 text-sm text-slate-300">{fixture.date} · {fixture.time}</p>
+                  <div className="mt-4 space-y-1 text-sm text-slate-300">
+                    <p>{fixture.venue}</p>
+                    <p className="text-slate-400">{fixture.city}, {fixture.country}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
