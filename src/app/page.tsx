@@ -600,7 +600,7 @@ const subStreams = [
 ];
 
 type FixtureStreamer = { name: string; meta: string; initials: string; dot: string; dotText: string; roomId: string };
-type TodayFixture = { teams: string; flags: string; time: string; rooms: string; streamers: FixtureStreamer[] };
+type TodayFixture = { teams: string; flags: string; time: string; streamers: FixtureStreamer[] };
 
 const todayFixtures: TodayFixture[] = [
   {
