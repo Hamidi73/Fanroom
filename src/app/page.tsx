@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, ChangeEvent, FormEvent } from "react";
-import { getUpcomingFixtures } from "@/app/data/fixtures";
 
+// ─── LANGUAGE (kept simple) ───────────────────────────────────────────────────
 const languages = ["English", "Arabic", "Spanish", "French", "Portuguese"];
 
 const translations: Record<string, Record<string, string>> = {
@@ -92,10 +92,6 @@ const translations: Record<string, Record<string, string>> = {
     streamerApplicationHeading: "Candidate-se para entrar como criador.",
   },
 };
-
-// Upcoming official fixtures now come from local FIFA fixture data (src/app/data/fixtures.ts).
-// Pull the soonest 8 so the homepage shows a healthy preview row.
-const upcomingFixtures = getUpcomingFixtures(8);
 
 const countryCards = [
   {
@@ -580,510 +576,281 @@ const countryCards = [
   },
 ];
 
-const topStreamers = [
+
+// ─── HERO DEMO DATA (visual until backend/video exist) ────────────────────────
+// Featured stream + fixtures rail. "Watch" links point to REAL room IDs so the
+// click-through works today. Viewer counts and "live" are placeholders.
+
+const featured = {
+  match: "Morocco vs Spain",
+  flags: "🇲🇦🇪🇸",
+  host: "RashidLive",
+  hostInitials: "RL",
+  lang: "🇲🇦 Arabic",
+  viewers: "4,812",
+  roomId: "casablanca-watch-party",
+  gradient: "linear-gradient(135deg,#c1272d 0%,#006233 100%)",
+};
+
+const subStreams = [
+  { title: "Samba Rush", initials: "RG", sub: "🇧🇷 Brazil", viewers: "4.8K", roomId: "brazil-japan-room", dot: "#ffdf00", dotText: "#000", grad: "linear-gradient(135deg,#009b3a,#ffdf00)" },
+  { title: "Three Lions", initials: "LL", sub: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", viewers: "1.1K", roomId: "england-usa-live", dot: "#c8102e", dotText: "#fff", grad: "linear-gradient(135deg,#012169,#c8102e)" },
+  { title: "Bleu Stadium", initials: "EB", sub: "🇫🇷 France", viewers: "980", roomId: "france-germany-room", dot: "#0055a4", dotText: "#fff", grad: "linear-gradient(135deg,#0055a4,#ef4135)" },
+  { title: "Sakura Patrol", initials: "SS", sub: "🇯🇵 Japan", viewers: "850", roomId: "brazil-japan-room", dot: "#bc002d", dotText: "#fff", grad: "linear-gradient(135deg,#bc002d,#1d1d1d)" },
+];
+
+type FixtureStreamer = { name: string; meta: string; initials: string; dot: string; dotText: string; roomId: string };
+type TodayFixture = { teams: string; flags: string; time: string; rooms: string; streamers: FixtureStreamer[] };
+
+const todayFixtures: TodayFixture[] = [
   {
-    name: "Mira Fennec",
-    country: "Morocco",
-    language: "Arabic",
-    style: "Passionate reaction host",
-    viewers: "3.2K",
+    teams: "Morocco v Spain", flags: "🇲🇦 🇪🇸", time: "7:00 PM · 5 rooms live",
+    streamers: [
+      { name: "RashidLive", meta: "4.8K · Arabic", initials: "RL", dot: "#fcd116", dotText: "#000", roomId: "casablanca-watch-party" },
+      { name: "AtlasWave", meta: "2.1K · French", initials: "AW", dot: "#c1272d", dotText: "#fff", roomId: "morocco-spain-room" },
+      { name: "OléWatch", meta: "1.4K · Spanish", initials: "OW", dot: "#aa151b", dotText: "#fff", roomId: "morocco-spain-room" },
+    ],
   },
   {
-    name: "RafaGoals",
-    country: "Brazil",
-    language: "Portuguese",
-    style: "High-energy fan commentary",
-    viewers: "4.1K",
+    teams: "Brazil v Japan", flags: "🇧🇷 🇯🇵", time: "10:30 PM · 3 rooms live",
+    streamers: [
+      { name: "RafaGoals", meta: "1.2K · Portuguese", initials: "RG", dot: "#ffdf00", dotText: "#000", roomId: "brazil-japan-room" },
+      { name: "SakuraStream", meta: "850 · Japanese", initials: "SS", dot: "#bc002d", dotText: "#fff", roomId: "brazil-japan-room" },
+    ],
   },
   {
-    name: "Nico Roja",
-    country: "Argentina",
-    language: "Spanish",
-    style: "Tactical breakdown voice",
-    viewers: "2.8K",
+    teams: "England v USA", flags: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇺🇸", time: "6:30 PM · 4 rooms live",
+    streamers: [
+      { name: "LondonLoud", meta: "1.1K · English", initials: "LL", dot: "#012169", dotText: "#fff", roomId: "england-usa-live" },
+      { name: "FanZoneUS", meta: "760 · English", initials: "FZ", dot: "#b22234", dotText: "#fff", roomId: "rivalry-room" },
+    ],
   },
   {
-    name: "LondonLoud",
-    country: "England",
-    language: "English",
-    style: "Rivalry chant leader",
-    viewers: "3.5K",
-  },
-  {
-    name: "Elsa Bleu",
-    country: "France",
-    language: "French",
-    style: "Stylish live watch party",
-    viewers: "2.6K",
-  },
-  {
-    name: "Mateo Goal",
-    country: "Spain",
-    language: "Spanish",
-    style: "Club culture storyteller",
-    viewers: "2.9K",
+    teams: "France v Germany", flags: "🇫🇷 🇩🇪", time: "8:00 PM · 4 rooms live",
+    streamers: [
+      { name: "ParisPulse", meta: "1.0K · French", initials: "PP", dot: "#0055a4", dotText: "#fff", roomId: "france-germany-room" },
+      { name: "BerlinBounce", meta: "870 · German", initials: "BB", dot: "#000", dotText: "#fff", roomId: "france-germany-room" },
+    ],
   },
 ];
 
-const trendingRooms = [
-  {
-    match: "Brazil vs Japan",
-    host: "RafaGoals",
-    language: "Portuguese",
-    country: "Brazil",
-    status: "Live",
-    viewers: "4.8K",
-  },
-  {
-    match: "England vs USA",
-    host: "LondonLoud",
-    language: "English",
-    country: "England",
-    status: "Scheduled",
-    viewers: "2.4K",
-  },
-  {
-    match: "Morocco vs Spain",
-    host: "Mira Fennec",
-    language: "Arabic",
-    country: "Morocco",
-    status: "Live",
-    viewers: "3.9K",
-  },
-  {
-    match: "France vs Germany",
-    host: "Elsa Bleu",
-    language: "French",
-    country: "France",
-    status: "Scheduled",
-    viewers: "2.2K",
-  },
-];
+function nationSlug(country: string) {
+  return country.toLowerCase().replace(/\s+/g, "-");
+}
+
+// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
 export default function Home() {
   const [selectedLanguage, setSelectedLanguage] = useState("English");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openFixture, setOpenFixture] = useState<number | null>(0);
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    country: "",
-    team: "",
-    language: "",
-    social: "",
-    entertainment: "",
+    name: "", email: "", country: "", team: "", language: "", social: "", entertainment: "",
   });
   const [submitted, setSubmitted] = useState(false);
 
+  const t = translations[selectedLanguage];
+
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
-    setFormData((current) => ({
-      ...current,
-      [name]: value,
-    }));
+    setFormData((current) => ({ ...current, [name]: value }));
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const application = {
-      ...formData,
-      createdAt: new Date().toISOString(),
-    };
+    const application = { ...formData, createdAt: new Date().toISOString() };
     const stored = localStorage.getItem("streamerApplications");
     const parsed = stored ? JSON.parse(stored) : [];
     const apps = Array.isArray(parsed) ? parsed : [];
-    const nextApplications = [...apps, application];
-    localStorage.setItem("streamerApplications", JSON.stringify(nextApplications));
+    localStorage.setItem("streamerApplications", JSON.stringify([...apps, application]));
     setSubmitted(true);
   };
 
   return (
-    <main className="min-h-screen bg-[#040406] text-white">
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.22),transparent_18%),radial-gradient(circle_at_bottom_left,rgba(30,58,138,0.18),transparent_28%),radial-gradient(circle_at_center,rgba(234,179,8,0.08),transparent_38%)]" />
-        <div className="absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-slate-900/90 via-slate-950/40 to-transparent" />
+    <main style={{ fontFamily: "'Outfit', sans-serif", background: "#0a0a0f", color: "#f4f4f6", minHeight: "100vh" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700;800&display=swap');
+        .fr-display { font-family:'Anton',sans-serif; text-transform:uppercase; letter-spacing:0.01em; }
+        @keyframes fr-pulse { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+        .fr-dot { width:7px; height:7px; border-radius:50%; background:#ff3b3b; animation:fr-pulse 1.4s infinite; display:inline-block; }
+        .fr-hero { display:grid; grid-template-columns:7fr 3fr; gap:16px; align-items:start; }
+        .fr-subgrid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:10px; }
+        .fr-nationgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+        .fr-card-hover { transition:transform .18s, border-color .18s; }
+        .fr-card-hover:hover { transform:translateY(-3px); border-color:#ffd23f; }
+        .fr-feature:hover { transform:translateY(-3px); }
+        .fr-nation:hover { transform:translateY(-4px); }
+        @media (max-width:940px){ .fr-hero { grid-template-columns:1fr; } }
+        @media (max-width:680px){ .fr-subgrid { grid-template-columns:repeat(2,1fr); } }
+      `}</style>
 
-        <div className="relative mx-auto max-w-7xl px-6 py-8 lg:px-8">
-          <header className="flex flex-col gap-6 border-b border-white/10 pb-6 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-emerald-300 md:text-sm">FanRoom</p>
-              <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl md:text-4xl lg:text-6xl">
-                Find your nation, language, and the best World Cup fan rooms.
-              </h1>
-            </div>
-            <div className="flex items-center justify-between w-full gap-4 md:w-auto md:justify-end">
-              <div className="hidden md:flex md:items-center md:gap-4">
-                <nav className="flex items-center gap-4 text-sm text-white/70">
-                  <a href="#choose-nation" className="transition hover:text-white">{translations[selectedLanguage].navChooseNation}</a>
-                  <a href="#fixtures" className="transition hover:text-white">{translations[selectedLanguage].navFixtures}</a>
-                  <a href="#top-streamers" className="transition hover:text-white">{translations[selectedLanguage].navTopStreamers}</a>
-                  <a href="#apply" className="transition hover:text-white">{translations[selectedLanguage].navApply}</a>
-                </nav>
-                <label className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80">
-                  <span className="text-white/60 hidden md:inline">Language</span>
-                  <select
-                    value={selectedLanguage}
-                    onChange={(event) => setSelectedLanguage(event.target.value)}
-                    className="bg-transparent text-white outline-none"
-                  >
-                    {languages.map((language) => (
-                      <option key={language} value={language} className="bg-[#040406] text-white">
-                        {language}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-
-              <div className="flex md:hidden items-center gap-3">
-                <label className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/80">
-                  <select
-                    value={selectedLanguage}
-                    onChange={(event) => setSelectedLanguage(event.target.value)}
-                    className="bg-transparent text-white outline-none text-sm"
-                    aria-label="Language selector"
-                  >
-                    {languages.map((language) => (
-                      <option key={language} value={language} className="bg-[#040406] text-white">
-                        {language}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <button
-                  onClick={() => setMobileMenuOpen((v) => !v)}
-                  aria-label="Open menu"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/3 p-2 text-white/90"
-                >
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </header>
-
-          {mobileMenuOpen && (
-            <div className="md:hidden mt-4 rounded-lg border border-white/6 bg-[#021014] p-4">
-              <nav className="flex flex-col gap-3">
-                <a href="#choose-nation" className="block rounded px-3 py-2 text-base text-white/90">{translations[selectedLanguage].navChooseNation}</a>
-                <a href="#fixtures" className="block rounded px-3 py-2 text-base text-white/90">{translations[selectedLanguage].navFixtures}</a>
-                <a href="#top-streamers" className="block rounded px-3 py-2 text-base text-white/90">{translations[selectedLanguage].navTopStreamers}</a>
-                <a href="#apply" className="block rounded px-3 py-2 text-base text-white/90">{translations[selectedLanguage].navApply}</a>
-              </nav>
-            </div>
-          )}
-
-          <section className="py-16">
-            <div className="space-y-8">
-              <div className="inline-flex rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 shadow-sm shadow-emerald-500/10">
-                Safe watch-alongs — no match footage, all creator-led energy.
-              </div>
-
-              <div className="space-y-6">
-                <p className="text-sm uppercase tracking-[0.35em] text-white/60">Fan-first World Cup discovery</p>
-                <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">
-                  {translations[selectedLanguage].mainHeadline}
-                </h2>
-                <p className="max-w-2xl text-base md:text-lg leading-7 text-white/70">
-                  {translations[selectedLanguage].heroSubtext}
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div className="rounded-[1.5rem] border border-white/10 bg-[#06111b] px-5 py-4 text-sm text-white/80">
-                  {translations[selectedLanguage].safetyHeading}
-                </div>
-                <div className="flex flex-col gap-4 sm:flex-row">
-                  <a href="#choose-nation" className="block w-full rounded-full bg-emerald-400 px-6 py-4 text-base font-semibold text-black text-center transition duration-200 ease-out hover:bg-emerald-300 hover:shadow-[0_18px_30px_-22px_rgba(16,185,129,0.9)] sm:inline sm:w-auto">
-                    {translations[selectedLanguage].ctaChooseNation}
-                  </a>
-                  <a href="#top-streamers" className="block w-full rounded-full border border-white/20 bg-white/5 px-6 py-4 text-base font-semibold text-white text-center transition duration-200 ease-out hover:bg-white/15 hover:border-emerald-300 sm:inline sm:w-auto">
-                    {translations[selectedLanguage].ctaExploreStreamers}
-                  </a>
-                </div>
-              </div>
-            </div>
-          </section>
+      {/* ── TOP BAR ── */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 22px", borderBottom: "1px solid rgba(255,255,255,0.08)", position: "sticky", top: 0, zIndex: 50, background: "rgba(10,10,15,0.85)", backdropFilter: "blur(12px)" }}>
+        <div className="fr-display" style={{ fontSize: 22 }}>FANROOM<span style={{ color: "#ffd23f" }}>GLOBAL</span></div>
+        <div style={{ display: "flex", gap: 22, alignItems: "center" }}>
+          <a href="#nations" style={{ color: "#9a9aa8", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>{t.navChooseNation}</a>
+          <a href="#apply" style={{ color: "#9a9aa8", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>{t.navApply}</a>
+          <select
+            value={selectedLanguage}
+            onChange={(e) => setSelectedLanguage(e.target.value)}
+            style={{ background: "rgba(255,255,255,0.06)", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 99, padding: "6px 12px", fontSize: 13, fontFamily: "inherit", outline: "none" }}
+          >
+            {languages.map((l) => <option key={l} value={l} style={{ background: "#0a0a0f" }}>{l}</option>)}
+          </select>
         </div>
       </div>
 
-      {/* Removed large language discovery section to keep homepage nation-first and clean */}
+      <div style={{ maxWidth: 1240, margin: "0 auto", padding: 22 }}>
 
-      <section id="choose-nation" className="bg-[#050507] px-6 py-16 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-emerald-300">{translations[selectedLanguage].navChooseNation}</p>
-              <h2 className="mt-3 text-4xl font-black text-white sm:text-5xl">{translations[selectedLanguage].chooseNationHeading}</h2>
-            </div>
-            <p className="max-w-xl text-sm text-white/70">Country cards help fans jump directly to national streams and local match energy.</p>
-          </div>
-
-          <div className="mt-10 grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {countryCards.map((country) => (
-              <div
-                key={country.country}
-                className="rounded-[2rem] border p-5 shadow-sm shadow-black/25 transition hover:-translate-y-1"
-                style={{
-                  borderColor: country.borderColor,
-                  backgroundImage: `radial-gradient(circle at top left, ${country.accentColor}, transparent 30%), radial-gradient(circle at bottom right, rgba(255,255,255,0.04), transparent 45%), linear-gradient(180deg, #071117 0%, #08131d 100%)`,
-                }}
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className="flex h-12 w-12 items-center justify-center rounded-3xl text-3xl shadow-inner shadow-black/30"
-                    style={{ backgroundColor: country.borderColor }}
-                  >
-                    {country.flag}
-                  </div>
-                  <div>
-                    <p className="text-base uppercase tracking-[0.35em] text-slate-300">{country.country}</p>
-                    <p className="mt-1 text-xl font-bold text-white">{country.country}</p>
-                  </div>
-                </div>
-                <div className="mt-4 space-y-3 text-base sm:text-sm text-white/70">
-                  <p><span className="font-semibold text-white">Main languages:</span> {country.languages}</p>
-                  <p><span className="font-semibold text-white">Top streamers:</span> {country.topStreamers}</p>
-                  <p><span className="font-semibold text-white">Upcoming match:</span> {country.match}</p>
-                </div>
-                <div className="mt-6 flex flex-col items-stretch gap-3 rounded-[1.5rem] bg-white/5 px-4 py-4 text-base text-white/70 sm:flex-row sm:items-center sm:justify-between">
-                  <span>{country.rooms} fan rooms</span>
-                  <a href={`/nation/${country.country.toLowerCase().replace(/\s+/g, "-")}`} className="block w-full text-center text-emerald-300 sm:inline sm:w-auto">View nation rooms</a>
-                </div>
-              </div>
-            ))}
-          </div>
+        {/* preview note */}
+        <div style={{ background: "rgba(255,210,63,0.1)", border: "1px solid rgba(255,210,63,0.3)", color: "#ffd23f", fontSize: 12, padding: "8px 14px", borderRadius: 8, textAlign: "center", marginBottom: 18 }}>
+          ⚡ Preview — live rooms & video are coming. Reactions, commentary & community only — never match footage.
         </div>
-      </section>
 
-      <section id="global-trending" className="bg-[#050507] px-6 py-16 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        {/* ── HERO: 70% featured + sub-streams | 30% fixtures ── */}
+        <div className="fr-hero">
+
+          {/* LEFT 70% */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* Featured */}
+            <a href={`/room/${featured.roomId}`} className="fr-feature" style={{ position: "relative", borderRadius: 16, overflow: "hidden", aspectRatio: "16/9", cursor: "pointer", background: featured.gradient, display: "flex", flexDirection: "column", justifyContent: "flex-end", textDecoration: "none", color: "#fff", transition: "transform .25s" }}>
+              <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 20% 30%,rgba(255,255,255,0.18),transparent 40%),linear-gradient(to top,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.1) 55%)" }} />
+              <div style={{ position: "absolute", top: 14, left: 14, right: 14, display: "flex", justifyContent: "space-between", zIndex: 2 }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(0,0,0,0.5)", padding: "5px 10px", borderRadius: 99, fontSize: 12 }}>👀 {featured.viewers} watching</span>
+                <span style={{ fontSize: 40, letterSpacing: 5 }}>{featured.flags}</span>
+              </div>
+              <div style={{ position: "relative", zIndex: 2, padding: 22 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#ffd23f", letterSpacing: "0.12em", textTransform: "uppercase" }}>● Biggest room right now</div>
+                <div className="fr-display" style={{ fontSize: "clamp(26px,3vw,38px)", lineHeight: 0.95, margin: "7px 0 6px" }}>{featured.match}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, color: "#e8e8ee", fontSize: 13, fontWeight: 500, flexWrap: "wrap" }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <span style={{ width: 25, height: 25, borderRadius: "50%", background: "#ffd23f", color: "#000", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 11 }}>{featured.hostInitials}</span>
+                    {featured.host}
+                  </span>
+                  <span>· {featured.lang}</span>
+                </div>
+                <span style={{ marginTop: 14, display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: "#000", padding: "12px 24px", borderRadius: 99, fontWeight: 700, fontSize: 14 }}>▶ Watch now</span>
+              </div>
+            </a>
+
+            {/* Sub-streams under featured */}
             <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-emerald-300">Global Trending Fan Rooms</p>
-              <h2 className="mt-3 text-4xl font-black text-white sm:text-5xl">Join the most active watch-along rooms.</h2>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 700, color: "#9a9aa8", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                <span className="fr-dot" /> Also live right now
+              </div>
+              <div className="fr-subgrid">
+                {subStreams.map((s) => (
+                  <a key={s.title + s.sub} href={`/room/${s.roomId}`} className="fr-card-hover" style={{ borderRadius: 12, overflow: "hidden", background: "#16161f", border: "1px solid rgba(255,255,255,0.08)", textDecoration: "none", color: "#f4f4f6", display: "block" }}>
+                    <div style={{ position: "relative", aspectRatio: "16/9", background: s.grad }}>
+                      <span style={{ position: "absolute", top: 7, left: 7, background: "#ff3b3b", color: "#fff", fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 4 }}>LIVE</span>
+                      <span style={{ position: "absolute", bottom: 7, right: 7, background: "rgba(0,0,0,0.6)", fontSize: 10, padding: "2px 6px", borderRadius: 4 }}>{s.viewers}</span>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, padding: 9, alignItems: "center" }}>
+                      <span style={{ width: 26, height: 26, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 11, background: s.dot, color: s.dotText }}>{s.initials}</span>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 12, lineHeight: 1.2 }}>{s.title}</div>
+                        <div style={{ fontSize: 10.5, color: "#9a9aa8", marginTop: 2 }}>{s.sub}</div>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
             </div>
-            <p className="max-w-xl text-sm text-white/70">Trending rooms surface the best matches, hosts, and language-based fan energy.</p>
           </div>
 
-          <div className="mt-10 grid gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-            {trendingRooms.map((room) => {
-              const roomId = `${room.host.toLowerCase().replace(/\s+/g, "-")}-room`;
+          {/* RIGHT 30%: fixtures with dropdowns */}
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#9a9aa8", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Today&apos;s fixtures</div>
+            {todayFixtures.map((fx, i) => {
+              const open = openFixture === i;
               return (
-                <div key={`${room.match}-${room.host}`} className="rounded-[2rem] border border-white/10 bg-[#08121d] p-5 shadow-sm shadow-black/20 transition hover:-translate-y-1 hover:border-emerald-400/30">
-                  <div className="flex items-center justify-between text-base sm:text-sm text-white/60">
-                    <span className="font-semibold text-white">{room.match}</span>
-                    <span className={`rounded-full px-3 py-1 text-xs uppercase tracking-[0.25em] ${room.status === "Live" ? "bg-red-500/15 text-red-300 ring-1 ring-red-500/10" : "bg-slate-700/70 text-slate-200"}`}>
-                      {room.status}
-                    </span>
+                <div key={fx.teams} style={{ background: "#16161f", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, overflow: "hidden", marginBottom: 10 }}>
+                  <div onClick={() => setOpenFixture(open ? null : i)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 15px", cursor: "pointer" }}>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 9, fontWeight: 600, fontSize: 14 }}><span style={{ fontSize: 18 }}>{fx.flags}</span> {fx.teams}</div>
+                      <div style={{ fontSize: 11, color: "#9a9aa8", marginTop: 2 }}>{fx.time}</div>
+                    </div>
+                    <span style={{ color: "#9a9aa8", transform: open ? "rotate(180deg)" : "none", transition: "transform .2s" }}>▾</span>
                   </div>
-                  <p className="mt-3 text-lg font-semibold text-white">Host: {room.host}</p>
-                  <p className="mt-2 text-base sm:text-sm text-white/70">{room.language} • {room.country} fanbase</p>
-                  <div className="mt-6 flex flex-col items-stretch gap-3 text-base text-white/70 sm:flex-row sm:items-center sm:justify-between">
-                    <span>{room.viewers} viewers</span>
-                    <a href={`/room/${roomId}`} className="block w-full text-center text-emerald-300 sm:inline sm:w-auto">Join room</a>
-                  </div>
+                  {open && (
+                    <div>
+                      <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em", color: "#9a9aa8", padding: "9px 15px 4px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>Top streamers for this game</div>
+                      {fx.streamers.map((st, idx) => (
+                        <a key={st.name} href={`/room/${st.roomId}`} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 15px", textDecoration: "none", color: "#f4f4f6" }}>
+                          <span className="fr-display" style={{ fontSize: 14, color: "#ffd23f", width: 14 }}>{idx + 1}</span>
+                          <span style={{ width: 28, height: 28, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 11, background: st.dot, color: st.dotText }}>{st.initials}</span>
+                          <span style={{ flex: 1, minWidth: 0 }}>
+                            <span style={{ fontSize: 13, fontWeight: 600, display: "block" }}>{st.name}</span>
+                            <span style={{ fontSize: 11, color: "#9a9aa8" }}>{st.meta}</span>
+                          </span>
+                          <span style={{ fontSize: 12, color: "#ffd23f", fontWeight: 600 }}>Watch</span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
         </div>
-      </section>
 
-      <section id="top-streamers" className="bg-[#040406] px-6 py-16 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-emerald-300">Top Streamers by Nation</p>
-              <h2 className="mt-3 text-4xl font-black text-white sm:text-5xl">Follow the creators fans want to join.</h2>
-            </div>
-            <p className="max-w-xl text-sm text-white/70">Streamers are listed with their country, language, and personality so fans can find the right room quickly.</p>
-          </div>
+        {/* ── NATIONS ── */}
+        <div id="nations" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "38px 0 16px" }}>
+          <h2 className="fr-display" style={{ fontSize: 24 }}>🌍 Pick your nation</h2>
+        </div>
+        <div className="fr-nationgrid">
+          {countryCards.map((c) => (
+            <a key={c.country} href={`/nation/${nationSlug(c.country)}`} className="fr-nation" style={{ position: "relative", borderRadius: 14, overflow: "hidden", cursor: "pointer", aspectRatio: "4/3", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: 14, textDecoration: "none", color: "#fff", transition: "transform .2s", backgroundImage: `radial-gradient(circle at top left, ${c.accentColor}, transparent 35%), linear-gradient(160deg, ${c.borderColor}, #0c0c14 80%)` }}>
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(0,0,0,0.78),transparent 65%)" }} />
+              <span style={{ position: "absolute", top: 12, left: 14, fontSize: 30, zIndex: 2, filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.4))" }}>{c.flag}</span>
+              <span className="fr-display" style={{ position: "relative", zIndex: 2, fontSize: 18 }}>{c.country}</span>
+              <span style={{ position: "relative", zIndex: 2, fontSize: 12, color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>{c.rooms} fan rooms</span>
+            </a>
+          ))}
+        </div>
 
-          <div className="mt-10 grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {topStreamers.map((streamer) => (
-              <div key={streamer.name} className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.08),transparent_30%),#08121d] p-5 ring-1 ring-slate-800/30 shadow-sm shadow-black/25 transition hover:-translate-y-1 hover:border-emerald-400/30">
-                <div className="flex flex-wrap items-center gap-2 text-sm text-slate-300">
-                  <span className="rounded-full bg-slate-900/70 px-3 py-1">{streamer.country}</span>
-                  <span className="rounded-full bg-slate-900/70 px-3 py-1">{streamer.language}</span>
-                </div>
-                <h3 className="mt-4 text-xl sm:text-2xl font-bold text-white">{streamer.name}</h3>
-                <p className="mt-3 text-base sm:text-sm text-white/70">{streamer.style}</p>
-                <div className="mt-6 flex flex-col items-stretch gap-3 text-base text-white/70 sm:flex-row sm:items-center sm:justify-between">
-                  <span>{streamer.viewers} expected viewers</span>
-                  <a href="#global-trending" className="block w-full rounded-full bg-white/5 px-3 py-3 text-center text-emerald-300 transition hover:bg-white/10 sm:inline sm:w-auto">Follow / Join room</a>
-                </div>
+        {/* ── APPLY ── */}
+        <div id="apply" style={{ marginTop: 48 }}>
+          <div style={{ borderRadius: 18, border: "1px solid rgba(255,210,63,0.15)", background: "linear-gradient(160deg,#12121c,#0c0c14)", padding: 28 }}>
+            <div style={{ display: "grid", gap: 24, gridTemplateColumns: "1fr 1.1fr", alignItems: "start" }}>
+              <div>
+                <p style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.2em", color: "#ffd23f" }}>Become a host</p>
+                <h2 className="fr-display" style={{ fontSize: 30, marginTop: 8 }}>{t.streamerApplicationHeading}</h2>
+                <p style={{ marginTop: 12, color: "#9a9aa8", fontSize: 14, lineHeight: 1.6 }}>Represent your nation. Host the room. Bring the energy. (Applications save locally for now.)</p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="fixtures" className="bg-[#040406] px-6 py-16 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-emerald-300">Upcoming Official Fixtures</p>
-              <h2 className="mt-3 text-4xl font-black text-white sm:text-5xl">Browse the next fan-ready matches.</h2>
-            </div>
-            <p className="max-w-xl text-sm text-white/70">Official World Cup schedule — source: FIFA. No match footage, just the fixtures fans can rally around.</p>
-          </div>
-
-          {upcomingFixtures.length === 0 ? (
-            <div className="mt-10 rounded-[1.75rem] border border-slate-700/40 bg-[#02060d] p-8 text-center">
-              <p className="text-sm leading-7 text-slate-300">Official fixtures will appear here once added.</p>
-            </div>
-          ) : (
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-              {upcomingFixtures.map((fixture) => (
-                <div key={fixture.id} className="group overflow-hidden rounded-[1.75rem] border border-slate-700/40 bg-[radial-gradient(circle_at_top_left,rgba(30,64,175,0.08),transparent_45%),#02060d] p-6 shadow-[0_30px_60px_-40px_rgba(0,0,0,0.8)] transition hover:scale-[1.01] hover:border-emerald-400/30">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm uppercase tracking-[0.35em] text-slate-400">{fixture.stage} · Group {fixture.group}</p>
-                    <span className="rounded-full bg-slate-900/70 px-3 py-1 text-xs uppercase tracking-[0.25em] text-emerald-200">{fixture.source}</span>
+              <div style={{ background: "#0c0c14", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: 22 }}>
+                {submitted ? (
+                  <div style={{ textAlign: "center", padding: 16 }}>
+                    <p style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.2em", color: "#34d399" }}>Application received</p>
+                    <h3 className="fr-display" style={{ fontSize: 22, marginTop: 10 }}>Thanks for applying!</h3>
+                    <p style={{ marginTop: 8, color: "#9a9aa8", fontSize: 13 }}>We&apos;ll reach out as we build the platform.</p>
                   </div>
-                  <p className="mt-4 text-2xl font-bold text-white">{fixture.teamA} vs {fixture.teamB}</p>
-                  <p className="mt-3 text-sm text-slate-300">{fixture.date} · {fixture.time}</p>
-                  <div className="mt-4 space-y-1 text-sm text-slate-300">
-                    <p>{fixture.venue}</p>
-                    <p className="text-slate-400">{fixture.city}, {fixture.country}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section className="border-t border-slate-700/40 bg-[#03101b] px-6 py-14 lg:px-8">
-        <div className="mx-auto max-w-7xl rounded-[2rem] border border-emerald-400/10 bg-gradient-to-b from-slate-950 via-slate-900 to-[#061321] p-8 text-center shadow-lg shadow-emerald-500/10">
-          <p className="text-sm uppercase tracking-[0.35em] text-amber-200">Trust & safety</p>
-          <h2 className="mt-4 text-3xl font-black text-white sm:text-4xl">No match footage. Creator-led reactions only.</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-300">
-            The platform keeps streams compliant and premium. Creators share reactions and chat — not the match feed.
-          </p>
-          <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
-            <a href="#apply" className="block w-full rounded-full bg-emerald-400 px-6 py-4 text-base font-semibold text-black text-center shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-300 sm:inline sm:w-auto">
-              Apply to stream
-            </a>
-            <a href="#fixtures" className="block w-full rounded-full border border-slate-600 bg-slate-950/80 px-6 py-4 text-base font-semibold text-white text-center transition hover:bg-slate-900/90 sm:inline sm:w-auto">
-              Explore fixtures
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section id="apply" className="bg-[#050507] px-6 py-16 lg:px-8">
-        <div className="mx-auto max-w-5xl rounded-[2rem] border border-emerald-400/10 bg-gradient-to-br from-slate-950 via-slate-900 to-[#07151a] p-10 shadow-2xl shadow-emerald-400/10">
-          <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-start">
-            <div>
-              <p className="text-sm uppercase tracking-[0.35em] text-emerald-300">Streamer application</p>
-              <h2 className="mt-4 text-4xl font-black text-white">{translations[selectedLanguage].streamerApplicationHeading}</h2>
-              <p className="mt-4 text-slate-300">
-                Fill out the form to join the platform. Applications are saved locally in your browser for this MVP.
-              </p>
-            </div>
-
-            <div className="rounded-[1.75rem] bg-[#06131d] p-8 text-white/80 shadow-inner shadow-black/20 ring-1 ring-slate-700/30">
-              {submitted ? (
-                <div className="rounded-3xl border border-emerald-400/20 bg-emerald-400/10 p-8 text-center">
-                  <p className="text-sm uppercase tracking-[0.35em] text-emerald-200">Application received</p>
-                  <h3 className="mt-4 text-2xl font-bold text-white">Thanks for applying!</h3>
-                  <p className="mt-3 text-sm leading-6 text-white/70">
-                    We’ve got your streamer pitch and will reach out as we build the platform.
-                  </p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <label className="block text-base sm:text-sm text-white/70">
-                    <span className="text-white">Name</span>
-                    <input
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                      className="mt-2 w-full rounded-3xl border border-slate-700 bg-[#07131f] px-4 py-3 text-white outline-none transition focus:border-emerald-400"
-                    />
-                  </label>
-
-                  <label className="block text-base sm:text-sm text-white/70">
-                    <span className="text-white">Email</span>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      className="mt-2 w-full rounded-3xl border border-white/10 bg-[#020405] px-4 py-3 text-white outline-none transition focus:border-emerald-400"
-                    />
-                  </label>
-
-                  <label className="block text-base sm:text-sm text-white/70">
-                    <span className="text-white">Country</span>
-                    <input
-                      name="country"
-                      value={formData.country}
-                      onChange={handleChange}
-                      required
-                      className="mt-2 w-full rounded-3xl border border-white/10 bg-[#020405] px-4 py-3 text-white outline-none transition focus:border-emerald-400"
-                    />
-                  </label>
-
-                  <label className="block text-base sm:text-sm text-white/70">
-                    <span className="text-white">Team supported</span>
-                    <input
-                      name="team"
-                      value={formData.team}
-                      onChange={handleChange}
-                      required
-                      className="mt-2 w-full rounded-3xl border border-white/10 bg-[#020405] px-4 py-3 text-white outline-none transition focus:border-emerald-400"
-                    />
-                  </label>
-
-                  <label className="block text-base sm:text-sm text-white/70">
-                    <span className="text-white">Main language</span>
-                    <input
-                      name="language"
-                      value={formData.language}
-                      onChange={handleChange}
-                      required
-                      className="mt-2 w-full rounded-3xl border border-white/10 bg-[#020405] px-4 py-3 text-white outline-none transition focus:border-emerald-400"
-                    />
-                  </label>
-
-                  <label className="block text-base sm:text-sm text-white/70">
-                    <span className="text-white">Social media link</span>
-                    <input
-                      name="social"
-                      value={formData.social}
-                      onChange={handleChange}
-                      className="mt-2 w-full rounded-3xl border border-white/10 bg-[#020405] px-4 py-3 text-white outline-none transition focus:border-emerald-400"
-                    />
-                  </label>
-
-                  <label className="block text-base sm:text-sm text-white/70">
-                    <span className="text-white">Why would your room be entertaining?</span>
-                    <textarea
-                      name="entertainment"
-                      value={formData.entertainment}
-                      onChange={handleChange}
-                      required
-                      rows={4}
-                      className="mt-2 w-full rounded-3xl border border-white/10 bg-[#020405] px-4 py-3 text-white outline-none transition focus:border-emerald-400"
-                    />
-                  </label>
-
-                  <button
-                    type="submit"
-                    className="w-full rounded-full bg-emerald-400 px-6 py-4 text-base font-semibold text-black transition hover:bg-emerald-300"
-                  >
-                    Submit application
-                  </button>
-                </form>
-              )}
+                ) : (
+                  <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {([["name","Name","text"],["email","Email","email"],["country","Country","text"],["team","Team supported","text"],["language","Main language","text"],["social","Social link","text"]] as const).map(([k,label,type]) => (
+                      <label key={k} style={{ fontSize: 13, color: "#9a9aa8" }}>
+                        <span style={{ color: "#fff" }}>{label}</span>
+                        <input name={k} type={type} value={(formData as Record<string,string>)[k]} onChange={handleChange} required={k !== "social"}
+                          style={{ marginTop: 6, width: "100%", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "#07070d", padding: "10px 14px", color: "#fff", outline: "none", fontFamily: "inherit", fontSize: 14 }} />
+                      </label>
+                    ))}
+                    <label style={{ fontSize: 13, color: "#9a9aa8" }}>
+                      <span style={{ color: "#fff" }}>Why would your room be entertaining?</span>
+                      <textarea name="entertainment" value={formData.entertainment} onChange={handleChange} required rows={3}
+                        style={{ marginTop: 6, width: "100%", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "#07070d", padding: "10px 14px", color: "#fff", outline: "none", fontFamily: "inherit", fontSize: 14, resize: "vertical" }} />
+                    </label>
+                    <button type="submit" style={{ width: "100%", borderRadius: 99, background: "#ffd23f", color: "#000", border: "none", padding: "13px", fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: "inherit" }}>Submit application</button>
+                  </form>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </section>
+
+      </div>
+
+      <footer style={{ textAlign: "center", color: "#9a9aa8", fontSize: 12, padding: "40px 20px", borderTop: "1px solid rgba(255,255,255,0.08)", marginTop: 40 }}>
+        Reminder: rooms are for reactions, commentary &amp; community — never match footage. · FanRoom Global
+      </footer>
     </main>
   );
 }
