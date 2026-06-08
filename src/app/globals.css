@@ -1,26 +1,63 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+  Design tokens for the whole site.
+
+  These are the only colours/fonts you should need. Use them as normal Tailwind
+  utilities, e.g. `bg-ink`, `text-accent`, `border-muted`, `font-display`.
+  Change a value here and it updates everywhere it's used.
+*/
+@theme {
+  /* Surfaces (dark theme) */
+  --color-ink: #0a0a0f;            /* page background (homepage)        */
+  --color-ink-deep: #040406;       /* page background (nation/room)     */
+  --color-ink-foreground: #f4f4f6; /* default text                      */
+  --color-surface: #16161f;        /* cards on the homepage             */
+  --color-surface-2: #0c0c14;      /* darker inset panels               */
+  --color-panel: #08131d;          /* cards on nation/room pages        */
+  --color-panel-2: #06121d;        /* darker panels on nation/room      */
+
+  /* Brand */
+  --color-accent: #ffd23f;         /* FanRoom yellow                    */
+  --color-muted: #9a9aa8;          /* secondary / caption text          */
+
+  /* Fonts (the actual families are loaded in app/layout.tsx) */
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-anton), ui-sans-serif, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    background-color: var(--color-ink);
+  }
+  body {
+    color: var(--color-ink-foreground);
+    font-family: var(--font-sans);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Big condensed display headings (the "FANROOM" / match-title look). */
+.display {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+/* Pulsing red "live" dot. */
+@keyframes fr-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+.live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: #ff3b3b;
+  animation: fr-pulse 1.4s infinite;
 }

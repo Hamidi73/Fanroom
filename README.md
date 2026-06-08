@@ -1,36 +1,156 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FanRoom Global
 
-## Getting Started
+A World Cup 2026 fan-room platform — fans create an account, host or join
+creator-led watch-along rooms, and chat in real time. **Reactions, commentary
+and community only — never match footage.**
 
-First, run the development server:
+Wired to **real data and a real backend**:
+
+- **Fixtures are real** — the complete 104-match 2026 schedule, fetched at
+  request time from OpenFootball (public-domain data), not hardcoded. Knockout
+  matches whose teams aren't decided yet show placeholder slots (e.g. "W101").
+- **Nations are real reference data** (the participating teams).
+- **Accounts, rooms and chat are real** — backed by Supabase (Postgres auth +
+  database + realtime). Users sign up, create rooms, join them, and chat live.
+  Everything is empty until real people use it (no fake seed content).
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
+npm run build    # production build
+npm run lint     # eslint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Requires `.env.local` (already present locally, gitignored):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...
+# Live video (LiveKit) — secret stays server-side, URL is public
+NEXT_PUBLIC_LIVEKIT_URL=wss://<project>.livekit.cloud
+LIVEKIT_API_KEY=API...
+LIVEKIT_API_SECRET=...
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+> **Sign-ups are instant:** a database trigger auto-confirms new accounts, so no
+> email confirmation step is needed (and no confirmation emails are sent). To
+> require real email confirmation instead, drop the `auto_confirm_email` trigger
+> and turn on "Confirm email" in the Supabase dashboard.
 
-## Learn More
+> Note: this project pins **Next.js 16** (App Router) + React 19 + Tailwind v4.
+> Some APIs differ from older Next.js — see `AGENTS.md`.
 
-To learn more about Next.js, take a look at the following resources:
+## How the project is organised
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+  app/
+    data/            ← static/reference data + the live fixtures API
+      fixtures.ts      LIVE fixtures from OpenFootball. Async getters.
+      nations.ts       real reference data (name/flag/languages)
+      i18n.ts          homepage UI translations (5 languages)
+      index.ts         barrel — import from "@/app/data"
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+    components/      ← reusable UI (cards, headers, chat, forms, GoogleButton)
+    page.tsx           Homepage (server: fixtures) + HomeClient.tsx (shell)
+    nation/[slug]/     Per-nation hub page
+    signup/  login/    Auth pages (email + password, and Continue with Google)
+    auth/callback/     OAuth callback — exchanges the Google code for a session
+    profile/           Signed-in user's account page (edit name, password, rooms)
+    rooms/             Rooms list
+    rooms/new/         Create-a-room form (requires login)
+    rooms/[id]/        A room: join/leave + realtime chat + host-only live video
+    api/livekit/token  Mints LiveKit tokens (host=publish, members=watch)
+    admin/             Admin-only (login-gated). page.tsx = LIVE stats dashboard
+    admin/manage/      Delete accounts; close/delete any room
 
-## Deploy on Vercel
+  lib/
+    supabase/client.ts   browser Supabase client
+    supabase/server.ts   server Supabase client (cookies)
+    types.ts             DB row shapes
+  middleware.ts          refreshes the auth session each request
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Database (Supabase)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Four tables with row-level security:
+
+| Table          | What it holds                                  |
+| -------------- | ---------------------------------------------- |
+| `profiles`     | one row per user (public display name); auto-created on signup |
+| `rooms`        | a room hosted by a user                        |
+| `room_members` | who joined which room                          |
+| `messages`     | chat messages (only room members can post)     |
+
+`profiles` also has an `is_admin` flag (locked down — users can't set it). RLS
+enforces: anyone can read; only authenticated users create rooms / join / post;
+you can only add or remove **yourself**; only a room's members can post; a room's
+**host** (or an **admin**) can close/delete it. Chat updates over Supabase
+Realtime. Admin-only RPCs (`admin_list_users`, `admin_delete_user`) power the
+admin panel.
+
+**Make someone an admin:** set their flag in SQL —
+`update public.profiles set is_admin = true where id = '<user-uuid>';`
+Admins see an **Admin** link in the header and a shortcut button on their profile.
+
+### Profile / account page (`/profile`)
+
+Every signed-in user has a profile page (linked from their name in the header):
+edit display name (synced to both the `profiles` row and auth metadata), change
+password (hidden for Google accounts), and see the rooms they host and have joined.
+
+### Admin dashboard (`/admin`)
+
+The admin home is a **live dashboard** — member / room / message / join counts and
+the newest members & rooms, all read from the database on each load (nothing is
+hardcoded). `/admin/manage` is the moderation panel (delete accounts; close,
+reopen, or delete any room).
+
+### Sign in with Google (free)
+
+Code is wired up (the **Continue with Google** button + `/auth/callback`). To turn
+it on you only need free dashboard config — no cost:
+
+1. **Google Cloud Console** → APIs & Services → Credentials → *Create OAuth client
+   ID* (type: Web application). Under **Authorized redirect URIs** add:
+   `https://grciopikqdjbtrxffwit.supabase.co/auth/v1/callback`
+   (Configure the OAuth consent screen first if prompted; "External" is fine.)
+2. Copy the **Client ID** and **Client secret**.
+3. **Supabase dashboard** → Authentication → Providers → **Google** → enable, paste
+   the Client ID + secret, save.
+4. **Supabase** → Authentication → URL Configuration → add your app origins to
+   **Redirect URLs** (e.g. `http://localhost:3000/**`, and later your live domain
+   `https://yourdomain/**`).
+
+That's it — the Google button then works on both `/login` and `/signup`. New Google
+users get a profile auto-created (their Google name becomes the display name).
+
+### Live video (LiveKit)
+
+Each room has host-only video: the host broadcasts their camera, members watch.
+`/api/livekit/token` checks (via Supabase) whether the requester is the host
+(publish) or a member (watch) and mints a scoped LiveKit token; the API secret
+never reaches the browser.
+
+### Config (optional env vars)
+
+```
+FIXTURES_URL=https://.../worldcup.json   # swap the fixtures source
+```
+
+## Common tasks (where to edit)
+
+| I want to…                            | Edit…                                       |
+| ------------------------------------- | ------------------------------------------- |
+| Change the fixtures source            | `src/app/data/fixtures.ts` (+ `FIXTURES_URL`) |
+| Add / change a nation                 | `src/app/data/nations.ts`                   |
+| Change the DB schema / RLS            | Supabase (migrations) + `src/lib/types.ts`  |
+| Change brand colours or fonts         | `src/app/globals.css` (theme tokens)        |
+| Restyle a card without touching data  | the matching file in `src/app/components/`  |
+
+## No match footage
+
+By design, no page ever shows or embeds the match feed — rooms are for reactions,
+commentary and community only.
