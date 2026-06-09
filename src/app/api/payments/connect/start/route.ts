@@ -26,11 +26,12 @@ export async function POST(request: Request) {
   const user = userData.user;
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
-  const accountId = await getOrCreateConnectAccount(user.id, user.email ?? null);
-  if (!accountId) return NextResponse.json({ error: "Could not start payout setup." }, { status: 500 });
-
   const origin = new URL(request.url).origin;
   try {
+    const accountId = await getOrCreateConnectAccount(user.id, user.email ?? null);
+    if (!accountId) {
+      return NextResponse.json({ error: "Payouts are not configured on the server." }, { status: 503 });
+    }
     const link = await stripe.accountLinks.create({
       account: accountId,
       refresh_url: `${origin}/api/payments/connect/refresh`,
@@ -38,10 +39,11 @@ export async function POST(request: Request) {
       type: "account_onboarding",
     });
     return NextResponse.json({ url: link.url });
-  } catch {
-    return NextResponse.json(
-      { error: "Could not create onboarding link. Make sure Connect is enabled on the Stripe account." },
-      { status: 502 },
-    );
+  } catch (err) {
+    // Surface Stripe's real reason (e.g. "enable Connect in the dashboard").
+    const message =
+      err instanceof Error ? err.message : "Could not start payout setup. Is Connect enabled in Stripe?";
+    console.error("connect/start failed", err);
+    return NextResponse.json({ error: message }, { status: 502 });
   }
 }
