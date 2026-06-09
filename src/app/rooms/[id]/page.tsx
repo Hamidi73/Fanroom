@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader, SiteFooter, RoomChat, RoomMembers, RoomMemberCount, JoinRoomButton, RoomHostControls, RoomVideo, StreamAlerts } from "@/app/components";
+import { AppHeader, SiteFooter, RoomChat, RoomMembers, RoomMemberCount, JoinRoomButton, RoomHostControls, RoomVideo, StreamAlerts, RoomGiftsProvider, GiftDrawer } from "@/app/components";
 import { getNation } from "@/app/data";
 import type { RoomRow, MemberRow, MessageRow, ChatLine } from "@/lib/types";
 
@@ -60,6 +60,7 @@ export default async function RoomDetailPage({
   const isHost = !!user && user.id === room.host_id;
   const isClosed = room.status === "Closed";
   const nation = room.nation_slug ? getNation(room.nation_slug) : undefined;
+  const senderName = (user?.user_metadata?.display_name as string | undefined) ?? "A fan";
 
   const initialChat: ChatLine[] = messages.map((m) => ({
     id: m.id,
@@ -73,6 +74,7 @@ export default async function RoomDetailPage({
   }));
 
   return (
+    <RoomGiftsProvider roomId={room.id} senderName={senderName}>
     <main className="flex-1 bg-ink-deep">
       <AppHeader />
       <div className="mx-auto max-w-5xl px-5 py-10 sm:px-6">
@@ -167,5 +169,7 @@ export default async function RoomDetailPage({
       </div>
       <SiteFooter />
     </main>
+      <GiftDrawer nationSlug={room.nation_slug} isLoggedIn={!!user} isClosed={isClosed} />
+    </RoomGiftsProvider>
   );
 }
