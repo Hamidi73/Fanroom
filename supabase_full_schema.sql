@@ -303,3 +303,73 @@ alter table public.profiles
 
 -- Managed server-side via the service role only; never exposed to client roles.
 revoke select (stripe_account_id, stripe_payouts_enabled) on public.profiles from anon, authenticated;
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- roar_wallets_and_coin_purchases  (gift economy)
+-- ─────────────────────────────────────────────────────────────────────────
+create table public.wallets (
+  user_id uuid primary key references public.profiles(id) on delete cascade,
+  balance_roars bigint not null default 0 check (balance_roars >= 0),
+  updated_at timestamptz not null default now()
+);
+alter table public.wallets enable row level security;
+create policy "Own wallet is readable" on public.wallets for select using (auth.uid() = user_id);
+revoke select on public.wallets from anon;
+revoke insert, update, delete on public.wallets from anon, authenticated;
+
+create table public.coin_purchases (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  provider text not null,
+  provider_ref text unique,
+  bundle_id text not null,
+  roars integer not null,
+  amount_cents integer not null,
+  status text not null default 'pending',
+  created_at timestamptz not null default now()
+);
+alter table public.coin_purchases enable row level security;
+create policy "Own purchases are readable" on public.coin_purchases for select using (auth.uid() = user_id);
+revoke select on public.coin_purchases from anon;
+revoke insert, update, delete on public.coin_purchases from anon, authenticated;
+
+create or replace function public.get_or_seed_wallet()
+returns bigint language plpgsql security definer set search_path = '' as $$
+declare uid uuid := auth.uid(); bal bigint;
+begin
+  if uid is null then raise exception 'not authenticated'; end if;
+  insert into public.wallets (user_id, balance_roars) values (uid, 500) on conflict (user_id) do nothing;
+  select balance_roars into bal from public.wallets where user_id = uid;
+  return bal;
+end; $$;
+revoke execute on function public.get_or_seed_wallet() from anon, public;
+grant execute on function public.get_or_seed_wallet() to authenticated;
+
+create or replace function public.spend_roars(amount integer)
+returns bigint language plpgsql security definer set search_path = '' as $$
+declare uid uuid := auth.uid(); bal bigint;
+begin
+  if uid is null then raise exception 'not authenticated'; end if;
+  if amount is null or amount <= 0 then raise exception 'invalid amount'; end if;
+  insert into public.wallets (user_id, balance_roars) values (uid, 500) on conflict (user_id) do nothing;
+  update public.wallets set balance_roars = balance_roars - amount, updated_at = now()
+    where user_id = uid and balance_roars >= amount returning balance_roars into bal;
+  if bal is null then raise exception 'insufficient roars'; end if;
+  return bal;
+end; $$;
+revoke execute on function public.spend_roars(integer) from anon, public;
+grant execute on function public.spend_roars(integer) to authenticated;
+
+create or replace function public.credit_coins(purchase uuid)
+returns void language plpgsql security definer set search_path = '' as $$
+declare uid uuid; amt integer;
+begin
+  update public.coin_purchases set status = 'paid'
+    where id = purchase and status = 'pending' returning user_id, roars into uid, amt;
+  if not found then return; end if;
+  insert into public.wallets (user_id, balance_roars) values (uid, amt)
+    on conflict (user_id) do update
+      set balance_roars = public.wallets.balance_roars + excluded.balance_roars, updated_at = now();
+end; $$;
+revoke execute on function public.credit_coins(uuid) from anon, authenticated, public;
+grant execute on function public.credit_coins(uuid) to service_role;

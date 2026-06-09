@@ -37,3 +37,13 @@ export async function fulfillDonation(donationId: string, providerRef?: string):
     .update({ status: "paid", message_id: message.id, ...(providerRef ? { provider_ref: providerRef } : {}) })
     .eq("id", donationId);
 }
+
+// Credit a confirmed Roar coin purchase to the buyer's wallet. The DB function
+// claims the pending row and credits in one transaction, so duplicate webhook
+// deliveries are safe (idempotent).
+export async function creditCoins(purchaseId: string): Promise<void> {
+  const admin = getAdminClient();
+  if (!admin) throw new Error("Service role not configured");
+  const { error } = await admin.rpc("credit_coins", { purchase: purchaseId });
+  if (error) throw error;
+}

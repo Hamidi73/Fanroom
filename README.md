@@ -173,6 +173,24 @@ that room** — never anyone else. Mechanism:
 - **Enable Connect once** in the Stripe dashboard (Connect → Get started; free)
   or account creation will fail. Crypto can't auto-split, so it stays disabled.
 
+#### Gift economy ("Roars")
+
+Rooms also have a TikTok/Bigo-style gift layer: a floating 🎁 drawer of ~70 gifts
+(reactions, banter, trash-talk, and 48 nation "legend" gifts), realtime fly-over
+animations with combos and full-screen "takeovers", and synthesized sound — see
+`src/lib/gifts.ts` (catalog, server-authoritative prices), `giftSound.ts`,
+`GiftDrawer.tsx`, and `RoomGiftsProvider.tsx`.
+
+The currency is **Roars** (100 ≈ $1, one-way / non-cashable):
+
+- **Buying is real** — the coin store starts a Stripe Checkout (server-priced
+  from `COIN_BUNDLES`); the webhook credits the `wallets` table via the
+  idempotent `credit_coins` RPC. New wallets get 500 welcome Roars.
+- **Sending a gift** debits the wallet atomically via `spend_roars` (optimistic
+  UI, reconciled). Gift broadcasts themselves are ephemeral (no DB write).
+- Coin purchases are captured to the platform; paying out a creator's gift share
+  would reuse the same Connect transfer path as highlights (future work).
+
 Turn it on by setting the env vars below. Without them, the feature stays hidden
 and the rest of the app is unaffected.
 

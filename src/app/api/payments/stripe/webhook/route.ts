@@ -3,7 +3,7 @@
 // is the source of truth for "the payment succeeded" — never the browser.
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
-import { fulfillDonation } from "@/lib/payments";
+import { fulfillDonation, creditCoins } from "@/lib/payments";
 
 export const runtime = "nodejs";
 
@@ -26,16 +26,22 @@ export async function POST(request: Request) {
   }
 
   if (event.type === "checkout.session.completed") {
-    const session = event.data.object as { metadata?: { donationId?: string }; id: string };
-    const donationId = session.metadata?.donationId;
-    if (donationId) {
-      try {
-        await fulfillDonation(donationId, session.id);
-      } catch (err) {
-        // Returning 500 tells Stripe to retry later.
-        console.error("fulfillDonation failed", err);
-        return NextResponse.json({ error: "Fulfillment failed" }, { status: 500 });
+    const session = event.data.object as {
+      metadata?: { donationId?: string; kind?: string; purchaseId?: string };
+      id: string;
+    };
+    try {
+      if (session.metadata?.kind === "coins" && session.metadata.purchaseId) {
+        // Buying Roar coins → credit the wallet.
+        await creditCoins(session.metadata.purchaseId);
+      } else if (session.metadata?.donationId) {
+        // Paid highlight → post the highlighted message.
+        await fulfillDonation(session.metadata.donationId, session.id);
       }
+    } catch (err) {
+      // Returning 500 tells Stripe to retry later.
+      console.error("webhook fulfillment failed", err);
+      return NextResponse.json({ error: "Fulfillment failed" }, { status: 500 });
     }
   }
 
