@@ -22,3 +22,5 @@ export * from "./JoinRoomButton";
 export * from "./RoomHostControls";
 export * from "./RoomVideo";
 export * from "./StreamAlerts";
+export * from "./RoomGiftsProvider";
+export * from "./GiftDrawer";
