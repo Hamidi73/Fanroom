@@ -149,9 +149,18 @@ export function GiftDrawer({
                     className="group flex flex-col items-center gap-1 rounded-xl border bg-surface p-2 text-center transition hover:-translate-y-0.5 hover:bg-surface-2"
                     style={{ borderColor: `${RARITY[g.rarity].color}55` }}
                   >
-                    <span className="text-3xl transition group-hover:scale-110" style={{ filter: `drop-shadow(0 0 6px ${RARITY[g.rarity].glow})` }}>
-                      {g.icon}
-                    </span>
+                    {g.kind === "text" ? (
+                      <span
+                        className="flex h-9 items-center rounded-lg px-2 text-base font-black uppercase italic leading-none text-white transition group-hover:scale-110"
+                        style={{ background: g.color }}
+                      >
+                        {g.icon}
+                      </span>
+                    ) : (
+                      <span className="text-3xl transition group-hover:scale-110" style={{ filter: `drop-shadow(0 0 6px ${RARITY[g.rarity].glow})` }}>
+                        {g.icon}
+                      </span>
+                    )}
                     <span className="line-clamp-1 w-full text-[10px] font-semibold text-ink-foreground">{g.name}</span>
                     <span className={`flex items-center gap-0.5 text-[11px] font-black ${affordable ? "text-accent-soft" : "text-muted"}`}>
                       {ECONOMY.coinSymbol} {g.priceRoars.toLocaleString()}

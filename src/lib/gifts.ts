@@ -107,13 +107,16 @@ export type GiftSound =
   | "drum"
   | "boom"
   | "cheer"
-  | "whistle";
+  | "whistle"
+  | "buzzer";
 
 /** Tab the gift lives under in the drawer. Universal packs first, then the six
  *  continent packs hold the nation legends (mirrors the sidebar grouping). */
 export type GiftPackId =
   | "reactions"
   | "atmosphere"
+  | "banter"
+  | "trash-talk"
   | "legendary"
   | "mythic"
   | "africa"
@@ -126,7 +129,8 @@ export type GiftPackId =
 export type Gift = {
   id: string;
   name: string;
-  icon: string; // emoji or flag
+  icon: string; // emoji or flag — or the text shown for a text-banner gift
+  kind?: "emoji" | "text"; // "text" renders as a bold banner (GG, EZ, L…)
   rarity: Rarity;
   priceRoars: number;
   pack: GiftPackId;
@@ -142,6 +146,8 @@ export type Gift = {
 export const PACKS: { id: GiftPackId; label: string; icon: string }[] = [
   { id: "reactions", label: "Reactions", icon: "👏" },
   { id: "atmosphere", label: "Atmosphere", icon: "🎺" },
+  { id: "banter", label: "Banter", icon: "🤡" },
+  { id: "trash-talk", label: "Trash Talk", icon: "😤" },
   { id: "legendary", label: "Legendary", icon: "🏆" },
   { id: "mythic", label: "Mythic", icon: "🔥" },
   { id: "south-america", label: "S. America", icon: "🌎" },
@@ -184,6 +190,46 @@ const UNIVERSAL_GIFTS: Gift[] = [
   { id: "smoke-bomb", name: "Smoke Bomb", icon: "💨", rarity: "rare", priceRoars: 249, pack: "atmosphere", celebration: "rise", sound: "whoosh", color: "#e85d75" },
   { id: "confetti-burst", name: "Confetti Burst", icon: "🎉", rarity: "rare", priceRoars: 399, pack: "atmosphere", celebration: "pop", sound: "cheer", color: "#b36bff" },
   { id: "pyro-combo", name: "Pyro Combo", icon: "🎆", rarity: "rare", priceRoars: 499, pack: "atmosphere", celebration: "rise", sound: "boom", color: "#ff8a3d" },
+
+  // Banter (emoji rivalry — change the energy when a team bottles it)
+  { id: "crying", name: "Crying", icon: "😭", rarity: "common", priceRoars: 8, pack: "banter", celebration: "pop", sound: "buzzer", color: "#3ea6ff" },
+  { id: "mid", name: "Mid", icon: "🥱", rarity: "common", priceRoars: 11, pack: "banter", celebration: "roar", sound: "buzzer", color: "#9aa0a6" },
+  { id: "salty", name: "Salty", icon: "🧂", rarity: "common", priceRoars: 12, pack: "banter", celebration: "roar", sound: "buzzer", color: "#9aa0a6" },
+  { id: "pointing", name: "Clowned", icon: "🫵", rarity: "common", priceRoars: 13, pack: "banter", celebration: "pop", sound: "pop", color: "#ffb020" },
+  { id: "spill-tea", name: "Spill the Tea", icon: "☕", rarity: "common", priceRoars: 14, pack: "banter", celebration: "pop", sound: "pop", color: "#c98a2b" },
+  { id: "clown", name: "Clown", icon: "🤡", rarity: "common", priceRoars: 15, pack: "banter", celebration: "pop", sound: "buzzer", color: "#ff4d6d" },
+  { id: "trash", name: "Trash", icon: "🚮", rarity: "common", priceRoars: 16, pack: "banter", celebration: "pop", sound: "buzzer", color: "#9aa0a6" },
+  { id: "down-bad", name: "Down Bad", icon: "📉", rarity: "common", priceRoars: 18, pack: "banter", celebration: "charge", sound: "buzzer", color: "#ff4d4d" },
+  { id: "rip", name: "RIP", icon: "🪦", rarity: "common", priceRoars: 20, pack: "banter", celebration: "rise", sound: "buzzer", color: "#9aa0a6" },
+
+  // Trash Talk (gaming/esports text banners — pure energy)
+  { id: "w", name: "W", icon: "W", kind: "text", rarity: "common", priceRoars: 8, pack: "trash-talk", celebration: "pop", sound: "cheer", color: "#22c55e" },
+  { id: "l", name: "L", icon: "L", kind: "text", rarity: "common", priceRoars: 8, pack: "trash-talk", celebration: "pop", sound: "buzzer", color: "#ff4d4d" },
+  { id: "gg", name: "GG", icon: "GG", kind: "text", rarity: "common", priceRoars: 10, pack: "trash-talk", celebration: "pop", sound: "cheer", color: "#3ea6ff" },
+  { id: "win", name: "WIN", icon: "WIN", kind: "text", rarity: "common", priceRoars: 12, pack: "trash-talk", celebration: "pop", sound: "cheer", color: "#22c55e" },
+  { id: "scenes", name: "SCENES", icon: "SCENES", kind: "text", rarity: "common", priceRoars: 14, pack: "trash-talk", celebration: "pop", sound: "cheer", color: "#22c55e" },
+  { id: "cope", name: "COPE", icon: "COPE", kind: "text", rarity: "common", priceRoars: 14, pack: "trash-talk", celebration: "roar", sound: "buzzer", color: "#ff8a3d" },
+  { id: "ez", name: "EZ", icon: "EZ", kind: "text", rarity: "common", priceRoars: 15, pack: "trash-talk", celebration: "pop", sound: "buzzer", color: "#ff4d6d" },
+  { id: "cooked", name: "COOKED", icon: "COOKED", kind: "text", rarity: "common", priceRoars: 16, pack: "trash-talk", celebration: "roar", sound: "buzzer", color: "#ff6b3d" },
+  { id: "ratio", name: "RATIO", icon: "RATIO", kind: "text", rarity: "common", priceRoars: 18, pack: "trash-talk", celebration: "charge", sound: "buzzer", color: "#b36bff" },
+  { id: "bottled", name: "BOTTLED", icon: "BOTTLED", kind: "text", rarity: "common", priceRoars: 20, pack: "trash-talk", celebration: "charge", sound: "buzzer", color: "#3ea6ff" },
+  { id: "clutch", name: "CLUTCH", icon: "CLUTCH", kind: "text", rarity: "common", priceRoars: 25, pack: "trash-talk", celebration: "spin-jump", sound: "cheer", color: "#ffd23f" },
+  { id: "goated", name: "GOATED", icon: "GOATED", kind: "text", rarity: "common", priceRoars: 30, pack: "trash-talk", celebration: "spin-jump", sound: "sparkle", color: "#ffd23f" },
+
+  // Continental atmosphere — signature crowd spam per continent (lives in each
+  // continent pack alongside its nation legends).
+  { id: "atm-samba", name: "Samba Drums", icon: "🥁", rarity: "rare", priceRoars: 99, pack: "south-america", celebration: "dance", sound: "drum", color: "#16b981" },
+  { id: "atm-carnaval", name: "Carnaval", icon: "🎊", rarity: "rare", priceRoars: 199, pack: "south-america", celebration: "dance", sound: "cheer", color: "#fde047" },
+  { id: "atm-scarf-wall", name: "Scarf Wall", icon: "🧣", rarity: "rare", priceRoars: 99, pack: "europe", celebration: "rise", sound: "whoosh", color: "#3ea6ff" },
+  { id: "atm-ultras", name: "Ultras Pyro", icon: "🎆", rarity: "rare", priceRoars: 249, pack: "europe", celebration: "rise", sound: "boom", color: "#ff6b3d" },
+  { id: "atm-vuvuzela-storm", name: "Vuvuzela Storm", icon: "🎺", rarity: "rare", priceRoars: 149, pack: "africa", celebration: "rise", sound: "horn", color: "#ffd23f" },
+  { id: "atm-djembe", name: "Djembe Beat", icon: "🥁", rarity: "rare", priceRoars: 99, pack: "africa", celebration: "dance", sound: "drum", color: "#ff9900" },
+  { id: "atm-taiko", name: "Taiko Drums", icon: "🥁", rarity: "rare", priceRoars: 99, pack: "asia", celebration: "charge", sound: "drum", color: "#e85d75" },
+  { id: "atm-lantern", name: "Lantern Glow", icon: "🏮", rarity: "rare", priceRoars: 149, pack: "asia", celebration: "rise", sound: "sparkle", color: "#ff4d4d" },
+  { id: "atm-eagle", name: "Eagle Soar", icon: "🦅", rarity: "rare", priceRoars: 99, pack: "north-america", celebration: "rise", sound: "cheer", color: "#3ea6ff" },
+  { id: "atm-brass", name: "Brass Band", icon: "🎺", rarity: "rare", priceRoars: 149, pack: "north-america", celebration: "rise", sound: "horn", color: "#ffb020" },
+  { id: "atm-haka", name: "Haka Wave", icon: "🌊", rarity: "rare", priceRoars: 149, pack: "oceania", celebration: "charge", sound: "drum", color: "#16b981" },
+  { id: "atm-boomerang", name: "Boomerang", icon: "🪃", rarity: "rare", priceRoars: 99, pack: "oceania", celebration: "bicycle", sound: "whoosh", color: "#ffb020" },
 
   // Legendary (3,000–9,999) — statement gifts
   { id: "stadium-roar", name: "Stadium Roar", icon: "🏟️", rarity: "legendary", priceRoars: 3999, pack: "legendary", celebration: "roar", sound: "cheer", color: "#ffb020" },

@@ -101,6 +101,10 @@ const RECIPES: Record<GiftSound, (ac: AudioContext, t: number) => void> = {
     noise(ac, { start: t, dur: 0.9, freq: 1000, sweepTo: 1600, gain: 0.16 });
     [523, 659, 784].forEach((f, i) => tone(ac, { freq: f, type: "triangle", start: t + i * 0.04, dur: 0.5, gain: 0.07 }));
   },
+  // Sad-trombone descent — the universal taunt for L / EZ / COPE.
+  buzzer: (ac, t) => {
+    [311, 277, 233, 185].forEach((f, i) => tone(ac, { freq: f, type: "sawtooth", start: t + i * 0.13, dur: 0.18, gain: 0.13 }));
+  },
 };
 
 /** Play a gift's sound, scaled a little by combo size for extra punch. */

@@ -171,9 +171,18 @@ export function RoomGiftsProvider({
             className={`absolute bottom-24 flex flex-col items-center ${CELEBRATION_ANIM[f.gift.celebration].cls}`}
             style={{ left: `${f.left}%` }}
           >
-            <span className="text-5xl drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)]" style={{ filter: `drop-shadow(0 0 14px ${f.gift.color})` }}>
-              {f.gift.icon}
-            </span>
+            {f.gift.kind === "text" ? (
+              <span
+                className="display rounded-2xl px-5 py-2 text-4xl font-black uppercase italic tracking-tight text-white"
+                style={{ background: f.gift.color, boxShadow: `0 6px 26px ${f.gift.color}` }}
+              >
+                {f.gift.icon}
+              </span>
+            ) : (
+              <span className="text-5xl drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)]" style={{ filter: `drop-shadow(0 0 14px ${f.gift.color})` }}>
+                {f.gift.icon}
+              </span>
+            )}
             {f.combo > 1 && (
               <span className="mt-1 rounded-full px-2 py-0.5 text-sm font-black text-white" style={{ background: f.gift.color }}>
                 ×{f.combo}
