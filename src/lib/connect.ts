@@ -47,7 +47,16 @@ export async function getOrCreateConnectAccount(
   if (!stripe || !admin) return null;
 
   const { accountId } = await getConnectInfo(userId);
-  if (accountId) return accountId;
+  if (accountId) {
+    // Make sure it still exists under the current Stripe key — a saved id from a
+    // different sandbox/account would 404 ("No such account"). If so, recreate.
+    try {
+      await stripe.accounts.retrieve(accountId);
+      return accountId;
+    } catch {
+      // fall through and create a fresh account below
+    }
+  }
 
   // Don't force a business_type — some countries (e.g. AE) don't support
   // "individual". Stripe collects it during onboarding instead.
@@ -57,7 +66,10 @@ export async function getOrCreateConnectAccount(
     capabilities: { transfers: { requested: true } },
     metadata: { userId },
   });
-  await admin.from("profiles").update({ stripe_account_id: account.id }).eq("id", userId);
+  await admin
+    .from("profiles")
+    .update({ stripe_account_id: account.id, stripe_payouts_enabled: false })
+    .eq("id", userId);
   return account.id;
 }
 
@@ -70,8 +82,14 @@ export async function syncPayoutStatus(userId: string): Promise<boolean> {
   const { accountId } = await getConnectInfo(userId);
   if (!accountId) return false;
 
-  const account = await stripe.accounts.retrieve(accountId);
-  const enabled = account.payouts_enabled === true && account.capabilities?.transfers === "active";
-  await admin.from("profiles").update({ stripe_payouts_enabled: enabled }).eq("id", userId);
-  return enabled;
+  try {
+    const account = await stripe.accounts.retrieve(accountId);
+    const enabled = account.payouts_enabled === true && account.capabilities?.transfers === "active";
+    await admin.from("profiles").update({ stripe_payouts_enabled: enabled }).eq("id", userId);
+    return enabled;
+  } catch {
+    // Stale/invalid account id — treat as not enabled (next setup will recreate).
+    await admin.from("profiles").update({ stripe_payouts_enabled: false }).eq("id", userId);
+    return false;
+  }
 }
