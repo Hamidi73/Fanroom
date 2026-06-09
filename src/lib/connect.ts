@@ -84,7 +84,10 @@ export async function syncPayoutStatus(userId: string): Promise<boolean> {
 
   try {
     const account = await stripe.accounts.retrieve(accountId);
-    const enabled = account.payouts_enabled === true && account.capabilities?.transfers === "active";
+    // Gate on the transfers capability being active — that's all a destination
+    // charge needs to route the split into the host's balance. (A bank account /
+    // full payout KYC is only needed for them to later cash out, not to receive.)
+    const enabled = account.capabilities?.transfers === "active";
     await admin.from("profiles").update({ stripe_payouts_enabled: enabled }).eq("id", userId);
     return enabled;
   } catch {
