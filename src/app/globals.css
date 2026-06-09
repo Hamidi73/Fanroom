@@ -1,29 +1,33 @@
 @import "tailwindcss";
 
 /*
-  Design tokens for the whole site.
+  Design tokens for the whole site — a single, dark, Twitch-inspired system.
 
-  These are the only colours/fonts you should need. Use them as normal Tailwind
-  utilities, e.g. `bg-ink`, `text-accent`, `border-muted`, `font-display`.
-  Change a value here and it updates everywhere it's used.
+  Use them as normal Tailwind utilities, e.g. `bg-surface`, `text-accent`,
+  `border-line`, `font-display`. Change a value here and it updates everywhere.
 */
 @theme {
-  /* Surfaces (dark theme) */
-  --color-ink: #0a0a0f;            /* page background (homepage)        */
-  --color-ink-deep: #040406;       /* page background (nation/room)     */
-  --color-ink-foreground: #f4f4f6; /* default text                      */
-  --color-surface: #16161f;        /* cards on the homepage             */
-  --color-surface-2: #0c0c14;      /* darker inset panels               */
-  --color-panel: #08131d;          /* cards on nation/room pages        */
-  --color-panel-2: #06121d;        /* darker panels on nation/room      */
+  /* Surfaces (dark neutral, like a streaming app) */
+  --color-ink: #0e0e10;            /* page background                   */
+  --color-ink-deep: #0a0a0b;       /* deepest background (room/video)   */
+  --color-ink-foreground: #efeff1; /* default text                      */
+  --color-surface: #18181b;        /* cards / panels                    */
+  --color-surface-2: #1f1f23;      /* hover / raised panels             */
+  --color-panel: #18181b;          /* alias used on room/nation pages   */
+  --color-panel-2: #131316;        /* darker inset panels               */
+  --color-line: #2a2a2e;           /* borders / dividers                */
 
   /* Brand */
-  --color-accent: #ffd23f;         /* FanRoom yellow                    */
-  --color-muted: #9a9aa8;          /* secondary / caption text          */
+  --color-accent: #9147ff;         /* primary purple (Twitch-like)      */
+  --color-accent-strong: #772ce8;  /* hover/pressed purple              */
+  --color-accent-soft: #bf94ff;    /* light purple for text-on-dark     */
+  --color-muted: #adadb8;          /* secondary / caption text          */
+  --color-live: #eb0400;           /* live red                          */
+  --color-online: #00c389;         /* scheduled / online green          */
 
-  /* Fonts (the actual families are loaded in app/layout.tsx) */
-  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-anton), ui-sans-serif, sans-serif;
+  /* Fonts (families are loaded in app/layout.tsx) */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
@@ -33,14 +37,30 @@
   body {
     color: var(--color-ink-foreground);
     font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Thin dark scrollbars, like a streaming app. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #2a2a2e transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: #2a2a2e;
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
 }
 
-/* Big condensed display headings (the "FANROOM" / match-title look). */
+/* Clean, tight headings (no longer condensed all-caps). */
 .display {
   font-family: var(--font-display);
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 /* Pulsing red "live" dot. */
@@ -50,14 +70,29 @@
     opacity: 1;
   }
   50% {
-    opacity: 0.3;
+    opacity: 0.35;
   }
 }
 .live-dot {
   display: inline-block;
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 9999px;
-  background: #ff3b3b;
+  background: var(--color-live);
   animation: fr-pulse 1.4s infinite;
+}
+
+/* Solid red LIVE badge used on stream-style cards. */
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--color-live);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
 }

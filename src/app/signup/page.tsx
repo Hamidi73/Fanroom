@@ -56,7 +56,7 @@ export default function SignupPage() {
         <p className="mt-2 text-sm text-muted">Join FanRoom Global to create and join fan rooms.</p>
 
         {needsConfirm ? (
-          <div className="mt-8 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-6 text-sm text-emerald-100">
+          <div className="mt-8 rounded-2xl border border-accent/20 bg-accent/10 p-6 text-sm text-accent-soft">
             Account created. Check <span className="font-semibold">{email}</span> for a confirmation
             link, then <Link href="/login" className="underline">log in</Link>.
           </div>
@@ -86,7 +86,7 @@ export default function SignupPage() {
 
             {error && <p className="text-sm text-red-400">{error}</p>}
 
-            <button type="submit" disabled={busy} className="mt-1 w-full rounded-full bg-accent py-3 text-[15px] font-bold text-black disabled:opacity-60">
+            <button type="submit" disabled={busy} className="mt-1 w-full rounded-full bg-accent py-3 text-[15px] font-bold text-white disabled:opacity-60">
               {busy ? "Creating…" : "Create account"}
             </button>
           </form>

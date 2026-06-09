@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader, SiteFooter } from "@/app/components";
-import type { RoomRow } from "@/lib/types";
+import { AppShell, SiteFooter, RoomCard, type RoomCardData } from "@/app/components";
 
-export const metadata: Metadata = { title: "Fan rooms | FanRoom Global" };
+export const metadata: Metadata = { title: "Browse rooms | FanRoom Global" };
+export const dynamic = "force-dynamic";
 
-export default async function RoomsPage() {
+export default async function RoomsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
+  const term = (q ?? "").trim().toLowerCase();
+
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   const isLoggedIn = !!userData.user;
@@ -15,63 +22,60 @@ export default async function RoomsPage() {
     .from("rooms")
     .select("id,title,match,nation_slug,language,status,created_at,host_id,host:profiles!rooms_host_id_fkey(display_name),members:room_members(count)")
     .order("created_at", { ascending: false });
-  const rooms = (data ?? []) as unknown as RoomRow[];
+  let rooms = (data ?? []) as unknown as RoomCardData[];
+
+  if (term) {
+    rooms = rooms.filter((r) =>
+      [r.title, r.match, r.host?.display_name, r.nation_slug]
+        .filter(Boolean)
+        .some((v) => v!.toLowerCase().includes(term)),
+    );
+  }
 
   return (
-    <main className="flex-1">
-      <AppHeader />
-      <div className="mx-auto max-w-5xl px-5 py-10 sm:px-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <AppShell>
+      <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6">
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-sm uppercase tracking-[0.35em] text-emerald-300">Fan rooms</p>
-            <h1 className="display mt-2 text-4xl">Live &amp; upcoming rooms</h1>
-            <p className="mt-2 text-sm text-muted">
+            <h1 className="display text-2xl sm:text-3xl">
+              {term ? `Results for “${q}”` : "Browse rooms"}
+            </h1>
+            <p className="mt-1 text-sm text-muted">
               Creator-led watch parties. Reactions and community only — never match footage.
             </p>
           </div>
           <Link
             href="/rooms/new"
-            className="inline-flex shrink-0 rounded-full bg-accent px-5 py-3 text-sm font-bold text-black"
+            className="inline-flex shrink-0 items-center rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-white no-underline transition hover:bg-accent-strong"
           >
             + Create a room
           </Link>
         </div>
 
         {rooms.length === 0 ? (
-          <div className="mt-10 rounded-2xl border border-white/10 bg-surface p-10 text-center">
-            <p className="text-sm text-muted">No rooms yet.</p>
+          <div className="mt-8 rounded-lg border border-line bg-surface p-10 text-center">
+            <p className="text-sm font-semibold text-ink-foreground">
+              {term ? "No rooms match your search." : "No rooms yet."}
+            </p>
             <p className="mt-2 text-sm text-muted">
-              {isLoggedIn ? (
-                <>Be the first — <Link href="/rooms/new" className="text-accent">create a room</Link>.</>
+              {term ? (
+                <>Try a different search, or <Link href="/rooms" className="text-accent-soft">see all rooms</Link>.</>
+              ) : isLoggedIn ? (
+                <>Be the first — <Link href="/rooms/new" className="text-accent-soft">create a room</Link>.</>
               ) : (
-                <><Link href="/signup" className="text-accent">Sign up</Link> to host the first one.</>
+                <><Link href="/signup" className="text-accent-soft">Sign up</Link> to host the first one.</>
               )}
             </p>
           </div>
         ) : (
-          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+          <div className="mt-7 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {rooms.map((room) => (
-              <Link
-                key={room.id}
-                href={`/rooms/${room.id}`}
-                className="block rounded-2xl border border-white/10 bg-surface p-5 no-underline transition hover:-translate-y-0.5 hover:border-emerald-400/40"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="rounded-full bg-white/5 px-3 py-1 text-xs text-slate-300">{room.status}</span>
-                  <span className="text-xs text-muted">{room.members?.[0]?.count ?? 0} joined</span>
-                </div>
-                <h2 className="mt-3 text-xl font-bold text-white">{room.title}</h2>
-                {room.match && <p className="mt-1 text-sm text-slate-300">{room.match}</p>}
-                <p className="mt-3 text-xs text-muted">
-                  Hosted by {room.host?.display_name ?? "a creator"}
-                  {room.language ? ` · ${room.language}` : ""}
-                </p>
-              </Link>
+              <RoomCard key={room.id} room={room} />
             ))}
           </div>
         )}
       </div>
       <SiteFooter />
-    </main>
+    </AppShell>
   );
 }

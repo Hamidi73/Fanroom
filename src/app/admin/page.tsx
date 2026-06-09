@@ -144,7 +144,7 @@ export default async function AdminDashboard() {
                       className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
                         r.status === "Closed"
                           ? "bg-white/10 text-muted"
-                          : "bg-emerald-400/15 text-emerald-200"
+                          : "bg-accent/15 text-accent-soft"
                       }`}
                     >
                       {r.status}

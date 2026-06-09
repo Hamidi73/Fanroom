@@ -76,7 +76,7 @@ export function ApplyForm({ heading }: { heading: string }) {
         <div className="rounded-[14px] border border-white/10 bg-surface-2 p-5">
           {submitted ? (
             <div className="p-4 text-center">
-              <p className="text-xs uppercase tracking-[0.2em] text-emerald-400">
+              <p className="text-xs uppercase tracking-[0.2em] text-accent">
                 Application received
               </p>
               <h3 className="display mt-2.5 text-[22px]">Thanks for applying!</h3>
@@ -112,7 +112,7 @@ export function ApplyForm({ heading }: { heading: string }) {
               </label>
               <button
                 type="submit"
-                className="w-full rounded-full bg-accent py-3 text-[15px] font-bold text-black"
+                className="w-full rounded-full bg-accent py-3 text-[15px] font-bold text-white"
               >
                 Submit application
               </button>

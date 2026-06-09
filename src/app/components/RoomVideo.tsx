@@ -20,7 +20,7 @@ import { Track } from "livekit-client";
 
 function Frame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-black">
+    <div className="overflow-hidden rounded-xl border border-white/10 bg-black">
       {children}
     </div>
   );

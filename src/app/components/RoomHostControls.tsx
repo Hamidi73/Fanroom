@@ -35,7 +35,7 @@ export function RoomHostControls({ roomId, status }: { roomId: string; status: s
         <button
           onClick={() => setStatus("Live Soon")}
           disabled={busy}
-          className="rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-black transition hover:bg-emerald-300 disabled:opacity-60"
+          className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-soft disabled:opacity-60"
         >
           Reopen room
         </button>

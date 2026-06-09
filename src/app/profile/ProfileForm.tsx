@@ -14,7 +14,7 @@ const inputClass =
 
 function Note({ kind, children }: { kind: "ok" | "err"; children: React.ReactNode }) {
   return (
-    <p className={`text-sm ${kind === "ok" ? "text-emerald-300" : "text-red-400"}`}>{children}</p>
+    <p className={`text-sm ${kind === "ok" ? "text-accent-soft" : "text-red-400"}`}>{children}</p>
   );
 }
 
@@ -96,7 +96,7 @@ export function ProfileForm({
         <button
           type="submit"
           disabled={nameBusy || name.trim() === initialName.trim()}
-          className="self-start rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-black disabled:opacity-50"
+          className="self-start rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
         >
           {nameBusy ? "Saving…" : "Save name"}
         </button>

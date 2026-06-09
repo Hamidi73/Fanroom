@@ -1,26 +1,26 @@
-// Homepage nation-grid card. Links to that nation's hub page.
-// Only the gradient colours are data-driven (inline style); everything else is
-// fixed layout via Tailwind.
+// Nation tile, styled like a streaming app's category "boxart": a portrait
+// cover (flag over the nation's colour gradient) with the name + languages below.
 
+import Link from "next/link";
 import type { Nation } from "@/app/data";
 
 export function NationCard({ nation }: { nation: Nation }) {
   return (
-    <a
-      href={`/nation/${nation.slug}`}
-      className="relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-2xl p-3.5 text-white no-underline transition hover:-translate-y-1"
-      style={{
-        backgroundImage: `radial-gradient(circle at top left, ${nation.theme.accent}, transparent 35%), linear-gradient(160deg, ${nation.theme.border}, #0c0c14 80%)`,
-      }}
-    >
-      <div className="absolute inset-0 bg-gradient-to-t from-black/[0.78] to-transparent to-[65%]" />
-      <span className="absolute left-3.5 top-3 z-[2] text-3xl drop-shadow-[0_2px_6px_rgba(0,0,0,0.4)]">
-        {nation.flag}
-      </span>
-      <span className="display relative z-[2] text-lg">{nation.name}</span>
-      <span className="relative z-[2] text-xs font-medium text-white/85">
-        {nation.languages.join(" · ")}
-      </span>
-    </a>
+    <Link href={`/nation/${nation.slug}`} className="group block no-underline">
+      <div
+        className="relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-lg ring-1 ring-line transition group-hover:ring-2 group-hover:ring-accent"
+        style={{
+          backgroundImage: `radial-gradient(circle at 30% 25%, ${nation.theme.accent}, transparent 55%), linear-gradient(155deg, ${nation.theme.border}, #131316 85%)`,
+        }}
+      >
+        <span className="text-5xl drop-shadow-[0_3px_8px_rgba(0,0,0,0.45)] transition-transform group-hover:scale-110">
+          {nation.flag}
+        </span>
+      </div>
+      <p className="mt-2 truncate text-sm font-bold text-ink-foreground transition group-hover:text-accent-soft">
+        {nation.name}
+      </p>
+      <p className="truncate text-xs text-muted">{nation.languages.join(", ")}</p>
+    </Link>
   );
 }

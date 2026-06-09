@@ -69,23 +69,24 @@ export function RoomChat({
 
   return (
     <div className="space-y-4 p-6 sm:p-8">
-      <p className="text-sm uppercase tracking-[0.35em] text-emerald-300">Live chat</p>
-      <h2 className="text-2xl font-black text-white">Room chat</h2>
+      <h2 className="display flex items-center gap-2 text-lg">
+        <span className="live-dot" /> Live chat
+      </h2>
 
-      <div className="max-h-96 space-y-3 overflow-y-auto rounded-[1.5rem] bg-white/5 p-4">
+      <div className="max-h-96 space-y-3 overflow-y-auto rounded-lg bg-white/5 p-4">
         {messages.length === 0 ? (
-          <p className="py-6 text-center text-sm text-slate-400">No messages yet. Say hello!</p>
+          <p className="py-6 text-center text-sm text-muted">No messages yet. Say hello!</p>
         ) : (
           messages.map((msg) => (
             <div key={msg.id} className="space-y-1 border-b border-white/5 pb-3 last:border-b-0">
               <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-semibold text-emerald-200">
+                <p className="text-sm font-semibold text-accent-soft">
                   {msg.name}
-                  {msg.user_id === currentUserId && <span className="text-slate-500"> · you</span>}
+                  {msg.user_id === currentUserId && <span className="text-muted"> · you</span>}
                 </p>
-                <p className="text-xs text-slate-400">{new Date(msg.created_at).toLocaleTimeString()}</p>
+                <p className="text-xs text-muted">{new Date(msg.created_at).toLocaleTimeString()}</p>
               </div>
-              <p className="text-sm text-slate-300">{msg.body}</p>
+              <p className="text-sm text-muted">{msg.body}</p>
             </div>
           ))
         )}
@@ -93,7 +94,7 @@ export function RoomChat({
       </div>
 
       {closed ? (
-        <p className="rounded-full bg-white/5 px-4 py-3 text-center text-sm text-slate-400">
+        <p className="rounded-full bg-white/5 px-4 py-3 text-center text-sm text-muted">
           This room is closed.
         </p>
       ) : canPost ? (
@@ -104,22 +105,22 @@ export function RoomChat({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
             placeholder="Send a message…"
-            className="flex-1 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/40 outline-none transition focus:border-emerald-400/40 focus:bg-white/10"
+            className="flex-1 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/40 outline-none transition focus:border-accent/40 focus:bg-white/10"
           />
           <button
             onClick={send}
-            className="rounded-full bg-emerald-400 px-6 py-3 text-sm font-semibold text-black transition hover:bg-emerald-300"
+            className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition hover:bg-accent-soft"
           >
             Send
           </button>
         </div>
       ) : (
-        <p className="rounded-full bg-white/5 px-4 py-3 text-center text-sm text-slate-400">
+        <p className="rounded-full bg-white/5 px-4 py-3 text-center text-sm text-muted">
           {currentUserId ? (
             "Join the room to chat."
           ) : (
             <>
-              <Link href="/login" className="text-emerald-300">Log in</Link> and join to chat.
+              <Link href="/login" className="text-accent-soft">Log in</Link> and join to chat.
             </>
           )}
         </p>

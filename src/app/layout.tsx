@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
-import { Anton, Outfit } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-// Body font (variable) and the condensed display font used by `.display`.
-// Self-hosted automatically by next/font — no external Google Fonts request.
-const outfit = Outfit({
-  variable: "--font-outfit",
-  subsets: ["latin"],
-});
-
-const anton = Anton({
-  variable: "--font-anton",
-  weight: "400",
+// One clean variable font for the whole UI (body + headings). Self-hosted
+// automatically by next/font — no external Google Fonts request.
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -27,10 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${outfit.variable} ${anton.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-ink font-sans text-ink-foreground">
         {children}
       </body>

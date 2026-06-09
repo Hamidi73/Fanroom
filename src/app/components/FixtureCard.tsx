@@ -6,16 +6,15 @@ import Link from "next/link";
 import type { Fixture } from "@/app/data";
 
 function statusBadge(status: Fixture["status"]) {
-  if (status === "live") return { label: "● Live", className: "border-red-500/30 bg-red-500/10 text-red-300" };
-  if (status === "finished") return { label: "Full time", className: "border-white/15 bg-white/5 text-slate-300" };
-  return { label: "Scheduled", className: "border-emerald-400/20 bg-emerald-400/10 text-emerald-200" };
+  if (status === "live") return { label: "● Live", className: "bg-live text-white" };
+  if (status === "finished") return { label: "Full time", className: "bg-surface-2 text-muted" };
+  return { label: "Scheduled", className: "bg-surface-2 text-online" };
 }
 
-// Link to the nation hub only when the team is a real, decided nation.
 function TeamName({ name, slug }: { name: string; slug: string }) {
-  if (!slug) return <span className="text-slate-400">{name}</span>;
+  if (!slug) return <span className="text-muted">{name}</span>;
   return (
-    <Link href={`/nation/${slug}`} className="hover:text-emerald-300">
+    <Link href={`/nation/${slug}`} className="text-ink-foreground no-underline hover:text-accent-soft">
       {name}
     </Link>
   );
@@ -26,36 +25,33 @@ export function FixtureCard({ fixture }: { fixture: Fixture }) {
   const hasScore = fixture.homeScore !== null && fixture.awayScore !== null;
 
   return (
-    <div className="rounded-[1.75rem] border border-white/10 bg-panel p-6 shadow-lg shadow-black/25">
-      <div className="flex items-center justify-between gap-4">
-        <p className="text-sm uppercase tracking-[0.35em] text-slate-400">
+    <div className="rounded-lg border border-line bg-surface p-4 transition hover:border-line/0 hover:ring-1 hover:ring-accent/40">
+      <div className="flex items-center justify-between gap-3">
+        <p className="truncate text-xs font-semibold uppercase tracking-wide text-muted">
           {fixture.round}{fixture.group ? ` · ${fixture.group}` : ""}
         </p>
-        <span className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold ${badge.className}`}>
+        <span className={`shrink-0 rounded px-2 py-0.5 text-[11px] font-bold ${badge.className}`}>
           {badge.label}
         </span>
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <h3 className="text-2xl font-bold text-white">
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <h3 className="text-lg font-bold">
           <TeamName name={fixture.teamA} slug={fixture.teamASlug} />
-          <span className="text-slate-500"> vs </span>
+          <span className="text-muted"> vs </span>
           <TeamName name={fixture.teamB} slug={fixture.teamBSlug} />
         </h3>
         {hasScore && (
-          <span className="shrink-0 text-2xl font-black text-white">
+          <span className="shrink-0 text-lg font-extrabold text-ink-foreground">
             {fixture.homeScore}–{fixture.awayScore}
           </span>
         )}
       </div>
 
-      <div className="mt-5 space-y-2 text-sm text-slate-300">
+      <div className="mt-3 space-y-0.5 text-sm text-muted">
         <p>{fixture.date}{fixture.time !== "TBD" ? ` · ${fixture.time}` : ""}</p>
-        <p>{fixture.venue}</p>
-        {fixture.country && <p className="text-slate-400">{fixture.country}</p>}
+        <p>{fixture.venue}{fixture.country ? ` · ${fixture.country}` : ""}</p>
       </div>
-
-      <p className="mt-4 text-xs text-slate-500">Source: {fixture.source}</p>
     </div>
   );
 }

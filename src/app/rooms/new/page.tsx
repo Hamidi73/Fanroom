@@ -86,7 +86,7 @@ export default function NewRoomPage() {
           <p className="mt-3 text-sm text-muted">You need an account to create a fan room.</p>
           <div className="mt-6 flex justify-center gap-3">
             <Link href="/login" className="rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white">Log in</Link>
-            <Link href="/signup" className="rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-black">Sign up</Link>
+            <Link href="/signup" className="rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-white">Sign up</Link>
           </div>
         </div>
       </main>
@@ -125,7 +125,7 @@ export default function NewRoomPage() {
 
           {error && <p className="text-sm text-red-400">{error}</p>}
 
-          <button type="submit" disabled={busy} className="mt-1 w-full rounded-full bg-accent py-3 text-[15px] font-bold text-black disabled:opacity-60">
+          <button type="submit" disabled={busy} className="mt-1 w-full rounded-full bg-accent py-3 text-[15px] font-bold text-white disabled:opacity-60">
             {busy ? "Creating…" : "Create room"}
           </button>
         </form>
