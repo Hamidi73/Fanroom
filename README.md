@@ -115,7 +115,7 @@ it on you only need free dashboard config — no cost:
 
 1. **Google Cloud Console** → APIs & Services → Credentials → *Create OAuth client
    ID* (type: Web application). Under **Authorized redirect URIs** add:
-   `https://grciopikqdjbtrxffwit.supabase.co/auth/v1/callback`
+   `https://fnfxchmdneffqxvrifwt.supabase.co/auth/v1/callback`
    (Configure the OAuth consent screen first if prompted; "External" is fine.)
 2. Copy the **Client ID** and **Client secret**.
 3. **Supabase dashboard** → Authentication → Providers → **Google** → enable, paste
