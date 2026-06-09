@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader, SiteFooter, RoomChat, JoinRoomButton, RoomHostControls, RoomVideo } from "@/app/components";
+import { AppHeader, SiteFooter, RoomChat, RoomMembers, RoomMemberCount, JoinRoomButton, RoomHostControls, RoomVideo } from "@/app/components";
 import { getNation } from "@/app/data";
 import type { RoomRow, MemberRow, MessageRow, ChatLine } from "@/lib/types";
 
@@ -97,7 +97,9 @@ export default async function RoomDetailPage({
             ) : (
               <span className="live-badge">● Live</span>
             )}
-            <span className="rounded bg-surface-2 px-2 py-0.5 text-xs text-muted">{members.length} joined</span>
+            <span className="rounded bg-surface-2 px-2 py-0.5 text-xs text-muted">
+              <RoomMemberCount roomId={room.id} initial={members.length} />
+            </span>
             {nation && (
               <Link href={`/nation/${nation.slug}`} className="rounded border border-line bg-surface-2 px-2 py-0.5 text-xs text-accent-soft no-underline">
                 {nation.flag} {nation.name}
@@ -150,23 +152,14 @@ export default async function RoomDetailPage({
           </section>
 
           <section className="order-1 rounded-xl border border-line bg-panel p-6  lg:order-2">
-            <p className="text-xs font-bold uppercase tracking-wide text-muted">In this room</p>
-            <h2 className="mt-2 text-lg font-bold text-white">{members.length} member{members.length === 1 ? "" : "s"}</h2>
-            <ul className="mt-4 space-y-2">
-              {members.length === 0 ? (
-                <li className="text-sm text-muted">No one has joined yet.</li>
-              ) : (
-                members.map((m) => (
-                  <li key={m.user_id} className="flex items-center gap-2 rounded-xl bg-white/5 px-3 py-2 text-sm text-ink-foreground">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent/20 text-xs font-bold text-accent-soft">
-                      {(m.profiles?.display_name ?? "F").slice(0, 1).toUpperCase()}
-                    </span>
-                    {m.profiles?.display_name ?? "Fan"}
-                    {m.user_id === room.host_id && <span className="text-xs text-accent">host</span>}
-                  </li>
-                ))
-              )}
-            </ul>
+            <RoomMembers
+              roomId={room.id}
+              hostId={room.host_id}
+              initial={members.map((m) => ({
+                user_id: m.user_id,
+                display_name: m.profiles?.display_name ?? null,
+              }))}
+            />
           </section>
         </div>
       </div>

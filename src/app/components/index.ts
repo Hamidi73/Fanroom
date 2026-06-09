@@ -17,6 +17,7 @@ export * from "./HeroStream";
 export * from "./FixtureCard";
 export * from "./ApplyForm";
 export * from "./RoomChat";
+export * from "./RoomMembers";
 export * from "./JoinRoomButton";
 export * from "./RoomHostControls";
 export * from "./RoomVideo";
