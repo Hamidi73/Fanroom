@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getNation, getFixturesByNationSlug } from "@/app/data";
-import { AppShell, SiteFooter, FixtureCard } from "@/app/components";
+import { AppShell, SiteFooter, FixtureCard, RoomCard, type RoomCardData } from "@/app/components";
+import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata({
   params,
@@ -27,6 +28,23 @@ export default async function NationPage({
 
   const fixtures = nation ? await getFixturesByNationSlug(nation.slug) : [];
   const nextMatch = fixtures.find((f) => f.status !== "finished") ?? fixtures[0];
+
+  // Live (non-closed) rooms hosted for this nation. Previously this section was
+  // hardcoded to "no rooms yet", so a creator's room never showed on its nation
+  // page — this fetches the real rooms the same way the homepage does.
+  let rooms: RoomCardData[] = [];
+  if (nation) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("rooms")
+      .select(
+        "id,title,match,nation_slug,language,status,created_at,host_id,host:profiles!rooms_host_id_fkey(display_name),members:room_members(count)",
+      )
+      .eq("nation_slug", nation.slug)
+      .neq("status", "Closed")
+      .order("created_at", { ascending: false });
+    rooms = (data ?? []) as unknown as RoomCardData[];
+  }
 
   if (!nation) {
     return (
@@ -82,12 +100,20 @@ export default async function NationPage({
         {/* Rooms */}
         <div className="mt-9">
           <h2 className="display mb-3 text-xl sm:text-2xl">{nation.name} fan rooms</h2>
-          <div className="rounded-lg border border-line bg-surface p-8 text-center">
-            <p className="text-sm text-muted">
-              No {nation.name} rooms are live yet —{" "}
-              <Link href="/rooms/new" className="text-accent-soft">create the first one</Link>.
-            </p>
-          </div>
+          {rooms.length === 0 ? (
+            <div className="rounded-lg border border-line bg-surface p-8 text-center">
+              <p className="text-sm text-muted">
+                No {nation.name} rooms are live yet —{" "}
+                <Link href="/rooms/new" className="text-accent-soft">create the first one</Link>.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 xl:grid-cols-3">
+              {rooms.map((room) => (
+                <RoomCard key={room.id} room={room} />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Fixtures */}
