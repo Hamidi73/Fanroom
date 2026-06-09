@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader, SiteFooter, RoomChat, JoinRoomButton, RoomHostControls, RoomVideo } from "@/app/components";
+import { AppHeader, SiteFooter, RoomChat, JoinRoomButton, RoomHostControls, RoomVideo, StreamAlerts } from "@/app/components";
 import { getNation } from "@/app/data";
 import type { RoomRow, MemberRow, MessageRow, ChatLine } from "@/lib/types";
 
@@ -128,10 +128,12 @@ export default async function RoomDetailPage({
           )}
         </section>
 
-        {/* Live video (host broadcasts, members watch) */}
+        {/* Live video (host broadcasts, members watch). Paid highlighted
+            messages pop over it as tier-specific alerts. */}
         {!isClosed && (
-          <section className="mt-6">
+          <section className="relative mt-6">
             <RoomVideo roomId={room.id} canWatch={isMember || isHost} />
+            <StreamAlerts roomId={room.id} />
           </section>
         )}
 
