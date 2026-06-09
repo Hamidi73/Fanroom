@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import crypto from "node:crypto";
 import { AccessToken } from "livekit-server-sdk";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -33,6 +34,15 @@ export async function GET(request: Request) {
   // ── Preview: a muted, subscribe-only peek for the public landing page. No
   //    login or membership needed; can never publish or send data. ──
   if (preview) {
+    // Throttle anonymous preview-token minting (curbs LiveKit-minute abuse).
+    const rl = rateLimit(`preview:${clientIp(request)}`, 60, 60_000);
+    if (!rl.ok) {
+      return NextResponse.json(
+        { error: "Too many requests." },
+        { status: 429, headers: { "retry-after": String(rl.retryAfter) } },
+      );
+    }
+
     const { data: room } = await supabase.from("rooms").select("id,status").eq("id", roomId).maybeSingle();
     if (!room) return NextResponse.json({ error: "Room not found." }, { status: 404 });
     if (room.status === "Closed") return NextResponse.json({ error: "Room is closed." }, { status: 403 });

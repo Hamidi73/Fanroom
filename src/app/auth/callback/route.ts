@@ -7,7 +7,10 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/rooms";
+  // Only allow same-site relative paths (a single leading slash) to prevent
+  // open-redirect abuse via a crafted ?next= value.
+  const rawNext = searchParams.get("next") ?? "/rooms";
+  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/rooms";
 
   if (code) {
     const supabase = await createClient();

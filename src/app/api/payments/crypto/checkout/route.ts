@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { getTier } from "@/lib/tiers";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -16,6 +17,14 @@ export async function POST(request: Request) {
   const admin = getAdminClient();
   if (!apiKey || !admin) {
     return NextResponse.json({ error: "Crypto payments are not configured." }, { status: 503 });
+  }
+
+  const rl = rateLimit(`checkout:${clientIp(request)}`, 15, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Too many requests." },
+      { status: 429, headers: { "retry-after": String(rl.retryAfter) } },
+    );
   }
 
   const { roomId, body, tierId } = await request.json().catch(() => ({}));
