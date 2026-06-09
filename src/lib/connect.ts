@@ -49,10 +49,11 @@ export async function getOrCreateConnectAccount(
   const { accountId } = await getConnectInfo(userId);
   if (accountId) return accountId;
 
+  // Don't force a business_type — some countries (e.g. AE) don't support
+  // "individual". Stripe collects it during onboarding instead.
   const account = await stripe.accounts.create({
     type: "express",
     email: email ?? undefined,
-    business_type: "individual",
     capabilities: { transfers: { requested: true } },
     metadata: { userId },
   });
