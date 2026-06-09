@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { AppHeader, SiteFooter, RoomChat, RoomMembers, RoomMemberCount, JoinRoomButton, RoomHostControls, RoomVideo, StreamAlerts } from "@/app/components";
 import { getNation } from "@/app/data";
+import { getConnectInfo } from "@/lib/connect";
 import type { RoomRow, MemberRow, MessageRow, ChatLine } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Fan room | FanRoom Global" };
@@ -50,8 +51,11 @@ export default async function RoomDetailPage({
       .order("created_at", { ascending: true }),
   ]);
 
-  const paymentsEnabled = !!process.env.STRIPE_SECRET_KEY;
-  const cryptoEnabled = !!process.env.COINBASE_COMMERCE_API_KEY;
+  // Paid highlights are only offered when the room's host can actually be paid
+  // (Stripe configured + host has connected payouts).
+  const hostPayouts = await getConnectInfo(room.host_id);
+  const paymentsEnabled = !!process.env.STRIPE_SECRET_KEY && hostPayouts.enabled;
+  const cryptoEnabled = false;
 
   const user = userData.user;
   const members = (memberData ?? []) as unknown as MemberRow[];

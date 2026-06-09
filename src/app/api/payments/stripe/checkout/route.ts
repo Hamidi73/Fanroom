@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe";
 import { getTier } from "@/lib/tiers";
+import { getConnectInfo, applicationFee } from "@/lib/connect";
 import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
@@ -45,9 +46,18 @@ export async function POST(request: Request) {
   const user = userData.user;
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
-  const { data: room } = await supabase.from("rooms").select("id,status").eq("id", roomId).maybeSingle();
+  const { data: room } = await supabase.from("rooms").select("id,status,host_id").eq("id", roomId).maybeSingle();
   if (!room) return NextResponse.json({ error: "Room not found." }, { status: 404 });
   if (room.status === "Closed") return NextResponse.json({ error: "This room is closed." }, { status: 403 });
+
+  // The host must have connected payouts — donations route to them, not us.
+  const host = await getConnectInfo(room.host_id);
+  if (!host.enabled || !host.accountId) {
+    return NextResponse.json(
+      { error: "This host hasn't set up payouts yet, so highlights are unavailable here." },
+      { status: 403 },
+    );
+  }
 
   const { data: membership } = await supabase
     .from("room_members")
@@ -90,6 +100,11 @@ export async function POST(request: Request) {
       },
     ],
     metadata: { donationId: donation.id },
+    // Destination charge: keep the platform fee, send the rest to the host.
+    payment_intent_data: {
+      application_fee_amount: applicationFee(tier.amountCents),
+      transfer_data: { destination: host.accountId },
+    },
     success_url: `${origin}/rooms/${roomId}?paid=1`,
     cancel_url: `${origin}/rooms/${roomId}?canceled=1`,
   });

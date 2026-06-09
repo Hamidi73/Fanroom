@@ -293,3 +293,13 @@ revoke insert, update, delete, select on public.donations from anon;
 revoke insert, delete on public.profiles from authenticated;
 revoke update, delete on public.messages from authenticated;
 revoke insert, update, delete on public.donations from authenticated;
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- stripe_connect_payouts  (host payouts via Stripe Connect)
+-- ─────────────────────────────────────────────────────────────────────────
+alter table public.profiles
+  add column if not exists stripe_account_id text,
+  add column if not exists stripe_payouts_enabled boolean not null default false;
+
+-- Managed server-side via the service role only; never exposed to client roles.
+revoke select (stripe_account_id, stripe_payouts_enabled) on public.profiles from anon, authenticated;

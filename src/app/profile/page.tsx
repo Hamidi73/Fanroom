@@ -5,19 +5,30 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader, SiteFooter } from "@/app/components";
+import { AppHeader, SiteFooter, ConnectPayouts } from "@/app/components";
+import { getConnectInfo, PLATFORM_FEE_BPS } from "@/lib/connect";
 import { ProfileForm } from "./ProfileForm";
+
+const HOST_SHARE_PCT = 100 - PLATFORM_FEE_BPS / 100;
 
 export const metadata: Metadata = { title: "Your profile | FanRoom Global" };
 export const dynamic = "force-dynamic";
 
 type RoomRef = { id: string; title: string; status: string };
 
-export default async function ProfilePage() {
+export default async function ProfilePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ payouts?: string }>;
+}) {
+  const { payouts } = await searchParams;
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   const user = userData.user;
   if (!user) redirect("/login");
+
+  const payoutsConfigured = !!process.env.STRIPE_SECRET_KEY;
+  const payout = payoutsConfigured ? await getConnectInfo(user.id) : { accountId: null, enabled: false };
 
   const [{ data: profile }, { data: hostedData }, { data: joinedData }] = await Promise.all([
     supabase.from("profiles").select("display_name,is_admin,created_at").eq("id", user.id).single(),
@@ -81,6 +92,44 @@ export default async function ProfilePage() {
             <ProfileForm initialName={displayName} canSetPassword={provider === "email"} />
           </div>
         </section>
+
+        {/* Creator payouts (Stripe Connect) */}
+        {payoutsConfigured && (
+          <section className="mt-6 rounded-xl border border-line bg-panel p-6 sm:p-8">
+            <h2 className="display text-xl">Creator payouts</h2>
+            <p className="mt-1 text-sm text-muted">
+              Connect a Stripe account to earn from paid highlights in rooms you host. You keep{" "}
+              <span className="font-semibold text-white">{HOST_SHARE_PCT}%</span> of every highlight;
+              Stripe pays it out to your bank.
+            </p>
+
+            {payouts === "connected" && (
+              <p className="mt-4 rounded-lg border border-online/40 bg-online/10 px-4 py-2.5 text-sm text-online">
+                ✓ Payouts are active — highlights in your rooms now pay you.
+              </p>
+            )}
+            {payouts === "pending" && (
+              <p className="mt-4 rounded-lg border border-line bg-surface px-4 py-2.5 text-sm text-muted">
+                Stripe is still reviewing your details. This can take a moment — check back shortly.
+              </p>
+            )}
+            {payouts === "error" && (
+              <p className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-200">
+                Something went wrong starting payout setup. Please try again.
+              </p>
+            )}
+
+            <div className="mt-5">
+              {payout.enabled ? (
+                <span className="inline-flex items-center gap-2 rounded-lg border border-online/40 bg-online/10 px-4 py-2.5 text-sm font-semibold text-online">
+                  ● Payouts active
+                </span>
+              ) : (
+                <ConnectPayouts hasAccount={!!payout.accountId} />
+              )}
+            </div>
+          </section>
+        )}
 
         {/* My rooms */}
         <section className="mt-6 grid gap-6 sm:grid-cols-2">

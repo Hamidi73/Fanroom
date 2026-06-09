@@ -152,6 +152,24 @@ post a **highlighted** chat message — Twitch Hype-Chat style. Flow:
    (`Members can post messages` requires `highlight = false`), so highlights can
    *only* be created by a verified payment.
 
+#### Creator payouts (Stripe Connect)
+
+Donations are split: the platform keeps a fee (default **20%**, see
+`PLATFORM_FEE_BPS` in `src/lib/connect.ts`) and the rest goes to the **host of
+that room** — never anyone else. Mechanism:
+
+- Each host connects a Stripe **Express** account once via Stripe-hosted
+  onboarding (`/api/payments/connect/start` → `…/return`), surfaced as a
+  **Creator payouts** card on `/profile`. Their `stripe_account_id` +
+  `stripe_payouts_enabled` live on `profiles` (service-role only).
+- The Stripe checkout is a **destination charge**: `application_fee_amount` (the
+  platform cut) stays with the platform, and `transfer_data.destination` routes
+  the remainder to the host's account; Stripe pays it out to their bank.
+- Paid highlights are **only offered when the room's host has payouts enabled** —
+  the composer hides and the checkout route 403s otherwise.
+- **Enable Connect once** in the Stripe dashboard (Connect → Get started; free)
+  or account creation will fail. Crypto can't auto-split, so it stays disabled.
+
 Turn it on by setting the env vars below. Without them, the feature stays hidden
 and the rest of the app is unaffected.
 
