@@ -44,13 +44,13 @@ export default async function ProfilePage() {
       <AppHeader />
       <div className="mx-auto max-w-3xl px-5 py-10 sm:px-6">
         {/* Header */}
-        <section className="rounded-xl border border-white/10 bg-panel p-6 shadow-lg shadow-black/25 sm:p-8">
+        <section className="rounded-xl border border-line bg-panel p-6  sm:p-8">
           <div className="flex items-center gap-4">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-accent/20 text-2xl font-black text-accent">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-accent/20 text-2xl font-bold text-accent">
               {displayName.slice(0, 1).toUpperCase()}
             </span>
             <div className="min-w-0">
-              <h1 className="truncate text-2xl font-black text-white sm:text-3xl">{displayName}</h1>
+              <h1 className="truncate text-2xl font-bold text-white sm:text-3xl">{displayName}</h1>
               <p className="truncate text-sm text-muted">{user.email}</p>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
                 <span>Joined {new Date(joinedSite).toLocaleDateString()}</span>
@@ -66,15 +66,15 @@ export default async function ProfilePage() {
           {isAdmin && (
             <Link
               href="/admin"
-              className="mt-5 inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-white"
+              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-white no-underline transition hover:bg-accent-strong"
             >
-              🛡️ Open admin dashboard
+              Open admin dashboard
             </Link>
           )}
         </section>
 
         {/* Account settings */}
-        <section className="mt-6 rounded-xl border border-white/10 bg-panel p-6 shadow-lg shadow-black/25 sm:p-8">
+        <section className="mt-6 rounded-xl border border-line bg-panel p-6  sm:p-8">
           <h2 className="display text-xl">Account settings</h2>
           <p className="mt-1 text-sm text-muted">Update your display name or change your password.</p>
           <div className="mt-5">
@@ -105,7 +105,7 @@ function RoomList({
   emptyCta: string;
 }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-panel p-6 shadow-lg shadow-black/25">
+    <div className="rounded-xl border border-line bg-panel p-6 ">
       <h2 className="display text-lg">{title}</h2>
       {rooms.length === 0 ? (
         <div className="mt-3">
@@ -124,7 +124,7 @@ function RoomList({
               >
                 <span className="min-w-0 flex-1 truncate text-sm font-semibold text-white">{r.title}</span>
                 <span
-                  className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                  className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-bold ${
                     r.status === "Closed" ? "bg-white/10 text-muted" : "bg-accent/15 text-accent-soft"
                   }`}
                 >

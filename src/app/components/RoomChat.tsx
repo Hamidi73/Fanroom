@@ -94,7 +94,7 @@ export function RoomChat({
       </div>
 
       {closed ? (
-        <p className="rounded-full bg-white/5 px-4 py-3 text-center text-sm text-muted">
+        <p className="rounded-lg bg-white/5 px-4 py-3 text-center text-sm text-muted">
           This room is closed.
         </p>
       ) : canPost ? (
@@ -105,17 +105,17 @@ export function RoomChat({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
             placeholder="Send a message…"
-            className="flex-1 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/40 outline-none transition focus:border-accent/40 focus:bg-white/10"
+            className="flex-1 rounded-lg border border-line bg-white/5 px-4 py-3 text-sm text-white placeholder-white/40 outline-none transition focus:border-accent/40 focus:bg-white/10"
           />
           <button
             onClick={send}
-            className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition hover:bg-accent-soft"
+            className="rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-white transition hover:bg-accent-soft"
           >
             Send
           </button>
         </div>
       ) : (
-        <p className="rounded-full bg-white/5 px-4 py-3 text-center text-sm text-muted">
+        <p className="rounded-lg bg-white/5 px-4 py-3 text-center text-sm text-muted">
           {currentUserId ? (
             "Join the room to chat."
           ) : (

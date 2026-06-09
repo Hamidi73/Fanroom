@@ -25,7 +25,7 @@ export function JoinRoomButton({
 
   if (isClosed) {
     return (
-      <span className="inline-flex rounded-full border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-muted">
+      <span className="inline-flex rounded-lg border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-muted">
         Room closed
       </span>
     );
@@ -35,7 +35,7 @@ export function JoinRoomButton({
     return (
       <Link
         href="/login"
-        className="inline-flex rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition hover:bg-accent-soft"
+        className="inline-flex rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-white transition hover:bg-accent-soft"
       >
         Log in to join
       </Link>
@@ -64,7 +64,7 @@ export function JoinRoomButton({
     <button
       onClick={toggle}
       disabled={busy}
-      className={`inline-flex rounded-full px-6 py-3 text-sm font-semibold transition disabled:opacity-60 ${
+      className={`inline-flex rounded-lg px-6 py-3 text-sm font-semibold transition disabled:opacity-60 ${
         isMember
           ? "border border-white/20 bg-white/5 text-white hover:bg-white/10"
           : "bg-accent text-white hover:bg-accent-soft"

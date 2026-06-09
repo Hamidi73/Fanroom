@@ -108,8 +108,7 @@ export default async function NationPage({
         </div>
 
         {/* Safety */}
-        <div className="mt-9 flex items-start gap-3 rounded-lg border border-line bg-surface p-5">
-          <span className="text-lg">🛡️</span>
+        <div className="mt-9 rounded-lg border border-line bg-surface p-5">
           <p className="text-sm text-muted">
             <span className="font-semibold text-ink-foreground">No match footage.</span>{" "}
             Rooms are for reactions, commentary, and community — creators share the energy, not the broadcast.

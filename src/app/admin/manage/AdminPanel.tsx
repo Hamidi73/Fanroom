@@ -53,7 +53,7 @@ export function AdminPanel({ users, rooms }: { users: AdminUser[]; rooms: AdminR
       {/* Users */}
       <section>
         <h2 className="display text-2xl">Users ({users.length})</h2>
-        <div className="mt-4 overflow-hidden rounded-2xl border border-white/10">
+        <div className="mt-4 overflow-hidden rounded-lg border border-line">
           {users.length === 0 ? (
             <p className="p-6 text-sm text-muted">No users yet.</p>
           ) : (
@@ -70,7 +70,7 @@ export function AdminPanel({ users, rooms }: { users: AdminUser[]; rooms: AdminR
                   onClick={() => deleteUser(u)}
                   disabled={busy === `u:${u.id}` || u.is_admin}
                   title={u.is_admin ? "Admins can't be deleted here" : "Delete account"}
-                  className="shrink-0 rounded-full border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-200 transition hover:bg-red-500/20 disabled:opacity-40"
+                  className="shrink-0 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-200 transition hover:bg-red-500/20 disabled:opacity-40"
                 >
                   {busy === `u:${u.id}` ? "…" : "Delete"}
                 </button>
@@ -83,7 +83,7 @@ export function AdminPanel({ users, rooms }: { users: AdminUser[]; rooms: AdminR
       {/* Rooms */}
       <section>
         <h2 className="display text-2xl">Rooms ({rooms.length})</h2>
-        <div className="mt-4 overflow-hidden rounded-2xl border border-white/10">
+        <div className="mt-4 overflow-hidden rounded-lg border border-line">
           {rooms.length === 0 ? (
             <p className="p-6 text-sm text-muted">No rooms yet.</p>
           ) : (
@@ -101,14 +101,14 @@ export function AdminPanel({ users, rooms }: { users: AdminUser[]; rooms: AdminR
                     <button
                       onClick={() => setRoom(r.id, closed ? "Live Soon" : "Closed")}
                       disabled={busy === `r:${r.id}`}
-                      className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10 disabled:opacity-40"
+                      className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10 disabled:opacity-40"
                     >
                       {closed ? "Reopen" : "Close"}
                     </button>
                     <button
                       onClick={() => deleteRoom(r)}
                       disabled={busy === `r:${r.id}`}
-                      className="rounded-full border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-200 transition hover:bg-red-500/20 disabled:opacity-40"
+                      className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-200 transition hover:bg-red-500/20 disabled:opacity-40"
                     >
                       Delete
                     </button>

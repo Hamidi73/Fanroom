@@ -45,7 +45,7 @@ function persistApplication(data: FormState) {
 }
 
 const inputClass =
-  "mt-1.5 w-full rounded-[10px] border border-white/10 bg-[#07070d] px-3.5 py-2.5 text-sm text-white outline-none";
+  "mt-1.5 w-full rounded-[10px] border border-line bg-[#07070d] px-3.5 py-2.5 text-sm text-white outline-none";
 
 export function ApplyForm({ heading }: { heading: string }) {
   const [formData, setFormData] = useState<FormState>(EMPTY);
@@ -63,20 +63,20 @@ export function ApplyForm({ heading }: { heading: string }) {
   };
 
   return (
-    <div className="rounded-[18px] border border-accent/15 bg-[linear-gradient(160deg,#12121c,#0c0c14)] p-7">
+    <div className="rounded-xl border border-line bg-surface p-7">
       <div className="grid items-start gap-6 md:grid-cols-[1fr_1.1fr]">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-accent">Become a host</p>
-          <h2 className="display mt-2 text-3xl">{heading}</h2>
+          <p className="text-xs font-bold uppercase tracking-wide text-muted">Become a host</p>
+          <h2 className="display mt-2 text-2xl sm:text-3xl">{heading}</h2>
           <p className="mt-3 text-sm leading-relaxed text-muted">
             Represent your nation. Host the room. Bring the energy. (Applications save
             locally for now.)
           </p>
         </div>
-        <div className="rounded-[14px] border border-white/10 bg-surface-2 p-5">
+        <div className="rounded-lg border border-line bg-surface-2 p-5">
           {submitted ? (
             <div className="p-4 text-center">
-              <p className="text-xs uppercase tracking-[0.2em] text-accent">
+              <p className="text-xs font-bold uppercase tracking-wide text-accent-soft">
                 Application received
               </p>
               <h3 className="display mt-2.5 text-[22px]">Thanks for applying!</h3>
@@ -112,7 +112,7 @@ export function ApplyForm({ heading }: { heading: string }) {
               </label>
               <button
                 type="submit"
-                className="w-full rounded-full bg-accent py-3 text-[15px] font-bold text-white"
+                className="w-full rounded-lg bg-accent py-3 text-[15px] font-bold text-white"
               >
                 Submit application
               </button>

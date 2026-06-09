@@ -29,7 +29,7 @@ export default async function RoomDetailPage({
         <div className="mx-auto max-w-xl px-5 py-20 text-center">
           <h1 className="display text-3xl">Room not found</h1>
           <p className="mt-3 text-sm text-muted">This room doesn&apos;t exist or was removed.</p>
-          <Link href="/rooms" className="mt-6 inline-flex rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-white">
+          <Link href="/rooms" className="mt-6 inline-flex rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-white">
             Browse rooms
           </Link>
         </div>
@@ -70,7 +70,7 @@ export default async function RoomDetailPage({
         <Link href="/rooms" className="text-sm text-muted hover:text-ink-foreground">← All rooms</Link>
 
         {/* Hero */}
-        <section className="mt-4 rounded-xl border border-line bg-surface p-6 shadow-lg shadow-black/30 sm:p-8">
+        <section className="mt-4 rounded-xl border border-line bg-surface p-6  sm:p-8">
           <div className="flex flex-wrap items-center gap-2">
             {isClosed ? (
               <span className="rounded bg-surface-2 px-2 py-0.5 text-xs font-bold text-muted">Closed</span>
@@ -91,13 +91,13 @@ export default async function RoomDetailPage({
             {room.language && <p><span className="font-semibold text-white">Language:</span> {room.language}</p>}
           </div>
           {isClosed && (
-            <p className="mt-4 rounded-[1rem] border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm text-amber-200">
+            <p className="mt-4 rounded-lg border border-line bg-surface-2 px-4 py-2 text-sm text-muted">
               This room has been closed by the host.
             </p>
           )}
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <JoinRoomButton roomId={room.id} isMember={isMember} isLoggedIn={!!user} isClosed={isClosed} />
-            <span className="rounded-[1rem] border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs text-red-200">
+            <span className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs text-red-200">
               Reactions &amp; commentary only — no match footage.
             </span>
           </div>
@@ -117,7 +117,7 @@ export default async function RoomDetailPage({
 
         {/* Chat + members */}
         <div className="mt-6 grid gap-6 lg:grid-cols-[2fr_1fr]">
-          <section className="order-2 rounded-xl border border-white/10 bg-panel shadow-lg shadow-black/25 lg:order-1">
+          <section className="order-2 rounded-xl border border-line bg-panel  lg:order-1">
             <RoomChat
               roomId={room.id}
               initial={initialChat}
@@ -127,9 +127,9 @@ export default async function RoomDetailPage({
             />
           </section>
 
-          <section className="order-1 rounded-xl border border-white/10 bg-panel p-6 shadow-lg shadow-black/25 lg:order-2">
+          <section className="order-1 rounded-xl border border-line bg-panel p-6  lg:order-2">
             <p className="text-xs font-bold uppercase tracking-wide text-muted">In this room</p>
-            <h2 className="mt-2 text-lg font-black text-white">{members.length} member{members.length === 1 ? "" : "s"}</h2>
+            <h2 className="mt-2 text-lg font-bold text-white">{members.length} member{members.length === 1 ? "" : "s"}</h2>
             <ul className="mt-4 space-y-2">
               {members.length === 0 ? (
                 <li className="text-sm text-muted">No one has joined yet.</li>

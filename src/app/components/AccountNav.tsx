@@ -68,7 +68,7 @@ export function AccountNav() {
         <Link href="/login" className="text-sm font-medium text-muted no-underline hover:text-ink-foreground">
           Log in
         </Link>
-        <Link href="/signup" className="rounded-full bg-accent px-3.5 py-1.5 text-sm font-bold text-white no-underline">
+        <Link href="/signup" className="rounded-lg bg-accent px-3.5 py-1.5 text-sm font-bold text-white no-underline">
           Sign up
         </Link>
       </span>
@@ -90,7 +90,7 @@ export function AccountNav() {
       </Link>
       <button
         onClick={signOut}
-        className="rounded-full border border-white/15 px-3 py-1.5 text-sm font-medium text-muted transition hover:text-ink-foreground"
+        className="rounded-lg border border-white/15 px-3 py-1.5 text-sm font-medium text-muted transition hover:text-ink-foreground"
       >
         Sign out
       </button>

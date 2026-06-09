@@ -67,7 +67,7 @@ export default async function AdminDashboard() {
     <main className="flex-1">
       <AppHeader />
       <div className="mx-auto max-w-5xl px-5 py-10">
-        <span className="text-xs uppercase tracking-[0.3em] text-muted">Admin</span>
+        <span className="text-xs uppercase tracking-wide text-muted">Admin</span>
         <h1 className="display mt-2 text-3xl sm:text-4xl">Command Center</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted">
           Live overview of FanRoom Global. Every figure below is read straight from the
@@ -77,7 +77,7 @@ export default async function AdminDashboard() {
         {/* Live stats */}
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((s) => (
-            <div key={s.label} className="rounded-2xl border border-white/10 bg-panel p-5">
+            <div key={s.label} className="rounded-lg border border-line bg-panel p-5">
               <p className="text-xs uppercase tracking-wider text-muted">{s.label}</p>
               <p className="display mt-2 text-4xl text-white">{s.value}</p>
               <p className="mt-1 text-xs text-muted">{s.sub}</p>
@@ -88,7 +88,7 @@ export default async function AdminDashboard() {
         {/* Manage entry point */}
         <Link
           href="/admin/manage"
-          className="mt-6 flex items-center justify-between gap-4 rounded-2xl border border-accent/30 bg-accent/10 p-5 transition hover:bg-accent/15"
+          className="mt-6 flex items-center justify-between gap-4 rounded-lg border border-accent/30 bg-accent/10 p-5 transition hover:bg-accent/15"
         >
           <div>
             <p className="text-base font-bold text-white">Members &amp; Rooms</p>
@@ -99,7 +99,7 @@ export default async function AdminDashboard() {
 
         {/* Recent activity */}
         <div className="mt-8 grid gap-6 lg:grid-cols-2">
-          <section className="rounded-2xl border border-white/10 bg-panel p-5">
+          <section className="rounded-lg border border-line bg-panel p-5">
             <div className="flex items-center justify-between">
               <h2 className="display text-xl">Newest members</h2>
               <Link href="/admin/manage" className="text-xs text-accent">View all</Link>
@@ -126,7 +126,7 @@ export default async function AdminDashboard() {
             </ul>
           </section>
 
-          <section className="rounded-2xl border border-white/10 bg-panel p-5">
+          <section className="rounded-lg border border-line bg-panel p-5">
             <div className="flex items-center justify-between">
               <h2 className="display text-xl">Newest rooms</h2>
               <Link href="/admin/manage" className="text-xs text-accent">View all</Link>
@@ -141,7 +141,7 @@ export default async function AdminDashboard() {
                       {r.title}
                     </Link>
                     <span
-                      className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                      className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-bold ${
                         r.status === "Closed"
                           ? "bg-white/10 text-muted"
                           : "bg-accent/15 text-accent-soft"
@@ -157,8 +157,7 @@ export default async function AdminDashboard() {
         </div>
 
         {/* Compliance reminder */}
-        <div className="mt-8 flex items-start gap-3 rounded-2xl border border-amber-400/25 bg-amber-400/5 p-5">
-          <span className="text-lg">⚠️</span>
+        <div className="mt-8 rounded-lg border border-line bg-surface p-5">
           <p className="text-sm text-muted">
             <span className="font-semibold text-white">No match footage.</span>{" "}
             Creator rooms are only for reactions, commentary, live chat, and community.

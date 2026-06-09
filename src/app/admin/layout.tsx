@@ -26,11 +26,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </p>
           <div className="mt-6 flex justify-center gap-3">
             {!user && (
-              <Link href="/login" className="rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-white">
+              <Link href="/login" className="rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-white">
                 Log in
               </Link>
             )}
-            <Link href="/" className="rounded-full border border-white/20 px-5 py-2.5 text-sm font-semibold text-white">
+            <Link href="/" className="rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-white">
               Back home
             </Link>
           </div>

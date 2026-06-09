@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 const inputClass =
-  "mt-1.5 w-full rounded-[10px] border border-white/10 bg-[#07070d] px-3.5 py-2.5 text-sm text-white outline-none focus:border-accent/50";
+  "mt-1.5 w-full rounded-[10px] border border-line bg-[#07070d] px-3.5 py-2.5 text-sm text-white outline-none focus:border-accent/50";
 
 function Note({ kind, children }: { kind: "ok" | "err"; children: React.ReactNode }) {
   return (
@@ -96,13 +96,13 @@ export function ProfileForm({
         <button
           type="submit"
           disabled={nameBusy || name.trim() === initialName.trim()}
-          className="self-start rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+          className="self-start rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
         >
           {nameBusy ? "Saving…" : "Save name"}
         </button>
       </form>
 
-      <div className="border-t border-white/10 pt-6">
+      <div className="border-t border-line pt-6">
         {canSetPassword ? (
           <form onSubmit={savePassword} className="flex flex-col gap-3">
             <p className="text-sm font-semibold text-white">Change password</p>
@@ -131,7 +131,7 @@ export function ProfileForm({
             <button
               type="submit"
               disabled={pwBusy || !password}
-              className="self-start rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-50"
+              className="self-start rounded-lg border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-50"
             >
               {pwBusy ? "Updating…" : "Update password"}
             </button>

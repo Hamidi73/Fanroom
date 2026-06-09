@@ -12,7 +12,7 @@ import { AppHeader } from "@/app/components/AppHeader";
 import { GoogleButton } from "@/app/components/GoogleButton";
 
 const inputClass =
-  "mt-1.5 w-full rounded-[10px] border border-white/10 bg-[#07070d] px-3.5 py-2.5 text-sm text-white outline-none focus:border-accent/50";
+  "mt-1.5 w-full rounded-[10px] border border-line bg-[#07070d] px-3.5 py-2.5 text-sm text-white outline-none focus:border-accent/50";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -56,7 +56,7 @@ export default function SignupPage() {
         <p className="mt-2 text-sm text-muted">Join FanRoom Global to create and join fan rooms.</p>
 
         {needsConfirm ? (
-          <div className="mt-8 rounded-2xl border border-accent/20 bg-accent/10 p-6 text-sm text-accent-soft">
+          <div className="mt-8 rounded-lg border border-accent/20 bg-accent/10 p-6 text-sm text-accent-soft">
             Account created. Check <span className="font-semibold">{email}</span> for a confirmation
             link, then <Link href="/login" className="underline">log in</Link>.
           </div>
@@ -86,7 +86,7 @@ export default function SignupPage() {
 
             {error && <p className="text-sm text-red-400">{error}</p>}
 
-            <button type="submit" disabled={busy} className="mt-1 w-full rounded-full bg-accent py-3 text-[15px] font-bold text-white disabled:opacity-60">
+            <button type="submit" disabled={busy} className="mt-1 w-full rounded-lg bg-accent py-3 text-[15px] font-bold text-white disabled:opacity-60">
               {busy ? "Creating…" : "Create account"}
             </button>
           </form>

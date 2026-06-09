@@ -29,13 +29,13 @@ export function RoomHostControls({ roomId, status }: { roomId: string; status: s
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-[1.25rem] border border-white/10 bg-white/5 px-4 py-3">
+    <div className="flex flex-wrap items-center gap-3 rounded-[1.25rem] border border-line bg-white/5 px-4 py-3">
       <span className="text-xs uppercase tracking-[0.25em] text-muted">Host controls</span>
       {closed ? (
         <button
           onClick={() => setStatus("Live Soon")}
           disabled={busy}
-          className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-soft disabled:opacity-60"
+          className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-soft disabled:opacity-60"
         >
           Reopen room
         </button>
@@ -43,7 +43,7 @@ export function RoomHostControls({ roomId, status }: { roomId: string; status: s
         <button
           onClick={() => setStatus("Closed")}
           disabled={busy}
-          className="rounded-full border border-amber-400/40 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-400/20 disabled:opacity-60"
+          className="rounded-lg border border-line bg-surface-2 px-4 py-2 text-sm font-semibold text-muted transition hover:bg-surface disabled:opacity-60"
         >
           Close room
         </button>
@@ -51,7 +51,7 @@ export function RoomHostControls({ roomId, status }: { roomId: string; status: s
       <button
         onClick={remove}
         disabled={busy}
-        className="rounded-full border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-200 transition hover:bg-red-500/20 disabled:opacity-60"
+        className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-200 transition hover:bg-red-500/20 disabled:opacity-60"
       >
         Delete room
       </button>
