@@ -10,6 +10,8 @@ export type Tier = {
   /** Tailwind classes for the highlighted message banner (higher = bolder). */
   ring: string;
   badge: string;
+  /** How long the on-stream alert stays up (ms) — bigger tiers linger longer. */
+  alertDurationMs: number;
 };
 
 export const TIERS: Tier[] = [
@@ -19,6 +21,7 @@ export const TIERS: Tier[] = [
     amountCents: 200,
     ring: "border-accent/40 bg-accent/5",
     badge: "bg-accent/20 text-accent-soft",
+    alertDurationMs: 12000,
   },
   {
     id: "featured",
@@ -26,6 +29,7 @@ export const TIERS: Tier[] = [
     amountCents: 500,
     ring: "border-accent/60 bg-accent/10",
     badge: "bg-accent/30 text-accent-soft",
+    alertDurationMs: 20000,
   },
   {
     id: "headliner",
@@ -33,6 +37,7 @@ export const TIERS: Tier[] = [
     amountCents: 1000,
     ring: "border-accent bg-accent/15",
     badge: "bg-accent text-white",
+    alertDurationMs: 30000,
   },
 ];
 

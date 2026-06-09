@@ -96,3 +96,119 @@
   padding: 2px 7px;
   border-radius: 4px;
 }
+
+/* ── On-stream paid-message alerts (Twitch-style) ──────────────────────────
+   A paid (highlighted) chat message also pops over the live video as an
+   animated banner. Each tier has a distinct look — the more you pay, the
+   bolder and longer-lived the alert. See src/app/components/StreamAlerts.tsx. */
+@keyframes fr-alert-in {
+  0%   { opacity: 0; transform: translateY(-14px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes fr-alert-out {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-10px) scale(0.98); }
+}
+@keyframes fr-alert-pop {
+  0%   { opacity: 0; transform: translateY(-20px) scale(0.8); }
+  60%  { opacity: 1; transform: translateY(0) scale(1.06); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes fr-shimmer {
+  0%   { background-position: -150% 0; }
+  100% { background-position: 250% 0; }
+}
+@keyframes fr-glow {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(145, 71, 255, 0.5), 0 0 22px rgba(145, 71, 255, 0.45); }
+  50%      { box-shadow: 0 0 0 1px rgba(224, 163, 255, 0.95), 0 0 42px rgba(145, 71, 255, 0.9); }
+}
+@keyframes fr-sparkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.7) rotate(0deg); }
+  50%      { opacity: 1;    transform: scale(1.25) rotate(25deg); }
+}
+@keyframes fr-confetti-fall {
+  0%   { opacity: 0; transform: translateY(-14px) rotate(0deg); }
+  12%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(190px) rotate(540deg); }
+}
+
+/* Confetti pieces thrown when an alert appears (position/colour/timing set
+   inline per piece). Falls within the overlay column, behind the banner. */
+.fr-confetti {
+  position: absolute;
+  top: 0;
+  border-radius: 1px;
+  will-change: transform, opacity;
+  animation-name: fr-confetti-fall;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+.stream-alert {
+  position: relative;
+  pointer-events: none;
+  border-radius: 12px;
+  overflow: hidden;
+  animation: fr-alert-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+/* Exit (set when the alert's timer fires). Two classes → wins over tier rules. */
+.stream-alert.is-leaving {
+  animation: fr-alert-out 0.4s ease-in forwards;
+}
+
+/* Spotlight ($2) — subtle frosted card, thin purple edge. */
+.stream-alert--spotlight {
+  background: rgba(24, 24, 27, 0.74);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(145, 71, 255, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Featured ($5) — animated gradient border + shimmer sweep. */
+.stream-alert--featured {
+  background:
+    linear-gradient(rgba(18, 14, 26, 0.9), rgba(18, 14, 26, 0.9)) padding-box,
+    linear-gradient(120deg, #9147ff, #bf94ff, #9147ff) border-box;
+  border: 1.5px solid transparent;
+  box-shadow: 0 0 26px rgba(145, 71, 255, 0.45);
+}
+.stream-alert--featured::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(191, 148, 255, 0.28) 50%, transparent 70%);
+  background-size: 220% 100%;
+  animation: fr-shimmer 2.6s linear infinite;
+  pointer-events: none;
+}
+
+/* Headliner ($10) — bold gradient fill, pop-in, pulsing glow, sparkles. */
+.stream-alert--headliner {
+  background: linear-gradient(125deg, #772ce8 0%, #9147ff 45%, #e0a3ff 100%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  animation:
+    fr-alert-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1) both,
+    fr-glow 1.8s ease-in-out 0.55s infinite;
+}
+.stream-alert__sparkle {
+  position: absolute;
+  font-size: 13px;
+  line-height: 1;
+  animation: fr-sparkle 1.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stream-alert,
+  .stream-alert--headliner {
+    animation: fr-alert-in 0.3s ease both;
+  }
+  .stream-alert--featured::after,
+  .stream-alert__sparkle {
+    animation: none;
+  }
+  .fr-confetti {
+    display: none;
+  }
+}
