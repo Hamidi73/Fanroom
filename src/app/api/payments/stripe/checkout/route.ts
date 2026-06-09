@@ -50,14 +50,18 @@ export async function POST(request: Request) {
   if (!room) return NextResponse.json({ error: "Room not found." }, { status: 404 });
   if (room.status === "Closed") return NextResponse.json({ error: "This room is closed." }, { status: 403 });
 
-  // The host must have connected payouts — donations route to them, not us.
+  // If the host has connected payouts, split their share to them; otherwise the
+  // charge stays on the platform (so highlights still work everywhere).
   const host = await getConnectInfo(room.host_id);
-  if (!host.enabled || !host.accountId) {
-    return NextResponse.json(
-      { error: "This host hasn't set up payouts yet, so highlights are unavailable here." },
-      { status: 403 },
-    );
-  }
+  const split =
+    host.enabled && host.accountId
+      ? {
+          payment_intent_data: {
+            application_fee_amount: applicationFee(tier.amountCents),
+            transfer_data: { destination: host.accountId },
+          },
+        }
+      : {};
 
   const { data: membership } = await supabase
     .from("room_members")
@@ -100,11 +104,8 @@ export async function POST(request: Request) {
       },
     ],
     metadata: { donationId: donation.id },
-    // Destination charge: keep the platform fee, send the rest to the host.
-    payment_intent_data: {
-      application_fee_amount: applicationFee(tier.amountCents),
-      transfer_data: { destination: host.accountId },
-    },
+    // Destination charge when the host is connected; otherwise a plain charge.
+    ...split,
     success_url: `${origin}/rooms/${roomId}?paid=1`,
     cancel_url: `${origin}/rooms/${roomId}?canceled=1`,
   });

@@ -3,7 +3,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { AppHeader, SiteFooter, RoomChat, RoomMembers, RoomMemberCount, JoinRoomButton, RoomHostControls, RoomVideo, StreamAlerts } from "@/app/components";
 import { getNation } from "@/app/data";
-import { getConnectInfo } from "@/lib/connect";
 import type { RoomRow, MemberRow, MessageRow, ChatLine } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Fan room | FanRoom Global" };
@@ -51,10 +50,10 @@ export default async function RoomDetailPage({
       .order("created_at", { ascending: true }),
   ]);
 
-  // Paid highlights are only offered when the room's host can actually be paid
-  // (Stripe configured + host has connected payouts).
-  const hostPayouts = await getConnectInfo(room.host_id);
-  const paymentsEnabled = !!process.env.STRIPE_SECRET_KEY && hostPayouts.enabled;
+  // Paid highlights are available whenever Stripe is configured. If the room's
+  // host has connected payouts, their share is split to them automatically
+  // (handled in the checkout route); otherwise the charge stays on the platform.
+  const paymentsEnabled = !!process.env.STRIPE_SECRET_KEY;
   const cryptoEnabled = false;
 
   const user = userData.user;

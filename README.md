@@ -162,11 +162,14 @@ that room** — never anyone else. Mechanism:
   onboarding (`/api/payments/connect/start` → `…/return`), surfaced as a
   **Creator payouts** card on `/profile`. Their `stripe_account_id` +
   `stripe_payouts_enabled` live on `profiles` (service-role only).
-- The Stripe checkout is a **destination charge**: `application_fee_amount` (the
-  platform cut) stays with the platform, and `transfer_data.destination` routes
-  the remainder to the host's account; Stripe pays it out to their bank.
-- Paid highlights are **only offered when the room's host has payouts enabled** —
-  the composer hides and the checkout route 403s otherwise.
+- When the host is connected, the Stripe checkout is a **destination charge**:
+  `application_fee_amount` (the platform cut) stays with the platform, and
+  `transfer_data.destination` routes the remainder to the host's account.
+- **Highlights work in every room.** If the host hasn't connected payouts yet,
+  the charge simply stays on the platform (no transfer); the split kicks in
+  automatically once that host connects. "Connected" means the account's
+  **transfers capability is active** — full bank/payout KYC (needed only to cash
+  out) is a separate step, so hosts can start receiving into their balance first.
 - **Enable Connect once** in the Stripe dashboard (Connect → Get started; free)
   or account creation will fail. Crypto can't auto-split, so it stays disabled.
 
