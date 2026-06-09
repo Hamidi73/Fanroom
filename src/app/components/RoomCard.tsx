@@ -1,9 +1,14 @@
-// Room tile, styled like a streaming app's channel card: a 16:9 "preview"
-// (we never show match footage, so it's a branded panel with the match + nation),
-// a LIVE / status badge and member count, then host avatar + title below.
+"use client";
 
+// Room tile, streaming-app style. The 16:9 preview shows the host (avatar + name)
+// as a static thumbnail; when the user hovers, it connects to the room and plays
+// the host's LIVE camera (muted) right in the card — like Twitch. A LIVE/status
+// badge and member count sit on top; host avatar + title + tags go below.
+
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { getNation } from "@/app/data";
+import { LivePreview } from "./LivePreview";
 
 export type RoomCardData = {
   id: string;
@@ -23,25 +28,54 @@ export function RoomCard({ room }: { room: RoomCardData }) {
   const count = room.members?.[0]?.count ?? 0;
   const hostName = room.host?.display_name ?? "a creator";
 
+  const [hovering, setHovering] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const onEnter = () => {
+    if (isClosed) return;
+    // Small hover-intent delay so quick passes don't spin up connections.
+    timerRef.current = setTimeout(() => setHovering(true), 250);
+  };
+  const onLeave = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setHovering(false);
+  };
+
   return (
-    <Link href={`/rooms/${room.id}`} className="group block no-underline">
+    <Link
+      href={`/rooms/${room.id}`}
+      className="group block no-underline"
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+    >
       {/* Preview */}
       <div className="relative">
         <div
-          className="flex aspect-video items-center justify-center overflow-hidden rounded-lg border border-line transition group-hover:border-accent/60"
+          className="relative flex aspect-video items-center justify-center overflow-hidden rounded-lg border border-line transition group-hover:border-accent/60"
           style={{
             backgroundImage: nation
               ? `radial-gradient(circle at 25% 20%, ${nation.theme.accent}, transparent 60%), linear-gradient(150deg, ${nation.theme.border}, #0e0e10 90%)`
               : "linear-gradient(150deg, #26263a, #0e0e10 90%)",
           }}
         >
-          <div className="text-center">
-            {nation && <div className="text-4xl drop-shadow-[0_3px_8px_rgba(0,0,0,0.5)]">{nation.flag}</div>}
-            <p className="mt-1 px-4 text-xs font-semibold text-white/70">{room.match ?? "Watch-along"}</p>
+          {/* Host thumbnail */}
+          <div className="flex flex-col items-center gap-2 px-4 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-black/30 text-lg font-bold text-white ring-2 ring-white/15">
+              {hostName.slice(0, 1).toUpperCase()}
+            </span>
+            <span className="text-xs font-semibold text-white/70">{room.match ?? "Watch-along"}</span>
           </div>
+
+          {/* Hover: live video covers the thumbnail when the host is broadcasting */}
+          {hovering && !isClosed && (
+            <div className="absolute inset-0">
+              <LivePreview roomId={room.id} />
+            </div>
+          )}
         </div>
+
         {/* Top-left status */}
-        <span className="absolute left-2 top-2">
+        <span className="pointer-events-none absolute left-2 top-2">
           {isClosed ? (
             <span className="rounded bg-black/70 px-1.5 py-0.5 text-[11px] font-bold text-white/80">Closed</span>
           ) : isLive ? (
@@ -51,7 +85,7 @@ export function RoomCard({ room }: { room: RoomCardData }) {
           )}
         </span>
         {/* Bottom-left viewers */}
-        <span className="absolute bottom-2 left-2 rounded bg-black/70 px-1.5 py-0.5 text-[11px] font-semibold text-white">
+        <span className="pointer-events-none absolute bottom-2 left-2 rounded bg-black/70 px-1.5 py-0.5 text-[11px] font-semibold text-white">
           {count} {count === 1 ? "member" : "members"}
         </span>
       </div>
