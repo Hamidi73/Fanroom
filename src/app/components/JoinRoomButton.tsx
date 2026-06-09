@@ -22,6 +22,7 @@ export function JoinRoomButton({
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (isClosed) {
     return (
@@ -44,6 +45,7 @@ export function JoinRoomButton({
 
   const toggle = async () => {
     setBusy(true);
+    setError(null);
     const supabase = createClient();
     const { data } = await supabase.auth.getUser();
     const user = data.user;
@@ -51,26 +53,31 @@ export function JoinRoomButton({
       router.push("/login");
       return;
     }
-    if (isMember) {
-      await supabase.from("room_members").delete().eq("room_id", roomId).eq("user_id", user.id);
-    } else {
-      await supabase.from("room_members").insert({ room_id: roomId, user_id: user.id });
-    }
+    const { error: dbError } = isMember
+      ? await supabase.from("room_members").delete().eq("room_id", roomId).eq("user_id", user.id)
+      : await supabase.from("room_members").insert({ room_id: roomId, user_id: user.id });
     setBusy(false);
+    if (dbError) {
+      setError(isMember ? "Couldn't leave the room — try again." : "Couldn't join the room — try again.");
+      return;
+    }
     router.refresh();
   };
 
   return (
-    <button
-      onClick={toggle}
-      disabled={busy}
-      className={`inline-flex rounded-lg px-6 py-3 text-sm font-semibold transition disabled:opacity-60 ${
-        isMember
-          ? "border border-white/20 bg-white/5 text-white hover:bg-white/10"
-          : "bg-accent text-white hover:bg-accent-soft"
-      }`}
-    >
-      {busy ? "…" : isMember ? "Leave room" : "Join room"}
-    </button>
+    <span className="inline-flex flex-col items-start gap-1">
+      <button
+        onClick={toggle}
+        disabled={busy}
+        className={`inline-flex rounded-lg px-6 py-3 text-sm font-semibold transition disabled:opacity-60 ${
+          isMember
+            ? "border border-white/20 bg-white/5 text-white hover:bg-white/10"
+            : "bg-accent text-white hover:bg-accent-soft"
+        }`}
+      >
+        {busy ? "…" : isMember ? "Leave room" : "Join room"}
+      </button>
+      {error && <span className="text-xs text-red-400">{error}</span>}
+    </span>
   );
 }

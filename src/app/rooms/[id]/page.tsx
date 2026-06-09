@@ -1,21 +1,44 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader, SiteFooter, RoomChat, RoomMembers, RoomMemberCount, JoinRoomButton, RoomHostControls, RoomVideo, StreamAlerts, RoomGiftsProvider, GiftDrawer } from "@/app/components";
+import {
+  AppHeader,
+  SiteFooter,
+  RoomChat,
+  RoomMembers,
+  RoomMemberCount,
+  JoinRoomButton,
+  RoomHostControls,
+  RoomVideo,
+  StreamAlerts,
+  RoomGiftsProvider,
+  GiftDrawer,
+  PaymentNotice,
+  ShareRoomButton,
+} from "@/app/components";
 import { getNation } from "@/app/data";
 import type { RoomRow, MemberRow, MessageRow, ChatLine } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Fan room | FanRoom Global" };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase.from("rooms").select("title").eq("id", id).maybeSingle();
+  return { title: data?.title ? `${data.title} | FanRoom Global` : "Fan room | FanRoom Global" };
+}
 
 export default async function RoomDetailPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ paid?: string; canceled?: string }>;
+  searchParams: Promise<{ paid?: string; canceled?: string; coins?: string }>;
 }) {
   const { id } = await params;
-  const { paid, canceled } = await searchParams;
+  const { paid, canceled, coins } = await searchParams;
   const supabase = await createClient();
 
   const { data: roomData } = await supabase
@@ -63,7 +86,15 @@ export default async function RoomDetailPage({
   const isHost = !!user && user.id === room.host_id;
   const isClosed = room.status === "Closed";
   const nation = room.nation_slug ? getNation(room.nation_slug) : undefined;
-  const senderName = (user?.user_metadata?.display_name as string | undefined) ?? "A fan";
+  const hostName = room.host?.display_name ?? "a creator";
+
+  // Gift overlays show the sender's CURRENT display name (the profiles row is
+  // the source of truth — auth metadata can go stale after a rename).
+  let senderName = "A fan";
+  if (user) {
+    const { data: me } = await supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle();
+    senderName = me?.display_name ?? (user.user_metadata?.display_name as string | undefined) ?? "A fan";
+  }
 
   const initialChat: ChatLine[] = messages.map((m) => ({
     id: m.id,
@@ -85,77 +116,95 @@ export default async function RoomDetailPage({
     >
     <main className="flex-1 bg-ink-deep">
       <AppHeader />
-      <div className="mx-auto max-w-5xl px-5 py-10 sm:px-6">
-        <Link href="/rooms" className="text-sm text-muted hover:text-ink-foreground">← All rooms</Link>
+      <div className="mx-auto max-w-[1500px] px-4 py-5 sm:px-6">
+        <Link href="/rooms" className="text-sm text-muted no-underline hover:text-ink-foreground">← All rooms</Link>
 
-        {paid && (
-          <p className="mt-4 rounded-lg border border-accent/40 bg-accent/10 px-4 py-2.5 text-sm text-accent-soft">
-            ✦ Payment received — your highlighted message will appear in chat momentarily.
-          </p>
-        )}
-        {canceled && (
-          <p className="mt-4 rounded-lg border border-line bg-surface px-4 py-2.5 text-sm text-muted">
-            Checkout canceled — no charge was made.
-          </p>
-        )}
+        {paid && <PaymentNotice kind="paid" />}
+        {coins && <PaymentNotice kind="coins" />}
+        {canceled && <PaymentNotice kind="canceled" />}
 
-        {/* Hero */}
-        <section className="mt-4 rounded-xl border border-line bg-surface p-6  sm:p-8">
-          <div className="flex flex-wrap items-center gap-2">
+        {/* Twitch-style stage: video + info on the left, full-height chat rail
+            on the right. On mobile: video → title → chat → members. */}
+        <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px] lg:grid-rows-[auto_1fr] lg:items-start">
+          {/* Video + title bar */}
+          <div className="order-1 min-w-0 lg:col-start-1 lg:row-start-1">
             {isClosed ? (
-              <span className="rounded bg-surface-2 px-2 py-0.5 text-xs font-bold text-muted">Closed</span>
+              <div className="flex aspect-video items-center justify-center rounded-xl border border-line bg-black px-6 text-center">
+                <div>
+                  <p className="text-sm font-bold text-white/80">This room has been closed by the host.</p>
+                  <Link href="/rooms" className="mt-3 inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-bold text-white no-underline">
+                    Find another room
+                  </Link>
+                </div>
+              </div>
             ) : (
-              <span className="live-badge">● Live</span>
+              <section className="relative">
+                {/* Anyone can peek (muted preview); members get sound. Paid
+                    highlighted messages pop over it as tier-specific alerts. */}
+                <RoomVideo roomId={room.id} canWatch={isMember || isHost} />
+                <StreamAlerts roomId={room.id} />
+              </section>
             )}
-            <span className="rounded bg-surface-2 px-2 py-0.5 text-xs text-muted">
-              <RoomMemberCount roomId={room.id} initial={members.length} />
-            </span>
-            {nation && (
-              <Link href={`/nation/${nation.slug}`} className="rounded border border-line bg-surface-2 px-2 py-0.5 text-xs text-accent-soft no-underline">
-                {nation.flag} {nation.name}
-              </Link>
-            )}
-          </div>
-          <h1 className="display mt-4 text-3xl sm:text-4xl">{room.title}</h1>
-          <div className="mt-3 space-y-1 text-sm text-muted">
-            {room.match && <p><span className="font-semibold text-white">Match:</span> {room.match}</p>}
-            <p><span className="font-semibold text-white">Host:</span> {room.host?.display_name ?? "a creator"}</p>
-            {room.language && <p><span className="font-semibold text-white">Language:</span> {room.language}</p>}
-          </div>
-          {isClosed && (
-            <p className="mt-4 rounded-lg border border-line bg-surface-2 px-4 py-2 text-sm text-muted">
-              This room has been closed by the host.
-            </p>
-          )}
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            <JoinRoomButton roomId={room.id} isMember={isMember} isLoggedIn={!!user} isClosed={isClosed} />
-            <span className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs text-red-200">
-              Reactions &amp; commentary only — no match footage.
-            </span>
-          </div>
-          {isHost && (
-            <div className="mt-4">
-              <RoomHostControls roomId={room.id} status={room.status} />
-            </div>
-          )}
-        </section>
 
-        {/* Live video (host broadcasts, members watch). Paid highlighted
-            messages pop over it as tier-specific alerts. */}
-        {!isClosed && (
-          <section className="relative mt-6">
-            <RoomVideo roomId={room.id} canWatch={isMember || isHost} />
-            <StreamAlerts roomId={room.id} />
-          </section>
-        )}
+            {/* Title bar under the player (Twitch pattern) */}
+            <section className="mt-4 rounded-xl border border-line bg-surface p-4 sm:p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex min-w-0 items-start gap-3">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent/20 text-base font-bold text-accent-soft ring-2 ring-accent/30">
+                    {hostName.slice(0, 1).toUpperCase()}
+                  </span>
+                  <div className="min-w-0">
+                    <h1 className="display truncate text-xl sm:text-2xl">{room.title}</h1>
+                    <p className="mt-0.5 truncate text-sm text-muted">
+                      <span className="font-semibold text-ink-foreground">{hostName}</span>
+                      {room.match && <> · {room.match}</>}
+                    </p>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      {isClosed ? (
+                        <span className="rounded bg-surface-2 px-2 py-0.5 text-xs font-bold text-muted">Closed</span>
+                      ) : (
+                        <span className="rounded bg-online/15 px-2 py-0.5 text-xs font-bold text-online">● Open</span>
+                      )}
+                      <span className="rounded bg-surface-2 px-2 py-0.5 text-xs text-muted">
+                        <RoomMemberCount roomId={room.id} initial={members.length} />
+                      </span>
+                      {nation && (
+                        <Link href={`/nation/${nation.slug}`} className="rounded border border-line bg-surface-2 px-2 py-0.5 text-xs text-accent-soft no-underline">
+                          {nation.flag} {nation.name}
+                        </Link>
+                      )}
+                      {room.language && (
+                        <span className="rounded bg-surface-2 px-2 py-0.5 text-xs text-muted">{room.language}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
 
-        {/* Chat + members */}
-        <div className="mt-6 grid gap-6 lg:grid-cols-[2fr_1fr]">
-          <section className="order-2 rounded-xl border border-line bg-panel  lg:order-1">
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  <ShareRoomButton title={room.title} />
+                  <JoinRoomButton roomId={room.id} isMember={isMember} isLoggedIn={!!user} isClosed={isClosed} />
+                </div>
+              </div>
+
+              <p className="mt-3 inline-flex rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs text-red-200">
+                Reactions &amp; commentary only — no match footage.
+              </p>
+
+              {isHost && (
+                <div className="mt-3">
+                  <RoomHostControls roomId={room.id} status={room.status} />
+                </div>
+              )}
+            </section>
+          </div>
+
+          {/* Chat rail — sticky and full height on desktop */}
+          <section className="order-2 flex h-[70vh] min-h-[480px] flex-col overflow-hidden rounded-xl border border-line bg-panel lg:sticky lg:top-[4.25rem] lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:h-[calc(100vh-5.5rem)]">
             <RoomChat
               roomId={room.id}
               initial={initialChat}
               currentUserId={user?.id ?? null}
+              hostId={room.host_id}
               canPost={isMember && !isClosed}
               closed={isClosed}
               paymentsEnabled={paymentsEnabled}
@@ -163,7 +212,8 @@ export default async function RoomDetailPage({
             />
           </section>
 
-          <section className="order-1 rounded-xl border border-line bg-panel p-6  lg:order-2">
+          {/* Members */}
+          <section className="order-3 rounded-xl border border-line bg-panel p-5 lg:col-start-1 lg:row-start-2">
             <RoomMembers
               roomId={room.id}
               hostId={room.host_id}

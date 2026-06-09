@@ -25,3 +25,5 @@ export * from "./StreamAlerts";
 export * from "./ConnectPayouts";
 export * from "./RoomGiftsProvider";
 export * from "./GiftDrawer";
+export * from "./PaymentNotice";
+export * from "./ShareRoomButton";

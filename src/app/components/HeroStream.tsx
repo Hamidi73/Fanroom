@@ -62,7 +62,7 @@ export function HeroStream({ room }: { room: LeaderRoom | null }) {
           <span className="rounded bg-black/60 px-1.5 py-0.5 text-[11px] font-bold text-white/80">Top room</span>
         )}
         <span className="rounded bg-black/60 px-1.5 py-0.5 text-[11px] font-semibold text-white">
-          {room.count} {room.count === 1 ? "watching" : "watching"}
+          {room.count} watching
         </span>
       </div>
 

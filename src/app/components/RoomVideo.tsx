@@ -2,9 +2,12 @@
 
 // Host-only live video for a room, powered by LiveKit.
 //   - The host sees camera/mic controls and broadcasts.
-//   - Members watch the host's stream.
-//   - Everyone else is prompted to join.
-// Gracefully shows a message if LiveKit isn't configured or the user can't watch.
+//   - Members watch the host's stream with audio.
+//   - Everyone else (logged-out or not yet joined) gets a MUTED preview — the
+//     Twitch pattern: anyone can peek at the stream, joining unlocks audio and
+//     chat. Uses the same subscribe-only preview tokens as the landing page.
+// A LIVE pill sits on the video whenever the host's camera is actually on.
+// Gracefully shows a message if LiveKit isn't configured.
 
 import { useEffect, useState } from "react";
 import "@livekit/components-styles";
@@ -36,12 +39,13 @@ function Placeholder({ text }: { text: string }) {
   );
 }
 
-function Stage({ canPublish }: { canPublish: boolean }) {
+function Stage({ canPublish, preview }: { canPublish: boolean; preview: boolean }) {
   const tracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: false }]);
+  const live = tracks.length > 0;
   return (
     <>
       <div className="relative aspect-video bg-black">
-        {tracks.length > 0 ? (
+        {live ? (
           <GridLayout tracks={tracks}>
             <ParticipantTile />
           </GridLayout>
@@ -52,6 +56,15 @@ function Stage({ canPublish }: { canPublish: boolean }) {
               : "Waiting for the host to start their camera…"}
           </div>
         )}
+
+        {live && (
+          <span className="live-badge absolute left-3 top-3 z-10">● LIVE</span>
+        )}
+        {live && preview && (
+          <span className="absolute bottom-3 left-3 z-10 rounded bg-black/70 px-2 py-1 text-[11px] font-semibold text-white/90">
+            🔇 Muted preview — join the room for sound
+          </span>
+        )}
       </div>
       {canPublish && (
         <ControlBar
@@ -59,32 +72,38 @@ function Stage({ canPublish }: { canPublish: boolean }) {
           controls={{ camera: true, microphone: true, screenShare: false, chat: false, leave: false }}
         />
       )}
-      <RoomAudioRenderer />
+      {!preview && <RoomAudioRenderer />}
     </>
   );
 }
 
 export function RoomVideo({ roomId, canWatch }: { roomId: string; canWatch: boolean }) {
   const [state, setState] = useState<
-    | { kind: "idle" }
     | { kind: "loading" }
     | { kind: "error"; message: string }
-    | { kind: "ready"; token: string; url: string; canPublish: boolean }
-  >({ kind: canWatch ? "loading" : "idle" });
+    | { kind: "ready"; token: string; url: string; canPublish: boolean; preview: boolean }
+  >({ kind: "loading" });
 
   useEffect(() => {
-    if (!canWatch) return;
     let active = true;
     (async () => {
       try {
-        const res = await fetch(`/api/livekit/token?roomId=${roomId}`);
+        // Members/hosts get a full token; everyone else a muted preview token.
+        const qs = canWatch ? `roomId=${roomId}` : `roomId=${roomId}&preview=1`;
+        const res = await fetch(`/api/livekit/token?${qs}`);
         const data = await res.json();
         if (!active) return;
         if (!res.ok) {
           setState({ kind: "error", message: data.error ?? "Video unavailable." });
           return;
         }
-        setState({ kind: "ready", token: data.token, url: data.url, canPublish: data.canPublish });
+        setState({
+          kind: "ready",
+          token: data.token,
+          url: data.url,
+          canPublish: data.canPublish,
+          preview: !canWatch,
+        });
       } catch {
         if (active) setState({ kind: "error", message: "Could not connect to video." });
       }
@@ -94,15 +113,13 @@ export function RoomVideo({ roomId, canWatch }: { roomId: string; canWatch: bool
     };
   }, [roomId, canWatch]);
 
-  if (!canWatch) return <Placeholder text="Join the room to watch the live stream." />;
   if (state.kind === "loading") return <Placeholder text="Connecting to live video…" />;
   if (state.kind === "error") return <Placeholder text={state.message} />;
-  if (state.kind !== "ready") return <Placeholder text="Video unavailable." />;
 
   return (
     <Frame>
       <LiveKitRoom token={state.token} serverUrl={state.url} connect video={false} audio={false}>
-        <Stage canPublish={state.canPublish} />
+        <Stage canPublish={state.canPublish} preview={state.preview} />
       </LiveKitRoom>
     </Frame>
   );

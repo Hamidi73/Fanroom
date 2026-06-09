@@ -24,6 +24,16 @@ export default async function RoomsPage({
     .order("created_at", { ascending: false });
   let rooms = (data ?? []) as unknown as RoomCardData[];
 
+  // Twitch-style ordering: open rooms first, busiest first; closed rooms sink.
+  const memberCount = (r: RoomCardData) => r.members?.[0]?.count ?? 0;
+  rooms = rooms
+    .slice()
+    .sort(
+      (a, b) =>
+        Number(a.status === "Closed") - Number(b.status === "Closed") ||
+        memberCount(b) - memberCount(a),
+    );
+
   if (term) {
     rooms = rooms.filter((r) =>
       [r.title, r.match, r.host?.display_name, r.nation_slug]

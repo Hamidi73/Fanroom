@@ -49,7 +49,11 @@ export function HomeClient({ fixtures, rooms = [] }: { fixtures: Fixture[]; room
   const [language, setLanguage] = useState<Language>("English");
   const t = getTranslations(language);
   const hasRooms = rooms.length > 0;
-  const featured = rooms.slice(0, 8);
+  // Busiest rooms first — same ordering a viewer expects from a live platform.
+  const featured = rooms
+    .slice()
+    .sort((a, b) => (b.members?.[0]?.count ?? 0) - (a.members?.[0]?.count ?? 0))
+    .slice(0, 8);
 
   const leaderboard: LeaderRoom[] = rooms
     .map((r) => ({

@@ -50,7 +50,7 @@ export function GiftDrawer({
     return (
       <Link
         href="/login"
-        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-2xl shadow-lg shadow-accent/30 transition hover:bg-accent-strong"
+        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-2xl shadow-lg shadow-accent/30 transition hover:bg-accent-strong lg:left-5 lg:right-auto"
         aria-label="Log in to send gifts"
       >
         🎁
@@ -71,16 +71,18 @@ export function GiftDrawer({
 
   return (
     <>
+      {/* Desktop: bottom-LEFT so it never covers the chat composer in the
+          right-hand rail; mobile keeps the familiar bottom-right spot. */}
       <button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-2xl shadow-lg shadow-accent/30 transition hover:scale-105 hover:bg-accent-strong"
+        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-2xl shadow-lg shadow-accent/30 transition hover:scale-105 hover:bg-accent-strong lg:left-5 lg:right-auto"
         aria-label="Send a gift"
       >
         🎁
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-[55] flex items-end justify-center sm:justify-end" onClick={() => setOpen(false)}>
+        <div className="fixed inset-0 z-[55] flex items-end justify-center sm:justify-end lg:justify-start" onClick={() => setOpen(false)}>
           <div
             className="flex max-h-[80vh] w-full max-w-md flex-col rounded-t-2xl border border-line bg-ink-deep shadow-2xl sm:m-4 sm:rounded-2xl"
             onClick={(e) => e.stopPropagation()}

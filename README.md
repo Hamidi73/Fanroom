@@ -61,7 +61,9 @@ src/
     profile/           Signed-in user's account page (edit name, password, rooms)
     rooms/             Rooms list
     rooms/new/         Create-a-room form (requires login)
-    rooms/[id]/        A room: join/leave + realtime chat + host-only live video
+    rooms/[id]/        A room: Twitch-style stage (video + side chat), join/leave,
+                       realtime chat, host-only live video (non-members get a
+                       muted preview; joining unlocks audio + chat)
     api/livekit/token  Mints LiveKit tokens (host=publish, members=watch)
     admin/             Admin-only (login-gated). page.tsx = LIVE stats dashboard
     admin/manage/      Delete accounts; close/delete any room
@@ -129,9 +131,12 @@ users get a profile auto-created (their Google name becomes the display name).
 
 ### Live video (LiveKit)
 
-Each room has host-only video: the host broadcasts their camera, members watch.
-`/api/livekit/token` checks (via Supabase) whether the requester is the host
-(publish) or a member (watch) and mints a scoped LiveKit token; the API secret
+Each room has host-only video: the host broadcasts their camera, members watch
+with sound. Everyone else — including logged-out visitors — sees a **muted
+preview** of the stream (the Twitch pattern: watch freely, join to unlock audio
+and chat). `/api/livekit/token` checks (via Supabase) whether the requester is
+the host (publish) or a member (watch+audio) and mints a scoped LiveKit token;
+anonymous preview tokens are subscribe-only and rate-limited. The API secret
 never reaches the browser.
 
 ### Paid highlighted messages (Stripe + crypto)
