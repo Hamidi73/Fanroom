@@ -161,6 +161,22 @@ const UNIVERSAL_GIFTS: Gift[] = [
   { id: "flag-wave", name: "Flag Wave", icon: "🚩", rarity: "common", priceRoars: 19, pack: "reactions", celebration: "rise", sound: "whoosh", color: "#3ea6ff" },
   { id: "drumbeat", name: "Drumbeat", icon: "🥁", rarity: "common", priceRoars: 29, pack: "reactions", celebration: "pop", sound: "drum", color: "#c98a2b" },
   { id: "flare", name: "Flare", icon: "🔴", rarity: "common", priceRoars: 49, pack: "reactions", celebration: "rise", sound: "whoosh", color: "#ff4d4d" },
+  // More celebration reactions — cheap, spammable, goal-moment energy
+  { id: "thumbs-up", name: "Respect", icon: "👍", rarity: "common", priceRoars: 5, pack: "reactions", celebration: "pop", sound: "pop", color: "#9aa0a6" },
+  { id: "hearts", name: "Love It", icon: "❤️", rarity: "common", priceRoars: 8, pack: "reactions", celebration: "rise", sound: "sparkle", color: "#ff4d6d" },
+  { id: "star", name: "Star", icon: "⭐", rarity: "common", priceRoars: 10, pack: "reactions", celebration: "pop", sound: "sparkle", color: "#ffd23f" },
+  { id: "fire", name: "On Fire", icon: "🔥", rarity: "common", priceRoars: 12, pack: "reactions", celebration: "rise", sound: "whoosh", color: "#ff6b3d" },
+  { id: "goal", name: "GOAL!", icon: "⚽", rarity: "common", priceRoars: 15, pack: "reactions", celebration: "pop", sound: "cheer", color: "#ffffff" },
+  { id: "raise-roof", name: "Raise the Roof", icon: "🙌", rarity: "common", priceRoars: 14, pack: "reactions", celebration: "pop", sound: "cheer", color: "#ffb020" },
+  { id: "muscle", name: "Let's Go", icon: "💪", rarity: "common", priceRoars: 16, pack: "reactions", celebration: "charge", sound: "drum", color: "#3ea6ff" },
+  { id: "cheers", name: "Cheers", icon: "🍻", rarity: "common", priceRoars: 18, pack: "reactions", celebration: "pop", sound: "pop", color: "#ffb020" },
+  { id: "party-popper", name: "Party Popper", icon: "🎊", rarity: "common", priceRoars: 19, pack: "reactions", celebration: "pop", sound: "cheer", color: "#b36bff" },
+  { id: "sparkler", name: "Sparkler", icon: "✨", rarity: "common", priceRoars: 20, pack: "reactions", celebration: "spin-jump", sound: "sparkle", color: "#ffe27a" },
+  { id: "mic-drop", name: "Mic Drop", icon: "🎤", rarity: "common", priceRoars: 22, pack: "reactions", celebration: "knee-slide", sound: "drum", color: "#e85d75" },
+  { id: "goat", name: "The GOAT", icon: "🐐", rarity: "common", priceRoars: 25, pack: "reactions", celebration: "spin-jump", sound: "sparkle", color: "#ffd23f" },
+  { id: "dancing", name: "Dance Off", icon: "🕺", rarity: "common", priceRoars: 28, pack: "reactions", celebration: "dance", sound: "drum", color: "#b36bff" },
+  { id: "crown", name: "Crown", icon: "👑", rarity: "common", priceRoars: 35, pack: "reactions", celebration: "rise", sound: "sparkle", color: "#ffd23f" },
+  { id: "rocket", name: "To the Moon", icon: "🚀", rarity: "common", priceRoars: 45, pack: "reactions", celebration: "rise", sound: "whoosh", color: "#3ea6ff" },
 
   // Rare (75–499) — the expressive workhorses
   { id: "scarf-throw", name: "Scarf Throw", icon: "🧣", rarity: "rare", priceRoars: 99, pack: "atmosphere", celebration: "rise", sound: "whoosh", color: "#3ea6ff" },

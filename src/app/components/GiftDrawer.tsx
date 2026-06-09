@@ -6,7 +6,7 @@
 // streaming-app pattern (TikTok/Bigo). The room's own nation legend is pinned
 // in a "Featured" tab so its fans see their gift first.
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import {
   activePacks,
@@ -38,6 +38,9 @@ export function GiftDrawer({
   const [mult, setMult] = useState<(typeof MULTIPLIERS)[number]>(1);
   const featured = featuredGiftForNation(nationSlug);
   const [tab, setTab] = useState<GiftPackId | "featured">(featured ? "featured" : "reactions");
+
+  const tabStripRef = useRef<HTMLDivElement>(null);
+  const scrollTabs = (dir: number) => tabStripRef.current?.scrollBy({ left: dir * 160, behavior: "smooth" });
 
   const { balance, canAfford, sendGift, openStore, muted, toggleMuted } = useRoomGifts();
 
@@ -99,20 +102,39 @@ export function GiftDrawer({
               </div>
             </div>
 
-            {/* Pack tabs */}
-            <div className="flex gap-1 overflow-x-auto border-b border-line px-2 py-2 [scrollbar-width:none]">
-              {tabs.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setTab(t.id)}
-                  className={`flex shrink-0 items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
-                    tab === t.id ? "bg-accent text-white" : "text-muted hover:bg-surface-2 hover:text-ink-foreground"
-                  }`}
-                >
-                  <span>{t.icon}</span>
-                  {t.label}
-                </button>
-              ))}
+            {/* Pack tabs with scroll controls */}
+            <div className="flex items-center gap-1 border-b border-line px-1.5 py-2">
+              <button
+                onClick={() => scrollTabs(-1)}
+                aria-label="Scroll packs left"
+                className="flex h-7 w-6 shrink-0 items-center justify-center rounded-md text-muted transition hover:bg-surface-2 hover:text-ink-foreground"
+              >
+                <Chevron dir="left" />
+              </button>
+              <div
+                ref={tabStripRef}
+                className="flex flex-1 gap-1 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              >
+                {tabs.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setTab(t.id)}
+                    className={`flex shrink-0 items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
+                      tab === t.id ? "bg-accent text-white" : "text-muted hover:bg-surface-2 hover:text-ink-foreground"
+                    }`}
+                  >
+                    <span>{t.icon}</span>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => scrollTabs(1)}
+                aria-label="Scroll packs right"
+                className="flex h-7 w-6 shrink-0 items-center justify-center rounded-md text-muted transition hover:bg-surface-2 hover:text-ink-foreground"
+              >
+                <Chevron dir="right" />
+              </button>
             </div>
 
             {/* Gift grid */}
@@ -160,5 +182,20 @@ export function GiftDrawer({
         </div>
       )}
     </>
+  );
+}
+
+function Chevron({ dir }: { dir: "left" | "right" }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+      className={dir === "left" ? "rotate-180" : ""}
+    >
+      <path d="m6 4 4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
