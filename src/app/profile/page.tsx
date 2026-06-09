@@ -6,10 +6,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppHeader, SiteFooter, ConnectPayouts } from "@/app/components";
-import { getConnectInfo, PLATFORM_FEE_BPS } from "@/lib/connect";
+import { getConnectInfo } from "@/lib/connect";
 import { ProfileForm } from "./ProfileForm";
-
-const HOST_SHARE_PCT = 100 - PLATFORM_FEE_BPS / 100;
 
 export const metadata: Metadata = { title: "Your profile | FanRoom Global" };
 export const dynamic = "force-dynamic";
@@ -98,9 +96,8 @@ export default async function ProfilePage({
           <section className="mt-6 rounded-xl border border-line bg-panel p-6 sm:p-8">
             <h2 className="display text-xl">Creator payouts</h2>
             <p className="mt-1 text-sm text-muted">
-              Connect a Stripe account to earn from paid highlights in rooms you host. You keep{" "}
-              <span className="font-semibold text-white">{HOST_SHARE_PCT}%</span> of every highlight;
-              Stripe pays it out to your bank.
+              Connect a Stripe account to earn from paid highlights in rooms you host. Stripe pays
+              your earnings out to your bank.
             </p>
 
             {payouts === "connected" && (

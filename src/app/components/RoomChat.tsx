@@ -226,13 +226,22 @@ export function RoomChat({
                         {payBusy ? "Starting…" : "Pay with card"}
                       </button>
                     )}
-                    {cryptoEnabled && (
+                    {cryptoEnabled ? (
                       <button
                         onClick={() => startCheckout("crypto")}
                         disabled={payBusy}
                         className="flex-1 rounded-lg border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-ink-foreground transition hover:bg-surface-2 disabled:opacity-60"
                       >
                         {payBusy ? "Starting…" : "Pay with crypto"}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled
+                        title="Crypto payments are coming soon"
+                        className="flex-1 cursor-not-allowed rounded-lg border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-muted opacity-70"
+                      >
+                        Crypto · coming soon
                       </button>
                     )}
                   </div>
