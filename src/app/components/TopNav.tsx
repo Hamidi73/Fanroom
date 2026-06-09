@@ -29,9 +29,6 @@ export function TopNav({ rightSlot }: { rightSlot?: ReactNode }) {
           <Link href="/rooms" className="text-sm font-semibold text-muted no-underline transition hover:text-ink-foreground">
             Browse
           </Link>
-          <Link href="/#nations" className="text-sm font-semibold text-muted no-underline transition hover:text-ink-foreground">
-            Nations
-          </Link>
         </nav>
       </div>
 

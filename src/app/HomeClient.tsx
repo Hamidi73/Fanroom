@@ -9,7 +9,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  getAllNations,
   getNation,
   getTranslations,
   languages,
@@ -19,7 +18,6 @@ import {
 import {
   AppShell,
   SiteFooter,
-  NationCard,
   RoomCard,
   RoomLeaderboard,
   HeroStream,
@@ -28,8 +26,6 @@ import {
   type RoomCardData,
   type LeaderRoom,
 } from "@/app/components";
-
-const nations = getAllNations();
 
 // Nations used for the "be the first" placeholders before real rooms exist.
 const PLACEHOLDER_NATIONS = ["brazil", "argentina", "france", "morocco", "england", "spain", "portugal", "usa"]
@@ -201,7 +197,7 @@ export function HomeClient({ fixtures, rooms = [] }: { fixtures: Fixture[]; room
 
         {/* Upcoming matches */}
         <div className="mt-10">
-          <SectionHeader title="Upcoming matches" href="/#nations" cta="Browse nations" />
+          <SectionHeader title="Upcoming matches" />
           {fixtures.length === 0 ? (
             <div className="rounded-lg border border-line bg-surface p-8 text-center text-sm text-muted">
               No fixtures available from the schedule right now — they&apos;ll appear as matches are confirmed.
@@ -213,16 +209,6 @@ export function HomeClient({ fixtures, rooms = [] }: { fixtures: Fixture[]; room
               ))}
             </div>
           )}
-        </div>
-
-        {/* Nations */}
-        <div id="nations" className="mt-10 scroll-mt-20">
-          <SectionHeader title="Browse by nation" />
-          <div className="grid grid-cols-3 gap-x-4 gap-y-5 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
-            {nations.map((nation) => (
-              <NationCard key={nation.slug} nation={nation} />
-            ))}
-          </div>
         </div>
 
         {/* Apply */}

@@ -124,3 +124,81 @@ export function getNation(slug: string): Nation | undefined {
 export function getAllNations(): Nation[] {
   return nations;
 }
+
+// ─── CONTINENTS ───────────────────────────────────────────────────────────────
+// Used to group the nations in the sidebar into collapsible sections.
+
+export const CONTINENTS = [
+  "Africa",
+  "Asia",
+  "Europe",
+  "North America",
+  "Oceania",
+  "South America",
+] as const;
+
+export type Continent = (typeof CONTINENTS)[number];
+
+// Which continent each nation belongs to (by slug). Australia is grouped under
+// Oceania geographically even though it competes in the Asian confederation.
+const continentBySlug: Record<string, Continent> = {
+  algeria: "Africa",
+  "cabo-verde": "Africa",
+  "congo-dr": "Africa",
+  "côte-d'ivoire": "Africa",
+  egypt: "Africa",
+  ghana: "Africa",
+  morocco: "Africa",
+  senegal: "Africa",
+  "south-africa": "Africa",
+  tunisia: "Africa",
+  "ir-iran": "Asia",
+  iraq: "Asia",
+  japan: "Asia",
+  jordan: "Asia",
+  "korea-republic": "Asia",
+  qatar: "Asia",
+  "saudi-arabia": "Asia",
+  uzbekistan: "Asia",
+  austria: "Europe",
+  belgium: "Europe",
+  "bosnia-and-herzegovina": "Europe",
+  croatia: "Europe",
+  czechia: "Europe",
+  england: "Europe",
+  france: "Europe",
+  germany: "Europe",
+  netherlands: "Europe",
+  norway: "Europe",
+  portugal: "Europe",
+  scotland: "Europe",
+  spain: "Europe",
+  sweden: "Europe",
+  switzerland: "Europe",
+  türkiye: "Europe",
+  canada: "North America",
+  curaçao: "North America",
+  haiti: "North America",
+  mexico: "North America",
+  panama: "North America",
+  usa: "North America",
+  australia: "Oceania",
+  "new-zealand": "Oceania",
+  argentina: "South America",
+  brazil: "South America",
+  colombia: "South America",
+  ecuador: "South America",
+  paraguay: "South America",
+  uruguay: "South America",
+};
+
+/**
+ * Nations grouped by continent (each group alphabetical by name, groups in the
+ * CONTINENTS order). Empty groups are dropped. Used by the sidebar dropdowns.
+ */
+export function getNationsByContinent(): { continent: Continent; nations: Nation[] }[] {
+  return CONTINENTS.map((continent) => ({
+    continent,
+    nations: nations.filter((n) => continentBySlug[n.slug] === continent),
+  })).filter((group) => group.nations.length > 0);
+}
