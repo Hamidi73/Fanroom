@@ -35,7 +35,7 @@ export async function GET(request: Request) {
   //    login or membership needed; can never publish or send data. ──
   if (preview) {
     // Throttle anonymous preview-token minting (curbs LiveKit-minute abuse).
-    const rl = rateLimit(`preview:${clientIp(request)}`, 60, 60_000);
+    const rl = await rateLimit(`preview:${clientIp(request)}`, 60, 60_000);
     if (!rl.ok) {
       return NextResponse.json(
         { error: "Too many requests." },

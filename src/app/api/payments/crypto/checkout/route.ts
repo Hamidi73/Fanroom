@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Crypto payments are not configured." }, { status: 503 });
   }
 
-  const rl = rateLimit(`checkout:${clientIp(request)}`, 15, 60_000);
+  const rl = await rateLimit(`checkout:${clientIp(request)}`, 15, 60_000);
   if (!rl.ok) {
     return NextResponse.json(
       { error: "Too many requests." },

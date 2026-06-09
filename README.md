@@ -169,6 +169,18 @@ COINBASE_COMMERCE_WEBHOOK_SECRET=   # Coinbase Commerce → Settings → Webhook
   event `charge:confirmed`.
 - Test cards: use `4242 4242 4242 4242` (any future date / CVC) in Stripe test mode.
 
+### Redis (rate limiting / caching)
+
+Set `REDIS_URL` to enable real, distributed rate limiting (preview-token + payment
+checkout endpoints). Any standard Redis works through this one variable — Upstash
+(`rediss://…`), DigitalOcean Managed Redis, or a droplet. Unset = best-effort
+in-memory limiting (per serverless instance). See `src/lib/redis.ts`.
+
+### Handing the backend to DigitalOcean
+
+The backend is built to be swappable by env var (Redis, LiveKit, Supabase). See
+**[MIGRATION.md](MIGRATION.md)** for the full DO handoff playbook.
+
 ### Config (optional env vars)
 
 ```
