@@ -134,6 +134,41 @@ Each room has host-only video: the host broadcasts their camera, members watch.
 (publish) or a member (watch) and mints a scoped LiveKit token; the API secret
 never reaches the browser.
 
+### Paid highlighted messages (Stripe + crypto)
+
+Members can pay a preset tier (Spotlight $2 / Featured $5 / Headliner $10) to
+post a **highlighted** chat message — Twitch Hype-Chat style. Flow:
+
+1. The pay button calls `/api/payments/{stripe|crypto}/checkout`, which validates
+   the user is a member of an open room, records a **pending** row in `donations`,
+   and starts a hosted checkout (Stripe Checkout or a Coinbase Commerce charge).
+   **The amount comes only from the server-side tier list (`src/lib/tiers.ts`)** —
+   the client sends a tier id, never a price.
+2. On payment, the provider calls the matching **webhook**
+   (`/api/payments/{stripe|crypto}/webhook`), which verifies the signature and
+   calls `fulfillDonation()` — this posts the message with `highlight = true`
+   using the **service role** (idempotent, so duplicate webhooks are safe).
+3. RLS forbids normal members from setting `highlight` themselves
+   (`Members can post messages` requires `highlight = false`), so highlights can
+   *only* be created by a verified payment.
+
+Turn it on by setting the env vars below. Without them, the feature stays hidden
+and the rest of the app is unaffected.
+
+```
+SUPABASE_SERVICE_ROLE_KEY=          # Supabase → Project Settings → API
+STRIPE_SECRET_KEY=sk_test_...       # Stripe → Developers → API keys (test mode)
+STRIPE_WEBHOOK_SECRET=whsec_...     # Stripe → Developers → Webhooks → your endpoint
+COINBASE_COMMERCE_API_KEY=          # Coinbase Commerce → Settings → API keys
+COINBASE_COMMERCE_WEBHOOK_SECRET=   # Coinbase Commerce → Settings → Webhook subscriptions
+```
+
+- **Stripe webhook endpoint:** `https://<your-domain>/api/payments/stripe/webhook`,
+  event `checkout.session.completed`.
+- **Coinbase webhook endpoint:** `https://<your-domain>/api/payments/crypto/webhook`,
+  event `charge:confirmed`.
+- Test cards: use `4242 4242 4242 4242` (any future date / CVC) in Stripe test mode.
+
 ### Config (optional env vars)
 
 ```

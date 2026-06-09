@@ -25,6 +25,9 @@ export type MessageRow = {
   body: string;
   created_at: string;
   user_id: string;
+  highlight: boolean;
+  amount_cents: number;
+  tier: string | null;
   profiles: ProfileRef;
 };
 
@@ -35,4 +38,7 @@ export type ChatLine = {
   created_at: string;
   user_id: string;
   name: string;
+  highlight: boolean;
+  amountCents: number;
+  tier: string | null;
 };

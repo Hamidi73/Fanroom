@@ -9,10 +9,13 @@ export const metadata: Metadata = { title: "Fan room | FanRoom Global" };
 
 export default async function RoomDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ paid?: string; canceled?: string }>;
 }) {
   const { id } = await params;
+  const { paid, canceled } = await searchParams;
   const supabase = await createClient();
 
   const { data: roomData } = await supabase
@@ -42,10 +45,13 @@ export default async function RoomDetailPage({
     supabase.from("room_members").select("user_id,profiles(display_name)").eq("room_id", id),
     supabase
       .from("messages")
-      .select("id,body,created_at,user_id,profiles(display_name)")
+      .select("id,body,created_at,user_id,highlight,amount_cents,tier,profiles(display_name)")
       .eq("room_id", id)
       .order("created_at", { ascending: true }),
   ]);
+
+  const paymentsEnabled = !!process.env.STRIPE_SECRET_KEY;
+  const cryptoEnabled = !!process.env.COINBASE_COMMERCE_API_KEY;
 
   const user = userData.user;
   const members = (memberData ?? []) as unknown as MemberRow[];
@@ -61,6 +67,9 @@ export default async function RoomDetailPage({
     created_at: m.created_at,
     user_id: m.user_id,
     name: m.profiles?.display_name ?? "Fan",
+    highlight: m.highlight ?? false,
+    amountCents: m.amount_cents ?? 0,
+    tier: m.tier ?? null,
   }));
 
   return (
@@ -68,6 +77,17 @@ export default async function RoomDetailPage({
       <AppHeader />
       <div className="mx-auto max-w-5xl px-5 py-10 sm:px-6">
         <Link href="/rooms" className="text-sm text-muted hover:text-ink-foreground">← All rooms</Link>
+
+        {paid && (
+          <p className="mt-4 rounded-lg border border-accent/40 bg-accent/10 px-4 py-2.5 text-sm text-accent-soft">
+            ✦ Payment received — your highlighted message will appear in chat momentarily.
+          </p>
+        )}
+        {canceled && (
+          <p className="mt-4 rounded-lg border border-line bg-surface px-4 py-2.5 text-sm text-muted">
+            Checkout canceled — no charge was made.
+          </p>
+        )}
 
         {/* Hero */}
         <section className="mt-4 rounded-xl border border-line bg-surface p-6  sm:p-8">
@@ -124,6 +144,8 @@ export default async function RoomDetailPage({
               currentUserId={user?.id ?? null}
               canPost={isMember && !isClosed}
               closed={isClosed}
+              paymentsEnabled={paymentsEnabled}
+              cryptoEnabled={cryptoEnabled}
             />
           </section>
 
