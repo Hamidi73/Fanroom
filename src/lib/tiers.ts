@@ -21,7 +21,7 @@ export const TIERS: Tier[] = [
     amountCents: 200,
     ring: "border-accent/40 bg-accent/5",
     badge: "bg-accent/20 text-accent-soft",
-    alertDurationMs: 6000,
+    alertDurationMs: 12000,
   },
   {
     id: "featured",
@@ -29,7 +29,7 @@ export const TIERS: Tier[] = [
     amountCents: 500,
     ring: "border-accent/60 bg-accent/10",
     badge: "bg-accent/30 text-accent-soft",
-    alertDurationMs: 8500,
+    alertDurationMs: 20000,
   },
   {
     id: "headliner",
@@ -37,7 +37,7 @@ export const TIERS: Tier[] = [
     amountCents: 1000,
     ring: "border-accent bg-accent/15",
     badge: "bg-accent text-white",
-    alertDurationMs: 12000,
+    alertDurationMs: 30000,
   },
 ];
 
