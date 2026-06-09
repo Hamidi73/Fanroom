@@ -126,6 +126,23 @@
   0%, 100% { opacity: 0.25; transform: scale(0.7) rotate(0deg); }
   50%      { opacity: 1;    transform: scale(1.25) rotate(25deg); }
 }
+@keyframes fr-confetti-fall {
+  0%   { opacity: 0; transform: translateY(-14px) rotate(0deg); }
+  12%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(190px) rotate(540deg); }
+}
+
+/* Confetti pieces thrown when an alert appears (position/colour/timing set
+   inline per piece). Falls within the overlay column, behind the banner. */
+.fr-confetti {
+  position: absolute;
+  top: 0;
+  border-radius: 1px;
+  will-change: transform, opacity;
+  animation-name: fr-confetti-fall;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
 
 .stream-alert {
   position: relative;
@@ -190,5 +207,8 @@
   .stream-alert--featured::after,
   .stream-alert__sparkle {
     animation: none;
+  }
+  .fr-confetti {
+    display: none;
   }
 }

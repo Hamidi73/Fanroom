@@ -5,15 +5,31 @@
 //
 // Self-contained: it opens its OWN realtime subscription on this room's messages
 // (separate channel from RoomChat) and, when a highlighted message arrives, shows
-// a tier-specific animated banner over the video. Alerts play one at a time; if
-// several land at once they queue. Bigger tiers look bolder and linger longer
-// (durations come from src/lib/tiers.ts). Visual styles live in globals.css
-// (.stream-alert--{tier}). Read-only and decorative — pointer-events are off so
-// it never blocks the video controls.
+// a tier-specific animated banner over the video — with a confetti burst.
+//
+// Timing rules (requested):
+//   - A highlighted message waits PRE_DELAY (10s) before it appears on the feed.
+//   - Alerts play strictly one at a time: a message is shown in full, and only
+//     after it leaves do we wait another 10s before the next queued one appears.
+//
+// Bigger tiers look bolder, throw more confetti, and linger longer (durations
+// from src/lib/tiers.ts). Visual styles/animations live in globals.css
+// (.stream-alert--{tier}, .fr-confetti). Decorative + read-only (pointer-events
+// off) so it never blocks the video controls; respects prefers-reduced-motion.
 
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getTier, formatAmount } from "@/lib/tiers";
+
+type ConfettiPiece = {
+  id: number;
+  left: number; // %
+  delay: number; // s
+  duration: number; // s
+  color: string;
+  w: number; // px
+  h: number; // px
+};
 
 type AlertItem = {
   key: number; // message id — unique render key
@@ -22,6 +38,7 @@ type AlertItem = {
   amountCents: number;
   tier: string | null;
   leaving: boolean;
+  confetti: ConfettiPiece[];
 };
 
 type NewRow = {
@@ -34,13 +51,29 @@ type NewRow = {
 };
 
 // Per-tier presentation. Class strings are literal so Tailwind/our CSS keep them.
-const TIER_UI: Record<string, { cls: string; icon: string; sparkles: boolean }> = {
-  spotlight: { cls: "stream-alert--spotlight", icon: "✦", sparkles: false },
-  featured: { cls: "stream-alert--featured", icon: "★", sparkles: false },
-  headliner: { cls: "stream-alert--headliner", icon: "👑", sparkles: true },
+const TIER_UI: Record<string, { cls: string; icon: string; sparkles: boolean; confetti: number }> = {
+  spotlight: { cls: "stream-alert--spotlight", icon: "✦", sparkles: false, confetti: 14 },
+  featured: { cls: "stream-alert--featured", icon: "★", sparkles: false, confetti: 22 },
+  headliner: { cls: "stream-alert--headliner", icon: "👑", sparkles: true, confetti: 36 },
 };
 
+const CONFETTI_COLORS = ["#9147ff", "#bf94ff", "#e0a3ff", "#ffffff", "#ffd56b", "#5ce1e6"];
+
+const PRE_DELAY = 10000; // wait before an alert appears on the feed (and between alerts)
 const EXIT_MS = 450; // must match the fr-alert-out duration in globals.css
+
+function makeConfetti(tier: string | null): ConfettiPiece[] {
+  const count = TIER_UI[tier ?? ""]?.confetti ?? 14;
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    delay: Math.random() * 0.7,
+    duration: 1.8 + Math.random() * 1.6,
+    color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+    w: 5 + Math.random() * 4,
+    h: 8 + Math.random() * 6,
+  }));
+}
 
 export function StreamAlerts({ roomId }: { roomId: string }) {
   const [current, setCurrent] = useState<AlertItem | null>(null);
@@ -61,19 +94,24 @@ export function StreamAlerts({ roomId }: { roomId: string }) {
         return;
       }
       busyRef.current = true;
-      setCurrent({ ...next, leaving: false });
 
-      const duration = getTier(next.tier)?.alertDurationMs ?? 6000;
+      // Hold for PRE_DELAY before showing (initial delay + gap between alerts).
       timers.push(
         setTimeout(() => {
-          setCurrent((c) => (c ? { ...c, leaving: true } : c));
+          setCurrent({ ...next, leaving: false });
+          const duration = getTier(next.tier)?.alertDurationMs ?? 12000;
           timers.push(
             setTimeout(() => {
-              setCurrent(null);
-              playNext();
-            }, EXIT_MS),
+              setCurrent((c) => (c ? { ...c, leaving: true } : c));
+              timers.push(
+                setTimeout(() => {
+                  setCurrent(null);
+                  playNext();
+                }, EXIT_MS),
+              );
+            }, duration),
           );
-        }, duration),
+        }, PRE_DELAY),
       );
     };
 
@@ -100,6 +138,7 @@ export function StreamAlerts({ roomId }: { roomId: string }) {
             amountCents: row.amount_cents ?? 0,
             tier: row.tier ?? null,
             leaving: false,
+            confetti: makeConfetti(row.tier ?? null),
           });
           if (!busyRef.current) playNext();
         },
@@ -123,43 +162,64 @@ export function StreamAlerts({ roomId }: { roomId: string }) {
 
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center p-3 sm:p-4">
-      <div
-        key={current.key}
-        className={`stream-alert ${ui.cls} ${current.leaving ? "is-leaving" : ""} w-full max-w-md px-4 py-3`}
-      >
-        {ui.sparkles && (
-          <>
-            <span className="stream-alert__sparkle right-3 top-2" style={{ animationDelay: "0s" }}>
-              ✨
-            </span>
-            <span className="stream-alert__sparkle bottom-2 left-3" style={{ animationDelay: "0.7s" }}>
-              ✨
-            </span>
-          </>
+      <div className="relative w-full max-w-md">
+        {/* Confetti burst (rains over and past the banner; behind the card so
+            the text stays readable). Hidden while leaving. */}
+        {!current.leaving && (
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-52 overflow-visible">
+            {current.confetti.map((p) => (
+              <span
+                key={p.id}
+                className="fr-confetti"
+                style={{
+                  left: `${p.left}%`,
+                  width: `${p.w}px`,
+                  height: `${p.h}px`,
+                  background: p.color,
+                  animationDelay: `${p.delay}s`,
+                  animationDuration: `${p.duration}s`,
+                }}
+              />
+            ))}
+          </div>
         )}
-        <div className="relative flex items-center justify-between gap-2">
-          <span
-            className={`inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide ${
-              isHeadliner ? "text-white" : "text-accent-soft"
-            }`}
-          >
-            <span className="text-sm">{ui.icon}</span>
-            {tier?.label ?? "Highlight"}
-          </span>
-          <span
-            className={`rounded-md px-2 py-0.5 text-xs font-bold ${
-              isHeadliner ? "bg-white/25 text-white" : "bg-accent/25 text-accent-soft"
-            }`}
-          >
-            {formatAmount(current.amountCents)}
-          </span>
+
+        <div
+          key={current.key}
+          className={`stream-alert ${ui.cls} ${current.leaving ? "is-leaving" : ""} px-4 py-3`}
+        >
+          {ui.sparkles && (
+            <>
+              <span className="stream-alert__sparkle right-3 top-2" style={{ animationDelay: "0s" }}>
+                ✨
+              </span>
+              <span className="stream-alert__sparkle bottom-2 left-3" style={{ animationDelay: "0.7s" }}>
+                ✨
+              </span>
+            </>
+          )}
+          <div className="relative flex items-center justify-between gap-2">
+            <span
+              className={`inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide ${
+                isHeadliner ? "text-white" : "text-accent-soft"
+              }`}
+            >
+              <span className="text-sm">{ui.icon}</span>
+              {tier?.label ?? "Highlight"}
+            </span>
+            <span
+              className={`rounded-md px-2 py-0.5 text-xs font-bold ${
+                isHeadliner ? "bg-white/25 text-white" : "bg-accent/25 text-accent-soft"
+              }`}
+            >
+              {formatAmount(current.amountCents)}
+            </span>
+          </div>
+          <p className="relative mt-1 text-sm font-bold text-white">{current.name}</p>
+          <p className={`relative text-sm ${isHeadliner ? "text-white/95" : "text-ink-foreground/90"}`}>
+            {current.body}
+          </p>
         </div>
-        <p className={`relative mt-1 text-sm font-bold ${isHeadliner ? "text-white" : "text-white"}`}>
-          {current.name}
-        </p>
-        <p className={`relative text-sm ${isHeadliner ? "text-white/95" : "text-ink-foreground/90"}`}>
-          {current.body}
-        </p>
       </div>
     </div>
   );
