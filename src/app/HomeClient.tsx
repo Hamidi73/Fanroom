@@ -21,9 +21,11 @@ import {
   SiteFooter,
   NationCard,
   RoomCard,
+  RoomLeaderboard,
   FixtureCard,
   ApplyForm,
   type RoomCardData,
+  type LeaderRoom,
 } from "@/app/components";
 
 const nations = getAllNations();
@@ -50,6 +52,18 @@ export function HomeClient({ fixtures, rooms = [] }: { fixtures: Fixture[]; room
   const [language, setLanguage] = useState<Language>("English");
   const t = getTranslations(language);
   const hasRooms = rooms.length > 0;
+  const featured = rooms.slice(0, 8);
+
+  const leaderboard: LeaderRoom[] = rooms
+    .map((r) => ({
+      id: r.id,
+      title: r.title,
+      nationSlug: r.nation_slug,
+      hostName: r.host?.display_name ?? "a creator",
+      count: r.members?.[0]?.count ?? 0,
+    }))
+    .sort((a, b) => b.count - a.count || a.title.localeCompare(b.title))
+    .slice(0, 5);
 
   const languagePicker = (
     <select
@@ -96,22 +110,23 @@ export function HomeClient({ fixtures, rooms = [] }: { fixtures: Fixture[]; room
           </p>
         </section>
 
-        {/* Featured rooms — the product, one click away */}
-        <div className="mt-8">
+        {/* Featured rooms (the product, one click away) + live leaderboard rail */}
+        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_320px]">
+          <div className="min-w-0">
           <SectionHeader
             title={hasRooms ? "Live now" : "Rooms opening soon"}
             href={hasRooms ? "/rooms" : undefined}
             cta={hasRooms ? "See all" : undefined}
           />
           {hasRooms ? (
-            <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {rooms.map((room) => (
+            <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 xl:grid-cols-3">
+              {featured.map((room) => (
                 <RoomCard key={room.id} room={room} />
               ))}
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3">
                 {PLACEHOLDER_NATIONS.map((n) => (
                   <Link key={n.slug} href="/rooms/new" className="group block no-underline">
                     <div
@@ -150,6 +165,11 @@ export function HomeClient({ fixtures, rooms = [] }: { fixtures: Fixture[]; room
               </div>
             </>
           )}
+          </div>
+
+          <div className="min-w-0">
+            <RoomLeaderboard initial={leaderboard} />
+          </div>
         </div>
 
         {/* How it works — reduce uncertainty in three steps */}

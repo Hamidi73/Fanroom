@@ -22,7 +22,7 @@ export default async function Home() {
       )
       .neq("status", "Closed")
       .order("created_at", { ascending: false })
-      .limit(8),
+      .limit(50),
   ]);
 
   const rooms = (roomsRes.data ?? []) as unknown as RoomCardData[];

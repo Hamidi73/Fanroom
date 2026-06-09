@@ -11,6 +11,7 @@ export * from "./AccountNav";
 export * from "./GoogleButton";
 export * from "./NationCard";
 export * from "./RoomCard";
+export * from "./RoomLeaderboard";
 export * from "./FixtureCard";
 export * from "./ApplyForm";
 export * from "./RoomChat";
