@@ -21,6 +21,8 @@ export * from "./RoomChat";
 export * from "./RoomMembers";
 export * from "./JoinRoomButton";
 export * from "./AutoJoinRoom";
+export * from "./ActiveRoomTracker";
+export * from "./DeleteAccountCard";
 export * from "./RoomHostControls";
 export * from "./RoomVideo";
 export * from "./StreamAlerts";

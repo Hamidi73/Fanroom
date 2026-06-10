@@ -102,6 +102,25 @@ Admins see an **Admin** link in the header and a shortcut button on their profil
 Every signed-in user has a profile page (linked from their name in the header):
 edit display name (synced to both the `profiles` row and auth metadata), change
 password (hidden for Google accounts), and see the rooms they host and have joined.
+A **Danger zone** lets users permanently delete their own account (type DELETE to
+confirm — the `delete_own_account` RPC removes the auth user; profile, rooms,
+messages and wallet cascade).
+
+### Mini-player + room auto-cleanup
+
+Leaving a room page doesn't stop the stream: a floating **mini-player**
+(bottom-right, global in the root layout — `MiniPlayer.tsx`) keeps the room
+playing on every other page. Members keep sound, hosts automatically
+**re-publish their camera** so navigating away no longer kills the broadcast,
+and logged-out visitors keep the muted preview. Click it to jump back to the
+room; ✕ dismisses it. The active room is tracked in localStorage
+(`src/lib/activeRoom.ts`) by `ActiveRoomTracker` on each room page.
+
+Rooms clean themselves up: every open room page and mini-player heartbeats
+`touch_room` once a minute, and chat messages bump activity via a DB trigger.
+A **pg_cron job** (`close-inactive-rooms`, every minute) deletes any room with
+no heartbeat and no chat for **5 minutes** — abandoned rooms disappear on
+their own.
 
 ### Admin dashboard (`/admin`)
 

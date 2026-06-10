@@ -8,6 +8,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { clearActiveRoom } from "@/lib/activeRoom";
 
 export function JoinRoomButton({
   roomId,
@@ -72,6 +73,7 @@ export function JoinRoomButton({
       setError(isMember ? "Couldn't leave the room — try again." : "Couldn't join the room — try again.");
       return;
     }
+    if (isMember) clearActiveRoom(roomId); // left the room → drop the mini-player
     router.refresh();
   };
 

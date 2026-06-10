@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader, SiteFooter, ConnectPayouts } from "@/app/components";
+import { AppHeader, SiteFooter, ConnectPayouts, DeleteAccountCard } from "@/app/components";
 import { getConnectInfo } from "@/lib/connect";
 import { ProfileForm } from "./ProfileForm";
 
@@ -133,6 +133,9 @@ export default async function ProfilePage({
           <RoomList title="Rooms I host" rooms={hosted} emptyHref="/rooms/new" emptyCta="Create a room" />
           <RoomList title="Rooms I've joined" rooms={joined} emptyHref="/rooms" emptyCta="Browse rooms" />
         </section>
+
+        {/* Danger zone — self-service account deletion */}
+        <DeleteAccountCard />
       </div>
       <SiteFooter />
     </main>

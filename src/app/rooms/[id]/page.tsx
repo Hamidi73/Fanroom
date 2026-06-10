@@ -17,6 +17,7 @@ import {
   ShareRoomButton,
   AutoJoinRoom,
   NationFlag,
+  ActiveRoomTracker,
 } from "@/app/components";
 import { getNation } from "@/app/data";
 import type { RoomRow, MemberRow, MessageRow, ChatLine } from "@/lib/types";
@@ -123,6 +124,15 @@ export default async function RoomDetailPage({
 
         {/* Clicking into an open room joins it instantly — no second click. */}
         {!!user && !isMember && !isHost && !isClosed && <AutoJoinRoom roomId={room.id} />}
+
+        {/* Remember this room for the global mini-player + heartbeat activity
+            (rooms with no viewers and no chat auto-delete after 5 minutes). */}
+        <ActiveRoomTracker
+          roomId={room.id}
+          title={room.title}
+          role={isHost ? "host" : isMember ? "member" : user ? "member" : "preview"}
+          closed={isClosed}
+        />
 
         {paid && <PaymentNotice kind="paid" />}
         {coins && <PaymentNotice kind="coins" />}
