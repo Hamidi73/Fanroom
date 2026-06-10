@@ -14,11 +14,14 @@ export function JoinRoomButton({
   isMember,
   isLoggedIn,
   isClosed = false,
+  joining = false,
 }: {
   roomId: string;
   isMember: boolean;
   isLoggedIn: boolean;
   isClosed?: boolean;
+  /** AutoJoinRoom is adding this user right now — show progress, not a button. */
+  joining?: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -40,6 +43,14 @@ export function JoinRoomButton({
       >
         Log in to join
       </Link>
+    );
+  }
+
+  if (joining && !isMember) {
+    return (
+      <span className="inline-flex rounded-lg border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-muted">
+        Joining…
+      </span>
     );
   }
 

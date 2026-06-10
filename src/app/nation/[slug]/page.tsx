@@ -91,8 +91,8 @@ export default async function NationPage({
             <Link href="/rooms/new" className="inline-flex items-center rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-white no-underline transition hover:bg-accent-strong">
               Host a {nation.name} room
             </Link>
-            <Link href="/#apply" className="inline-flex items-center rounded-lg border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-ink-foreground no-underline transition hover:bg-surface-2">
-              Apply to represent {nation.name}
+            <Link href="/rooms" className="inline-flex items-center rounded-lg border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-ink-foreground no-underline transition hover:bg-surface-2">
+              Browse live rooms
             </Link>
           </div>
         </section>

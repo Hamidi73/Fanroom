@@ -15,7 +15,6 @@ export type Language = (typeof languages)[number];
 
 export type TranslationKey =
   | "navChooseNation"
-  | "navApply"
   | "mainHeadline"
   | "heroSubtext"
   | "ctaChooseNation"
@@ -24,13 +23,11 @@ export type TranslationKey =
   | "fixturesHeading"
   | "topStreamersHeading"
   | "safetyHeading"
-  | "safetyText"
-  | "streamerApplicationHeading";
+  | "safetyText";
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   English: {
     navChooseNation: "Choose Nation",
-    navApply: "Apply to Stream",
     mainHeadline: "Find your nation and the best World Cup fan rooms.",
     heroSubtext: "Discover top national streamers and language-based rooms — all without match footage.",
     ctaChooseNation: "Choose your nation",
@@ -41,11 +38,9 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     safetyHeading: "No match footage. Only creator-led fan watch-alongs.",
     safetyText:
       "This platform is designed to keep every stream compliant and copyright-friendly. Streamers share reactions, commentary, and chat — not the match feed.",
-    streamerApplicationHeading: "Apply to join the World Cup creator stage.",
   },
   Arabic: {
     navChooseNation: "اختر دولتك",
-    navApply: "التقديم للبث",
     mainHeadline: "اعثر على بلدك والغرف الجماهيرية الأفضل.",
     heroSubtext: "اكتشف أفضل المذيعين المحليين وغرف اللغة — دون لقطات المباريات.",
     ctaChooseNation: "اختر دولتك",
@@ -56,11 +51,9 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     safetyHeading: "لا بث لمقاطع المباريات. التفاعل فقط.",
     safetyText:
       "تم تصميم هذه المنصة لتكون متوافقة وتوفر محتوى آمنًا؛ يشارك المذيعون ردود الفعل والتعليقات والدردشة — وليس لقطات المباراة.",
-    streamerApplicationHeading: "قدّم للانضمام إلى صانعي المحتوى.",
   },
   Spanish: {
     navChooseNation: "Elige país",
-    navApply: "Solicitar transmisión",
     mainHeadline: "Encuentra tu país y las mejores salas de fans.",
     heroSubtext: "Descubre streamers locales y salas por idioma — sin imágenes de partido.",
     ctaChooseNation: "Elige tu país",
@@ -71,11 +64,9 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     safetyHeading: "Sin imágenes de partido. Solo reacciones del creador.",
     safetyText:
       "La plataforma mantiene el cumplimiento de derechos: los creadores comparten reacciones, comentarios y chat — no el partido.",
-    streamerApplicationHeading: "Solicita unirte como creador.",
   },
   French: {
     navChooseNation: "Choisir un pays",
-    navApply: "Postuler pour streamer",
     mainHeadline: "Trouvez votre pays et les meilleures salles de supporters.",
     heroSubtext: "Découvrez les meilleurs streamers nationaux et les salons par langue — sans images de match.",
     ctaChooseNation: "Choisir votre pays",
@@ -86,11 +77,9 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     safetyHeading: "Pas d’images de match. Réactions et commentaires seulement.",
     safetyText:
       "La plateforme garantit la conformité : les streamers partagent réactions, commentaires et chat — pas le flux du match.",
-    streamerApplicationHeading: "Postulez pour rejoindre la scène créative.",
   },
   Portuguese: {
     navChooseNation: "Escolha seu país",
-    navApply: "Inscrever-se para transmitir",
     mainHeadline: "Encontre seu país e as melhores salas de fãs.",
     heroSubtext: "Descubra streamers locais e salas por idioma — sem imagens da partida.",
     ctaChooseNation: "Escolha seu país",
@@ -101,7 +90,6 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     safetyHeading: "Sem imagens da partida. Apenas reações dos criadores.",
     safetyText:
       "A plataforma mantém conformidade: os criadores compartilham reações, comentários e chat — não o feed do jogo.",
-    streamerApplicationHeading: "Candidate-se para entrar como criador.",
   },
 };
 

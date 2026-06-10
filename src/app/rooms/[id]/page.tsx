@@ -15,6 +15,7 @@ import {
   GiftDrawer,
   PaymentNotice,
   ShareRoomButton,
+  AutoJoinRoom,
 } from "@/app/components";
 import { getNation } from "@/app/data";
 import type { RoomRow, MemberRow, MessageRow, ChatLine } from "@/lib/types";
@@ -119,6 +120,9 @@ export default async function RoomDetailPage({
       <div className="mx-auto max-w-[1500px] px-4 py-5 sm:px-6">
         <Link href="/rooms" className="text-sm text-muted no-underline hover:text-ink-foreground">← All rooms</Link>
 
+        {/* Clicking into an open room joins it instantly — no second click. */}
+        {!!user && !isMember && !isHost && !isClosed && <AutoJoinRoom roomId={room.id} />}
+
         {paid && <PaymentNotice kind="paid" />}
         {coins && <PaymentNotice kind="coins" />}
         {canceled && <PaymentNotice kind="canceled" />}
@@ -182,7 +186,13 @@ export default async function RoomDetailPage({
 
                 <div className="flex shrink-0 flex-wrap items-center gap-2">
                   <ShareRoomButton title={room.title} />
-                  <JoinRoomButton roomId={room.id} isMember={isMember} isLoggedIn={!!user} isClosed={isClosed} />
+                  <JoinRoomButton
+                    roomId={room.id}
+                    isMember={isMember}
+                    isLoggedIn={!!user}
+                    isClosed={isClosed}
+                    joining={!!user && !isMember && !isHost}
+                  />
                 </div>
               </div>
 

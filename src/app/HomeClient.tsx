@@ -22,7 +22,6 @@ import {
   RoomLeaderboard,
   HeroStream,
   FixtureCard,
-  ApplyForm,
   type RoomCardData,
   type LeaderRoom,
 } from "@/app/components";
@@ -215,10 +214,6 @@ export function HomeClient({ fixtures, rooms = [] }: { fixtures: Fixture[]; room
           )}
         </div>
 
-        {/* Apply */}
-        <div id="apply" className="mt-12 scroll-mt-20">
-          <ApplyForm heading={t.streamerApplicationHeading} />
-        </div>
       </div>
 
       <SiteFooter />

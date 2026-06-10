@@ -75,25 +75,49 @@ export function AccountNav() {
     );
   }
 
+  // Twitch-style account menu: hovering (or focusing) the name drops a menu
+  // with the account actions. CSS-only open state (group-hover/focus-within)
+  // so it needs no outside-click handling and works with keyboard focus.
+  const itemClass =
+    "block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-ink-foreground no-underline transition hover:bg-surface-2";
+
   return (
     <span className="flex items-center gap-3">
       <Link href="/rooms" className="text-sm font-medium text-muted no-underline hover:text-ink-foreground">
         Rooms
       </Link>
-      {isAdmin && (
-        <Link href="/admin" className="text-sm font-bold text-accent no-underline hover:opacity-80">
-          Admin
+
+      <span className="group relative">
+        <Link
+          href="/profile"
+          className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-ink-foreground no-underline transition group-hover:bg-surface-2"
+        >
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent/25 text-xs font-bold text-accent-soft ring-1 ring-accent/40">
+            {name.slice(0, 1).toUpperCase()}
+          </span>
+          <span className="hidden max-w-[140px] truncate sm:block">{name}</span>
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="text-muted transition group-hover:rotate-180">
+            <path d="m4 6 4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </Link>
-      )}
-      <Link href="/profile" className="text-sm font-medium text-ink-foreground no-underline hover:text-accent">
-        {name}
-      </Link>
-      <button
-        onClick={signOut}
-        className="rounded-lg border border-white/15 px-3 py-1.5 text-sm font-medium text-muted transition hover:text-ink-foreground"
-      >
-        Sign out
-      </button>
+
+        {/* Dropdown — pt-2 bridges the hover gap between trigger and panel */}
+        <div className="invisible absolute right-0 top-full z-50 w-52 pt-2 opacity-0 transition-all duration-100 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+          <div className="overflow-hidden rounded-xl border border-line bg-ink p-1.5 shadow-2xl shadow-black/60">
+            <p className="truncate px-3 pb-1.5 pt-2 text-xs font-bold uppercase tracking-wide text-muted">{name}</p>
+            <Link href="/profile" className={itemClass}>👤 My profile</Link>
+            <Link href="/rooms/new" className={itemClass}>📺 Host a room</Link>
+            <Link href="/rooms" className={itemClass}>🔎 Browse rooms</Link>
+            {isAdmin && (
+              <Link href="/admin" className={`${itemClass} font-bold text-accent-soft`}>🛡️ Admin</Link>
+            )}
+            <div className="my-1 border-t border-line" />
+            <button onClick={signOut} className={`${itemClass} text-muted`}>
+              Sign out
+            </button>
+          </div>
+        </div>
+      </span>
     </span>
   );
 }
