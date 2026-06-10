@@ -5,7 +5,7 @@
 
 import { getUpcomingFixtures } from "@/app/data";
 import { createClient } from "@/lib/supabase/server";
-import type { RoomCardData } from "@/app/components";
+import { LiveRefresh, type RoomCardData } from "@/app/components";
 import { HomeClient } from "./HomeClient";
 
 export const dynamic = "force-dynamic";
@@ -27,5 +27,12 @@ export default async function Home() {
 
   const rooms = (roomsRes.data ?? []) as unknown as RoomCardData[];
 
-  return <HomeClient fixtures={fixtures} rooms={rooms} />;
+  return (
+    <>
+      {/* New rooms, closed rooms, member counts and fixture scores update
+          live — no manual reload needed. */}
+      <LiveRefresh />
+      <HomeClient fixtures={fixtures} rooms={rooms} />
+    </>
+  );
 }

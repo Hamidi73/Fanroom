@@ -117,12 +117,13 @@ function mapMatch(m: ApiMatch, i: number): Fixture {
 }
 
 // ─── FETCH (cached) ───────────────────────────────────────────────────────────
-// Server-side fetch, revalidated daily. Returns [] on any error so the UI shows
-// an honest empty state instead of crashing or inventing data.
+// Server-side fetch, revalidated every minute so live scores stay fresh (pages
+// re-render via LiveRefresh). Returns [] on any error so the UI shows an honest
+// empty state instead of crashing or inventing data.
 
 async function fetchFixtures(): Promise<Fixture[]> {
   try {
-    const res = await fetch(SOURCE_URL, { next: { revalidate: 86400 } });
+    const res = await fetch(SOURCE_URL, { next: { revalidate: 60 } });
     if (!res.ok) return [];
     const data: { matches?: ApiMatch[] | null } = await res.json();
     const matches = Array.isArray(data?.matches) ? data.matches : [];

@@ -22,6 +22,7 @@ export * from "./RoomMembers";
 export * from "./JoinRoomButton";
 export * from "./AutoJoinRoom";
 export * from "./ActiveRoomTracker";
+export * from "./LiveRefresh";
 export * from "./DeleteAccountCard";
 export * from "./RoomHostControls";
 export * from "./RoomVideo";

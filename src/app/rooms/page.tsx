@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell, SiteFooter, RoomCard, type RoomCardData } from "@/app/components";
+import { AppShell, SiteFooter, RoomCard, LiveRefresh, type RoomCardData } from "@/app/components";
 
 export const metadata: Metadata = { title: "Browse rooms | FanRoom Global" };
 export const dynamic = "force-dynamic";
@@ -18,21 +18,18 @@ export default async function RoomsPage({
   const { data: userData } = await supabase.auth.getUser();
   const isLoggedIn = !!userData.user;
 
+  // Closed rooms are hidden from browse — they disappear live (LiveRefresh)
+  // the moment a host closes one, and inactive ones are auto-deleted anyway.
   const { data } = await supabase
     .from("rooms")
     .select("id,title,match,nation_slug,language,status,created_at,host_id,host:profiles!rooms_host_id_fkey(display_name),members:room_members(count)")
+    .neq("status", "Closed")
     .order("created_at", { ascending: false });
   let rooms = (data ?? []) as unknown as RoomCardData[];
 
-  // Twitch-style ordering: open rooms first, busiest first; closed rooms sink.
+  // Twitch-style ordering: busiest rooms first.
   const memberCount = (r: RoomCardData) => r.members?.[0]?.count ?? 0;
-  rooms = rooms
-    .slice()
-    .sort(
-      (a, b) =>
-        Number(a.status === "Closed") - Number(b.status === "Closed") ||
-        memberCount(b) - memberCount(a),
-    );
+  rooms = rooms.slice().sort((a, b) => memberCount(b) - memberCount(a));
 
   if (term) {
     rooms = rooms.filter((r) =>
@@ -44,6 +41,7 @@ export default async function RoomsPage({
 
   return (
     <AppShell>
+      <LiveRefresh />
       <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>

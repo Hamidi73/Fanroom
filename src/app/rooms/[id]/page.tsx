@@ -18,6 +18,7 @@ import {
   AutoJoinRoom,
   NationFlag,
   ActiveRoomTracker,
+  LiveRefresh,
 } from "@/app/components";
 import { getNation } from "@/app/data";
 import type { RoomRow, MemberRow, MessageRow, ChatLine } from "@/lib/types";
@@ -119,6 +120,9 @@ export default async function RoomDetailPage({
     >
     <main className="flex-1 bg-ink-deep">
       <AppHeader />
+      {/* Live page state: if the host closes (or cleanup deletes) this room,
+          the page updates in place — no manual reload. */}
+      <LiveRefresh />
       <div className="mx-auto max-w-[1500px] px-4 py-5 sm:px-6">
         <Link href="/rooms" className="text-sm text-muted no-underline hover:text-ink-foreground">← All rooms</Link>
 

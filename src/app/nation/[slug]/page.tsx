@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getNation, getFixturesByNationSlug } from "@/app/data";
-import { AppShell, SiteFooter, FixtureCard, RoomCard, NationFlag, type RoomCardData } from "@/app/components";
+import { AppShell, SiteFooter, FixtureCard, RoomCard, NationFlag, LiveRefresh, type RoomCardData } from "@/app/components";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata({
@@ -62,6 +62,7 @@ export default async function NationPage({
 
   return (
     <AppShell>
+      <LiveRefresh />
       <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-6">
         {/* Hero */}
         <section

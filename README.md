@@ -122,6 +122,16 @@ A **pg_cron job** (`close-inactive-rooms`, every minute) deletes any room with
 no heartbeat and no chat for **5 minutes** — abandoned rooms disappear on
 their own.
 
+### Live-updating pages
+
+The homepage, rooms list, nation hubs and room pages refresh themselves
+(`LiveRefresh.tsx`): Supabase realtime events on `rooms`/`room_members` trigger
+an in-place `router.refresh()` (heartbeat-only updates are filtered out so
+touch_room pings don't cause refresh storms), and a 60-second interval re-pulls
+fixture scores (the OpenFootball fetch revalidates every minute). New rooms
+appear, closed/deleted rooms disappear, member counts and scores update — all
+without reloading, and client state (video, chat input) survives.
+
 ### Admin dashboard (`/admin`)
 
 The admin home is a **live dashboard** — member / room / message / join counts and
