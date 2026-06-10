@@ -13,14 +13,18 @@
 // reconciled). Gift broadcasts themselves are EPHEMERAL — no DB write.
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { getGift, COMBO, type Gift } from "@/lib/gifts";
+import { getSticker, stickerBody, giftBody, type Sticker } from "@/lib/stickers";
 import { playGiftSound, setGiftSoundMuted } from "@/lib/giftSound";
 import { CoinStore } from "./CoinStore";
 
 type GiftEvent = { giftId: string; sender: string; mult: number; combo: number };
+type StickerEvent = { stickerId: string; sender: string };
 
 type FlyingGift = { key: string; gift: Gift; combo: number; left: number; sender: string };
+type FlyingSticker = { key: string; sticker: Sticker; left: number; sender: string };
 type Takeover = { key: string; gift: Gift; sender: string };
 
 type RoomGiftsContextValue = {
@@ -28,7 +32,9 @@ type RoomGiftsContextValue = {
   combo: { giftId: string; count: number } | null;
   muted: boolean;
   sendGift: (giftId: string, mult?: number) => void;
+  sendSticker: (stickerId: string) => void;
   canAfford: (giftId: string, mult?: number) => boolean;
+  canAffordSticker: (stickerId: string) => boolean;
   openStore: () => void;
   toggleMuted: () => void;
 };
@@ -70,13 +76,16 @@ export function RoomGiftsProvider({
 }) {
   const [balance, setBalance] = useState(0);
   const [flying, setFlying] = useState<FlyingGift[]>([]);
+  const [flyingStickers, setFlyingStickers] = useState<FlyingSticker[]>([]);
   const [takeover, setTakeover] = useState<Takeover | null>(null);
   const [combo, setCombo] = useState<{ giftId: string; count: number } | null>(null);
   const [storeOpen, setStoreOpen] = useState(false);
   const [muted, setMuted] = useState(false);
 
   const supabaseRef = useRef(createClient());
+  const userIdRef = useRef<string | null>(null);
   const sendRef = useRef<((event: GiftEvent) => void) | null>(null);
+  const sendStickerRef = useRef<((event: StickerEvent) => void) | null>(null);
   const comboRef = useRef<{ giftId: string; count: number; at: number }>({ giftId: "", count: 0, at: 0 });
   const comboTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const keySeq = useRef(0);
@@ -87,6 +96,9 @@ export function RoomGiftsProvider({
     if (!loggedIn) return;
     const supabase = supabaseRef.current;
     let active = true;
+    void supabase.auth.getUser().then(({ data }) => {
+      if (active) userIdRef.current = data.user?.id ?? null;
+    });
     const refresh = async () => {
       const { data, error } = await supabase.rpc("get_or_seed_wallet");
       if (active && !error && data != null) setBalance(Number(data));
@@ -128,18 +140,36 @@ export function RoomGiftsProvider({
     setFlying((list) => [...list, ...spawned].slice(-40));
   }, []);
 
+  // Render an incoming sticker event — a real meme image flies up the stream.
+  const renderSticker = useCallback((evt: StickerEvent) => {
+    const sticker = getSticker(evt.stickerId);
+    if (!sticker) return;
+    playGiftSound("pop", 1);
+    const key = `s${keySeq.current++}`;
+    const left = 12 + Math.random() * 60;
+    setFlyingStickers((list) => [...list, { key, sticker, left, sender: evt.sender }].slice(-12));
+    window.setTimeout(() => setFlyingStickers((list) => list.filter((f) => f.key !== key)), 3000);
+  }, []);
+
   useEffect(() => {
     const supabase = supabaseRef.current;
     const channel = supabase.channel(`room-gifts-${roomId}`, { config: { broadcast: { self: true } } });
-    channel.on("broadcast", { event: "gift" }, ({ payload }) => render(payload as GiftEvent)).subscribe();
+    channel
+      .on("broadcast", { event: "gift" }, ({ payload }) => render(payload as GiftEvent))
+      .on("broadcast", { event: "sticker" }, ({ payload }) => renderSticker(payload as StickerEvent))
+      .subscribe();
     sendRef.current = (event) => {
       void channel.send({ type: "broadcast", event: "gift", payload: event });
     };
+    sendStickerRef.current = (event) => {
+      void channel.send({ type: "broadcast", event: "sticker", payload: event });
+    };
     return () => {
       sendRef.current = null;
+      sendStickerRef.current = null;
       supabase.removeChannel(channel);
     };
-  }, [roomId, render]);
+  }, [roomId, render, renderSticker]);
 
   const canAfford = useCallback(
     (giftId: string, mult = 1) => {
@@ -147,6 +177,25 @@ export function RoomGiftsProvider({
       return !!gift && balance >= gift.priceRoars * mult;
     },
     [balance],
+  );
+
+  const canAffordSticker = useCallback(
+    (stickerId: string) => {
+      const sticker = getSticker(stickerId);
+      return !!sticker && balance >= sticker.priceRoars;
+    },
+    [balance],
+  );
+
+  // Persist a send into the room's chat history (gifts/stickers shouldn't be
+  // screen-only moments — they show up as chat lines like on TikTok/Twitch).
+  const postChatLine = useCallback(
+    (body: string) => {
+      const userId = userIdRef.current;
+      if (!userId) return;
+      void supabaseRef.current.from("messages").insert({ room_id: roomId, user_id: userId, body });
+    },
+    [roomId],
   );
 
   const sendGift = useCallback(
@@ -178,8 +227,30 @@ export function RoomGiftsProvider({
       comboTimer.current = setTimeout(() => setCombo(null), COMBO.windowMs);
 
       sendRef.current?.({ giftId, sender: senderName, mult, combo: count });
+      postChatLine(giftBody(giftId, mult));
     },
-    [balance, senderName],
+    [balance, senderName, postChatLine],
+  );
+
+  const sendSticker = useCallback(
+    (stickerId: string) => {
+      const sticker = getSticker(stickerId);
+      if (!sticker) return;
+      if (balance < sticker.priceRoars) {
+        setStoreOpen(true);
+        return;
+      }
+      setBalance((b) => b - sticker.priceRoars);
+      void supabaseRef.current.rpc("spend_roars", { amount: sticker.priceRoars }).then(({ error }) => {
+        if (error) {
+          setBalance((b) => b + sticker.priceRoars);
+          setStoreOpen(true);
+        }
+      });
+      sendStickerRef.current?.({ stickerId, sender: senderName });
+      postChatLine(stickerBody(stickerId)); // the sticker lives on in chat
+    },
+    [balance, senderName, postChatLine],
   );
 
   const openStore = useCallback(() => setStoreOpen(true), []);
@@ -191,7 +262,9 @@ export function RoomGiftsProvider({
   }, []);
 
   return (
-    <Ctx.Provider value={{ balance, combo, muted, sendGift, canAfford, openStore, toggleMuted }}>
+    <Ctx.Provider
+      value={{ balance, combo, muted, sendGift, sendSticker, canAfford, canAffordSticker, openStore, toggleMuted }}
+    >
       {children}
 
       {/* Overlay — floats over everything, ignores clicks. */}
@@ -219,6 +292,24 @@ export function RoomGiftsProvider({
                 ×{f.combo}
               </span>
             )}
+          </div>
+        ))}
+
+        {flyingStickers.map((f) => (
+          <div
+            key={f.key}
+            className="absolute bottom-24 flex flex-col items-center gift-anim-rise"
+            style={{ left: `${f.left}%` }}
+          >
+            <Image
+              src={f.sticker.image}
+              alt={f.sticker.name}
+              width={160}
+              height={160}
+              unoptimized
+              className="h-auto w-36 rotate-[-3deg] rounded-xl border border-white/20 shadow-[0_10px_40px_rgba(0,0,0,0.6)] sm:w-44"
+            />
+            <span className="mt-1 rounded-full bg-black/70 px-2 py-0.5 text-xs font-bold text-white">{f.sender}</span>
           </div>
         ))}
 

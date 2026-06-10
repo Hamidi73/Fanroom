@@ -7,6 +7,7 @@
 // in a "Featured" tab so its fans see their gift first.
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   activePacks,
@@ -18,7 +19,10 @@ import {
   type Gift,
   type GiftPackId,
 } from "@/lib/gifts";
+import { STICKER_PACKS, stickersInPack, type StickerPackId } from "@/lib/stickers";
 import { useRoomGifts } from "./RoomGiftsProvider";
+
+type DrawerTab = GiftPackId | StickerPackId | "featured";
 
 const MULTIPLIERS = [1, 5, 10] as const;
 
@@ -37,12 +41,12 @@ export function GiftDrawer({
   const [open, setOpen] = useState(false);
   const [mult, setMult] = useState<(typeof MULTIPLIERS)[number]>(1);
   const featured = featuredGiftForNation(nationSlug);
-  const [tab, setTab] = useState<GiftPackId | "featured">(featured ? "featured" : "reactions");
+  const [tab, setTab] = useState<DrawerTab>(featured ? "featured" : "reactions");
 
   const tabStripRef = useRef<HTMLDivElement>(null);
   const scrollTabs = (dir: number) => tabStripRef.current?.scrollBy({ left: dir * 160, behavior: "smooth" });
 
-  const { balance, canAfford, sendGift, openStore, muted, toggleMuted } = useRoomGifts();
+  const { balance, canAfford, canAffordSticker, sendGift, sendSticker, openStore, muted, toggleMuted } = useRoomGifts();
 
   if (isClosed) return null;
 
@@ -58,8 +62,9 @@ export function GiftDrawer({
     );
   }
 
-  const tabs: { id: GiftPackId | "featured"; label: string; icon: string }[] = [
+  const tabs: { id: DrawerTab; label: string; icon: string }[] = [
     ...(featured ? [{ id: "featured" as const, label: "Featured", icon: "⭐" }] : []),
+    ...STICKER_PACKS,
     ...activePacks(),
   ];
 
@@ -67,7 +72,8 @@ export function GiftDrawer({
     ...(featured ? [featured] : []),
     ...FEATURED_EXTRAS.map(getGift).filter((g): g is Gift => !!g),
   ];
-  const gifts = tab === "featured" ? featuredGifts : giftsInPack(tab);
+  const stickerPack = STICKER_PACKS.find((p) => p.id === tab);
+  const gifts = stickerPack ? [] : tab === "featured" ? featuredGifts : giftsInPack(tab as GiftPackId);
 
   return (
     <>
@@ -139,8 +145,38 @@ export function GiftDrawer({
               </button>
             </div>
 
+            {/* Sticker grid — real meme images, sent straight into chat + stream */}
+            {stickerPack && (
+              <div className="grid grid-cols-3 gap-2 overflow-y-auto p-3">
+                {stickersInPack(stickerPack.id).map((st) => {
+                  const affordable = canAffordSticker(st.id);
+                  return (
+                    <button
+                      key={st.id}
+                      onClick={() => sendSticker(st.id)}
+                      title={st.name}
+                      className="group flex flex-col items-center gap-1 rounded-xl border border-line bg-surface p-1.5 text-center transition hover:-translate-y-0.5 hover:border-accent/50 hover:bg-surface-2"
+                    >
+                      <Image
+                        src={st.image}
+                        alt={st.name}
+                        width={140}
+                        height={140}
+                        unoptimized
+                        className="h-20 w-full rounded-lg object-cover transition group-hover:scale-[1.04]"
+                      />
+                      <span className="line-clamp-1 w-full text-[10px] font-semibold text-ink-foreground">{st.name}</span>
+                      <span className={`flex items-center gap-0.5 text-[11px] font-black ${affordable ? "text-accent-soft" : "text-muted"}`}>
+                        {ECONOMY.coinSymbol} {st.priceRoars.toLocaleString()}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             {/* Gift grid */}
-            <div className="grid grid-cols-3 gap-2 overflow-y-auto p-3 sm:grid-cols-4">
+            <div className={`grid grid-cols-3 gap-2 overflow-y-auto p-3 sm:grid-cols-4 ${stickerPack ? "hidden" : ""}`}>
               {gifts.map((g) => {
                 const affordable = canAfford(g.id, mult);
                 return (
@@ -172,23 +208,25 @@ export function GiftDrawer({
               })}
             </div>
 
-            {/* Multiplier */}
-            <div className="flex items-center justify-between gap-2 border-t border-line px-4 py-3">
-              <span className="text-xs font-semibold text-muted">Combo</span>
-              <div className="flex gap-1.5">
-                {MULTIPLIERS.map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setMult(m)}
-                    className={`rounded-lg px-3 py-1.5 text-sm font-black transition ${
-                      mult === m ? "bg-accent text-white" : "bg-surface-2 text-muted hover:text-ink-foreground"
-                    }`}
-                  >
-                    ×{m}
-                  </button>
-                ))}
+            {/* Multiplier (gifts only — stickers always send one at a time) */}
+            {!stickerPack && (
+              <div className="flex items-center justify-between gap-2 border-t border-line px-4 py-3">
+                <span className="text-xs font-semibold text-muted">Combo</span>
+                <div className="flex gap-1.5">
+                  {MULTIPLIERS.map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => setMult(m)}
+                      className={`rounded-lg px-3 py-1.5 text-sm font-black transition ${
+                        mult === m ? "bg-accent text-white" : "bg-surface-2 text-muted hover:text-ink-foreground"
+                      }`}
+                    >
+                      ×{m}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}

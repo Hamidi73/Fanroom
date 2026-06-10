@@ -186,13 +186,23 @@ animations with combos and full-screen "takeovers", and synthesized sound — se
 `src/lib/gifts.ts` (catalog, server-authoritative prices), `giftSound.ts`,
 `GiftDrawer.tsx`, and `RoomGiftsProvider.tsx`.
 
+There are also **meme sticker packs** (WhatsApp/Instagram-style): real meme
+images — classic templates plus football-meme editions — sourced from the
+memegen.link template library and committed under `public/stickers/` (no
+third-party CDN at runtime). Catalog + server-authoritative prices live in
+`src/lib/stickers.ts`. A sent sticker flies over the stream AND is persisted
+as a real chat message (`[sticker:<id>]`, rendered as the image inline), so it
+stays in the room's history; gift sends likewise leave a `[gift:<id>:<n>]`
+chat line.
+
 The currency is **Roars** (100 ≈ $1, one-way / non-cashable):
 
 - **Buying is real** — the coin store starts a Stripe Checkout (server-priced
   from `COIN_BUNDLES`); the webhook credits the `wallets` table via the
   idempotent `credit_coins` RPC. New wallets get 500 welcome Roars.
-- **Sending a gift** debits the wallet atomically via `spend_roars` (optimistic
-  UI, reconciled). Gift broadcasts themselves are ephemeral (no DB write).
+- **Sending a gift or sticker** debits the wallet atomically via `spend_roars`
+  (optimistic UI, reconciled). Gift overlay broadcasts themselves are ephemeral
+  (no DB write); sticker/gift chat lines are normal `messages` rows.
 - Coin purchases are captured to the platform; paying out a creator's gift share
   would reuse the same Connect transfer path as highlights (future work).
 

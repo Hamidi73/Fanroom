@@ -17,10 +17,13 @@
 // any other message — only with `highlight` set, so it renders prominently.
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { ChatLine } from "@/lib/types";
 import { TIERS, getTier, formatAmount } from "@/lib/tiers";
+import { parseStickerBody, parseGiftBody } from "@/lib/stickers";
+import { getGift } from "@/lib/gifts";
 
 type NewRow = {
   id: number;
@@ -219,7 +222,7 @@ export function RoomChat({
                     </p>
                     <p className="shrink-0 text-xs text-muted">{timeLabel(msg.created_at)}</p>
                   </div>
-                  <p className="break-words text-sm text-ink-foreground/85">{msg.body}</p>
+                  <MessageBody body={msg.body} />
                 </div>
               ),
             )
@@ -341,6 +344,44 @@ export function RoomChat({
       </div>
     </div>
   );
+}
+
+// Message bodies can encode sticker/gift sends (written by the gift layer):
+//   [sticker:<id>]  → render the actual meme image inline (WhatsApp-style)
+//   [gift:<id>:<n>] → render a compact "sent a gift" line
+// Anything else renders as plain text.
+function MessageBody({ body }: { body: string }) {
+  const sticker = parseStickerBody(body);
+  if (sticker) {
+    return (
+      <Image
+        src={sticker.image}
+        alt={sticker.name}
+        title={sticker.name}
+        width={180}
+        height={180}
+        unoptimized
+        className="mt-1 h-auto w-40 rounded-lg border border-white/10 shadow-md"
+      />
+    );
+  }
+
+  const giftSend = parseGiftBody(body);
+  const gift = giftSend ? getGift(giftSend.giftId) : undefined;
+  if (giftSend && gift) {
+    return (
+      <p className="mt-0.5 inline-flex max-w-full items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-sm text-ink-foreground/90">
+        <span aria-hidden="true">🎁</span>
+        <span className="truncate">
+          sent {gift.kind === "text" ? "" : `${gift.icon} `}
+          <span className="font-bold" style={{ color: gift.color }}>{gift.name}</span>
+          {giftSend.mult > 1 && <span className="font-black"> ×{giftSend.mult}</span>}
+        </span>
+      </p>
+    );
+  }
+
+  return <p className="break-words text-sm text-ink-foreground/85">{body}</p>;
 }
 
 function HostBadge() {
