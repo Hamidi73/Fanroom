@@ -9,6 +9,7 @@
 
 import { useState } from "react";
 import { COIN_BUNDLES, ECONOMY, type CoinBundle } from "@/lib/gifts";
+import { Coin } from "./GiftIcon";
 
 function usd(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -65,7 +66,7 @@ export function CoinStore({
           <div>
             <h2 className="display text-xl">Get {ECONOMY.coinName}</h2>
             <p className="text-xs text-muted">
-              Balance: <span className="font-bold text-ink-foreground">{ECONOMY.coinSymbol} {balance.toLocaleString()}</span>
+              Balance: <span className="font-bold text-ink-foreground"><Coin size={13} /> {balance.toLocaleString()}</span>
             </p>
           </div>
           <button onClick={onClose} aria-label="Close" className="rounded-lg px-2 py-1 text-muted hover:bg-surface-2 hover:text-ink-foreground">
@@ -93,7 +94,7 @@ export function CoinStore({
                   {b.badge === "popular" ? "Popular" : "Best value"}
                 </span>
               )}
-              <span className="text-2xl">{ECONOMY.coinSymbol}</span>
+              <Coin size={28} />
               <span className="text-sm font-black text-ink-foreground">{b.totalRoars.toLocaleString()}</span>
               {b.bonusPct > 0 && <span className="text-[10px] font-bold text-accent-soft">+{Math.round(b.bonusPct * 100)}% bonus</span>}
               <span className="mt-0.5 rounded-md bg-accent/15 px-2 py-0.5 text-xs font-bold text-accent-soft">

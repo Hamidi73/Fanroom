@@ -61,8 +61,12 @@ function Stage({ canPublish, preview }: { canPublish: boolean; preview: boolean 
           <span className="live-badge absolute left-3 top-3 z-10">● LIVE</span>
         )}
         {live && preview && (
-          <span className="absolute bottom-3 left-3 z-10 rounded bg-black/70 px-2 py-1 text-[11px] font-semibold text-white/90">
-            🔇 Muted preview — join the room for sound
+          <span className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-1.5 rounded bg-black/70 px-2 py-1 text-[11px] font-semibold text-white/90">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M2 6v4h2.5L8 13V3L4.5 6H2Z" fill="currentColor" />
+              <path d="m10.5 6 4 4m0-4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+            Muted preview — join the room for sound
           </span>
         )}
       </div>

@@ -14,7 +14,7 @@ const STYLES: Record<string, string> = {
 
 const COPY: Record<string, string> = {
   paid: "✦ Payment received — your highlighted message will appear on the stream and in chat momentarily.",
-  coins: "🪙 Payment received — your Roars are being added to your wallet (a few seconds at most).",
+  coins: "✓ Payment received — your Roars are being added to your wallet (a few seconds at most).",
   canceled: "Checkout canceled — no charge was made.",
 };
 

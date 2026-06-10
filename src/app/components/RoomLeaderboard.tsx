@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getNation } from "@/app/data";
+import { NationFlag } from "./NationFlag";
 
 export type LeaderRoom = {
   id: string;
@@ -96,7 +97,7 @@ export function RoomLeaderboard({ initial }: { initial: LeaderRoom[] }) {
                   >
                     {i + 1}
                   </span>
-                  {nation && <span className="shrink-0 text-lg leading-none">{nation.flag}</span>}
+                  {nation && <NationFlag src={nation.flagImg} name={nation.name} width={22} />}
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-semibold text-ink-foreground">{r.title}</span>
                     <span className="block truncate text-xs text-muted">{r.hostName}</span>

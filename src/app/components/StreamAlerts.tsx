@@ -18,8 +18,10 @@
 // off) so it never blocks the video controls; respects prefers-reduced-motion.
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { getTier, formatAmount } from "@/lib/tiers";
+import { emojiArt } from "@/lib/gifts";
 
 type ConfettiPiece = {
   id: number;
@@ -54,7 +56,7 @@ type NewRow = {
 const TIER_UI: Record<string, { cls: string; icon: string; sparkles: boolean; confetti: number }> = {
   spotlight: { cls: "stream-alert--spotlight", icon: "✦", sparkles: false, confetti: 14 },
   featured: { cls: "stream-alert--featured", icon: "★", sparkles: false, confetti: 22 },
-  headliner: { cls: "stream-alert--headliner", icon: "👑", sparkles: true, confetti: 36 },
+  headliner: { cls: "stream-alert--headliner", icon: "crown", sparkles: true, confetti: 36 },
 };
 
 const CONFETTI_COLORS = ["#9147ff", "#bf94ff", "#e0a3ff", "#ffffff", "#ffd56b", "#5ce1e6"];
@@ -191,10 +193,10 @@ export function StreamAlerts({ roomId }: { roomId: string }) {
           {ui.sparkles && (
             <>
               <span className="stream-alert__sparkle right-3 top-2" style={{ animationDelay: "0s" }}>
-                ✨
+                <Image src={emojiArt("✨")} alt="" width={14} height={14} unoptimized />
               </span>
               <span className="stream-alert__sparkle bottom-2 left-3" style={{ animationDelay: "0.7s" }}>
-                ✨
+                <Image src={emojiArt("✨")} alt="" width={14} height={14} unoptimized />
               </span>
             </>
           )}
@@ -204,7 +206,11 @@ export function StreamAlerts({ roomId }: { roomId: string }) {
                 isHeadliner ? "text-white" : "text-accent-soft"
               }`}
             >
-              <span className="text-sm">{ui.icon}</span>
+              {ui.icon === "crown" ? (
+                <Image src={emojiArt("👑")} alt="" width={16} height={16} unoptimized />
+              ) : (
+                <span className="text-sm">{ui.icon}</span>
+              )}
               {tier?.label ?? "Highlight"}
             </span>
             <span

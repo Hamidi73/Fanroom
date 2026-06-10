@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import type { Nation } from "@/app/data";
+import { NationFlag } from "./NationFlag";
 
 export function NationCard({ nation }: { nation: Nation }) {
   return (
@@ -13,8 +14,8 @@ export function NationCard({ nation }: { nation: Nation }) {
           backgroundImage: `radial-gradient(circle at 30% 25%, ${nation.theme.accent}, transparent 55%), linear-gradient(155deg, ${nation.theme.border}, #131316 85%)`,
         }}
       >
-        <span className="text-5xl drop-shadow-[0_3px_8px_rgba(0,0,0,0.45)] transition-transform group-hover:scale-110">
-          {nation.flag}
+        <span className="drop-shadow-[0_3px_8px_rgba(0,0,0,0.45)] transition-transform group-hover:scale-110">
+          <NationFlag src={nation.flagImg} name={nation.name} width={72} className="rounded-md" />
         </span>
       </div>
       <p className="mt-2 truncate text-sm font-bold text-ink-foreground transition group-hover:text-accent-soft">

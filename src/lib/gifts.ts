@@ -33,6 +33,34 @@ export const ECONOMY = {
   purchaseMinAge: 18, // hard age-gate on buying Roars
 } as const;
 
+// ─── ICON ART ────────────────────────────────────────────────────────────────
+// Gifts are NOT rendered as raw emoji glyphs — platform emoji fonts differ
+// (and Apple-style flags break on Windows entirely). Every emoji used by the
+// catalog has a matching OpenMoji image committed under /public/gifts/om, and
+// nation gifts use the real flag image (rendered with the waving animation).
+
+/** OpenMoji image path for an emoji (filenames are upper-hex codepoints). */
+export function emojiArt(emoji: string): string {
+  const hex = Array.from(emoji)
+    .map((c) => c.codePointAt(0) ?? 0)
+    .filter((cp) => cp !== 0xfe0f && cp !== 0x200d)
+    .map((cp) => cp.toString(16).toUpperCase())
+    .join("-");
+  return `/gifts/om/${hex}.png`;
+}
+
+export type GiftArt = { type: "flag"; src: string } | { type: "img"; src: string } | { type: "text" };
+
+/** How to draw a gift: waving flag (nation legends), image art, or text banner. */
+export function giftArt(gift: Gift): GiftArt {
+  if (gift.kind === "text") return { type: "text" };
+  if (gift.nationSlug) {
+    const nation = getAllNations().find((n) => n.slug === gift.nationSlug);
+    if (nation) return { type: "flag", src: nation.flagImg };
+  }
+  return { type: "img", src: emojiArt(gift.icon) };
+}
+
 /** Face value of an amount of Roars, in whole US cents. */
 export function roarsToUsdCents(roars: number): number {
   return Math.round((roars / ECONOMY.roarsPerUsd) * 100);

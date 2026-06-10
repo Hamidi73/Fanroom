@@ -186,14 +186,20 @@ animations with combos and full-screen "takeovers", and synthesized sound — se
 `src/lib/gifts.ts` (catalog, server-authoritative prices), `giftSound.ts`,
 `GiftDrawer.tsx`, and `RoomGiftsProvider.tsx`.
 
-There are also **meme sticker packs** (WhatsApp/Instagram-style): real meme
-images — classic templates plus football-meme editions — sourced from the
-memegen.link template library and committed under `public/stickers/` (no
-third-party CDN at runtime). Catalog + server-authoritative prices live in
-`src/lib/stickers.ts`. A sent sticker flies over the stream AND is persisted
-as a real chat message (`[sticker:<id>]`, rendered as the image inline), so it
-stays in the room's history; gift sends likewise leave a `[gift:<id>:<n>]`
-chat line.
+There's also a **football Legends sticker pack** (WhatsApp/Instagram-style):
+real player stickers (Messi, CR7, Mbappé, Salah…) using each player's lead
+photo from Wikipedia (freely licensed), committed under
+`public/stickers/legends/` (no third-party CDN at runtime). Catalog +
+server-authoritative prices live in `src/lib/stickers.ts`. A sent sticker
+flies over the stream AND is persisted as a real chat message
+(`[sticker:<id>]`, rendered as the image inline), so it stays in the room's
+history; gift sends likewise leave a highlighted `[gift:<id>:<n>]` chat line.
+
+**No raw emoji glyphs anywhere:** gifts render OpenMoji image art (committed
+under `public/gifts/om/`), and every nation flag is a real flag image from
+`public/flags/` (flagcdn) — Apple-style emoji flags break on Windows. The 48
+nation-legend flag gifts render with a CSS waving-cloth animation
+(`.flag-wave`) on the stream, in the drawer, and in chat.
 
 The currency is **Roars** (100 ≈ $1, one-way / non-cashable):
 

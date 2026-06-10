@@ -20,7 +20,8 @@ export type NationTheme = {
 export type Nation = {
   slug: string;        // matches the /nation/[slug] route
   name: string;
-  flag: string;        // emoji
+  flag: string;        // emoji (kept as data; UI renders flagImg — emoji flags break on Windows)
+  flagImg: string;     // image path under /public/flags (real flag, same on every OS)
   languages: string[]; // e.g. ["Arabic", "French"]
   theme: NationTheme;
   blurb: string;       // one-line description for the nation hub
@@ -44,8 +45,22 @@ export type RoomListing = {
   viewers: string;
 };
 
-// What you type when adding a nation (blurb is auto-filled if omitted).
-type RawNation = Omit<Nation, "blurb"> & { blurb?: string };
+// What you type when adding a nation (blurb + flagImg are auto-filled if omitted).
+type RawNation = Omit<Nation, "blurb" | "flagImg"> & { blurb?: string; flagImg?: string };
+
+// Flag images live in /public/flags/<iso>.png (downloaded from flagcdn.com).
+// The ISO code is derived from the flag emoji's regional-indicator pair, so
+// adding a nation only needs the emoji. England/Scotland use GB subdivisions.
+function flagIso(slug: string, flag: string): string {
+  if (slug === "england") return "gb-eng";
+  if (slug === "scotland") return "gb-sct";
+  return Array.from(flag)
+    .map((c) => {
+      const cp = c.codePointAt(0) ?? 0;
+      return cp >= 0x1f1e6 && cp <= 0x1f1ff ? String.fromCharCode(97 + cp - 0x1f1e6) : "";
+    })
+    .join("");
+}
 
 // ─── NATION REFERENCE DATA ────────────────────────────────────────────────────
 
@@ -103,6 +118,7 @@ const rawNations: RawNation[] = [
 export const nations: Nation[] = rawNations
   .map((n) => ({
     ...n,
+    flagImg: n.flagImg ?? `/flags/${flagIso(n.slug, n.flag)}.png`,
     blurb: n.blurb ?? `Fan rooms, reactions, and creators supporting ${n.name}.`,
   }))
   .sort((a, b) => a.name.localeCompare(b.name));

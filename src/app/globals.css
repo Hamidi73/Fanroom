@@ -289,6 +289,46 @@
   100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
 }
 
+/* ── Waving flag (animated, image-based — no emoji flags, they break on
+      Windows). The image ripples on a 3D sway while a moving sheen passes
+      over it, reading as cloth in the wind. ─────────────────────────────── */
+.flag-wave {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  transform-origin: left center;
+  animation: flag-sway 1.8s ease-in-out infinite;
+}
+.flag-wave > img { display: block; }
+.flag-wave::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    rgba(0, 0, 0, 0.18) 0%,
+    rgba(255, 255, 255, 0.22) 22%,
+    rgba(0, 0, 0, 0.1) 44%,
+    rgba(255, 255, 255, 0.16) 66%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+  background-size: 220% 100%;
+  animation: flag-sheen 1.8s linear infinite;
+  pointer-events: none;
+}
+@keyframes flag-sway {
+  0%, 100% { transform: perspective(220px) rotateY(-7deg) skewY(1.4deg); }
+  50% { transform: perspective(220px) rotateY(7deg) skewY(-1.4deg); }
+}
+@keyframes flag-sheen {
+  0% { background-position: 120% 0; }
+  100% { background-position: -120% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flag-wave { animation: none; }
+  .flag-wave::after { animation: none; background: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gift-anim-rise, .gift-anim-pop, .gift-anim-spin, .gift-anim-slide,
   .gift-anim-arc, .gift-anim-sway, .gift-anim-charge, .gift-anim-pulse {

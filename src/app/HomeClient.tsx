@@ -22,6 +22,7 @@ import {
   RoomLeaderboard,
   HeroStream,
   FixtureCard,
+  NationFlag,
   type RoomCardData,
   type LeaderRoom,
 } from "@/app/components";
@@ -144,7 +145,9 @@ export function HomeClient({ fixtures, rooms = [] }: { fixtures: Fixture[]; room
                       <span className="absolute left-2 top-2 rounded bg-black/60 px-1.5 py-0.5 text-[11px] font-bold text-white/80">
                         Opening soon
                       </span>
-                      <span className="text-4xl drop-shadow-[0_3px_8px_rgba(0,0,0,0.5)]">{n.flag}</span>
+                      <span className="drop-shadow-[0_3px_8px_rgba(0,0,0,0.5)]">
+                        <NationFlag src={n.flagImg} name={n.name} width={64} className="rounded-md" />
+                      </span>
                     </div>
                     <p className="mt-2 truncate text-sm font-bold text-ink-foreground transition group-hover:text-accent-soft">
                       Host the first {n.name} room

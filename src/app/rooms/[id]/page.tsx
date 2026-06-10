@@ -16,6 +16,7 @@ import {
   PaymentNotice,
   ShareRoomButton,
   AutoJoinRoom,
+  NationFlag,
 } from "@/app/components";
 import { getNation } from "@/app/data";
 import type { RoomRow, MemberRow, MessageRow, ChatLine } from "@/lib/types";
@@ -173,8 +174,8 @@ export default async function RoomDetailPage({
                         <RoomMemberCount roomId={room.id} initial={members.length} />
                       </span>
                       {nation && (
-                        <Link href={`/nation/${nation.slug}`} className="rounded border border-line bg-surface-2 px-2 py-0.5 text-xs text-accent-soft no-underline">
-                          {nation.flag} {nation.name}
+                        <Link href={`/nation/${nation.slug}`} className="inline-flex items-center gap-1.5 rounded border border-line bg-surface-2 px-2 py-0.5 text-xs text-accent-soft no-underline">
+                          <NationFlag src={nation.flagImg} name={nation.name} width={16} /> {nation.name}
                         </Link>
                       )}
                       {room.language && (

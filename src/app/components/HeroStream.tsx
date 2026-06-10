@@ -8,6 +8,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { LivePreview } from "./LivePreview";
+import { NationFlag } from "./NationFlag";
 import { getNation } from "@/app/data";
 import type { LeaderRoom } from "./RoomLeaderboard";
 
@@ -41,7 +42,9 @@ export function HeroStream({ room }: { room: LeaderRoom | null }) {
       {/* Thumbnail behind the video */}
       <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundImage: gradient }}>
         {nation ? (
-          <span className="text-6xl drop-shadow-[0_3px_10px_rgba(0,0,0,0.5)]">{nation.flag}</span>
+          <span className="drop-shadow-[0_3px_10px_rgba(0,0,0,0.5)]">
+            <NationFlag src={nation.flagImg} name={nation.name} width={110} wave className="rounded-md" />
+          </span>
         ) : (
           <span className="text-sm font-semibold text-white/60">{room.title}</span>
         )}

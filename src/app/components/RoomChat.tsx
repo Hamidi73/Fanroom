@@ -24,6 +24,7 @@ import type { ChatLine } from "@/lib/types";
 import { TIERS, getTier, formatAmount } from "@/lib/tiers";
 import { parseStickerBody, parseGiftBody } from "@/lib/stickers";
 import { getGift } from "@/lib/gifts";
+import { GiftIcon } from "./GiftIcon";
 
 type NewRow = {
   id: number;
@@ -369,15 +370,31 @@ function MessageBody({ body }: { body: string }) {
   const giftSend = parseGiftBody(body);
   const gift = giftSend ? getGift(giftSend.giftId) : undefined;
   if (giftSend && gift) {
+    // A paid send — render it highlighted (a tinted banner in the gift's
+    // colour), so it stands out in history like a mini hype-chat.
     return (
-      <p className="mt-0.5 inline-flex max-w-full items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-sm text-ink-foreground/90">
-        <span aria-hidden="true">🎁</span>
-        <span className="truncate">
-          sent {gift.kind === "text" ? "" : `${gift.icon} `}
-          <span className="font-bold" style={{ color: gift.color }}>{gift.name}</span>
-          {giftSend.mult > 1 && <span className="font-black"> ×{giftSend.mult}</span>}
-        </span>
-      </p>
+      <div
+        className="mt-1 flex items-center gap-2.5 rounded-lg border px-3 py-2"
+        style={{
+          borderColor: `${gift.color}59`,
+          background: `linear-gradient(90deg, ${gift.color}26, ${gift.color}08 70%, transparent)`,
+        }}
+      >
+        {gift.kind === "text" ? (
+          <span
+            className="display rounded-md px-2 py-0.5 text-sm font-black uppercase italic leading-none text-white"
+            style={{ background: gift.color }}
+          >
+            {gift.icon}
+          </span>
+        ) : (
+          <GiftIcon gift={gift} size={gift.nationSlug ? 40 : 30} />
+        )}
+        <p className="min-w-0 truncate text-sm text-ink-foreground/90">
+          sent <span className="font-bold" style={{ color: gift.color }}>{gift.name}</span>
+          {giftSend.mult > 1 && <span className="font-black text-ink-foreground"> ×{giftSend.mult}</span>}
+        </p>
+      </div>
     );
   }
 

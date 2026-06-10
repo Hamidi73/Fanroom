@@ -19,6 +19,7 @@ import { getGift, COMBO, type Gift } from "@/lib/gifts";
 import { getSticker, stickerBody, giftBody, type Sticker } from "@/lib/stickers";
 import { playGiftSound, setGiftSoundMuted } from "@/lib/giftSound";
 import { CoinStore } from "./CoinStore";
+import { GiftIcon } from "./GiftIcon";
 
 type GiftEvent = { giftId: string; sender: string; mult: number; combo: number };
 type StickerEvent = { stickerId: string; sender: string };
@@ -283,8 +284,8 @@ export function RoomGiftsProvider({
                 {f.gift.icon}
               </span>
             ) : (
-              <span className="text-5xl drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)]" style={{ filter: `drop-shadow(0 0 14px ${f.gift.color})` }}>
-                {f.gift.icon}
+              <span style={{ filter: `drop-shadow(0 0 14px ${f.gift.color}) drop-shadow(0 4px 10px rgba(0,0,0,0.6))` }}>
+                <GiftIcon gift={f.gift} size={f.gift.nationSlug ? 76 : 56} />
               </span>
             )}
             {f.combo > 1 && (
@@ -315,7 +316,18 @@ export function RoomGiftsProvider({
 
         {takeover && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gift-takeover" style={{ background: `radial-gradient(circle at center, ${takeover.gift.color}33, transparent 70%)` }}>
-            <span className="text-[9rem] leading-none drop-shadow-[0_8px_30px_rgba(0,0,0,0.7)]">{takeover.gift.icon}</span>
+            {takeover.gift.kind === "text" ? (
+              <span
+                className="display rounded-3xl px-10 py-4 text-7xl font-black uppercase italic tracking-tight text-white"
+                style={{ background: takeover.gift.color, boxShadow: `0 10px 50px ${takeover.gift.color}` }}
+              >
+                {takeover.gift.icon}
+              </span>
+            ) : (
+              <span className="drop-shadow-[0_8px_30px_rgba(0,0,0,0.7)]">
+                <GiftIcon gift={takeover.gift} size={takeover.gift.nationSlug ? 260 : 170} />
+              </span>
+            )}
             <span className="mt-2 display text-3xl text-white drop-shadow">{takeover.gift.name}</span>
             <span className="mt-1 text-sm font-bold uppercase tracking-wider" style={{ color: takeover.gift.color }}>
               sent by {takeover.sender}

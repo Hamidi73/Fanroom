@@ -10,6 +10,8 @@ export * from "./AppHeader";
 export * from "./AccountNav";
 export * from "./GoogleButton";
 export * from "./NationCard";
+export * from "./NationFlag";
+export * from "./GiftIcon";
 export * from "./RoomCard";
 export * from "./RoomLeaderboard";
 export * from "./LivePreview";

@@ -4,6 +4,7 @@
 
 import Link from "next/link";
 import { getNationsByContinent } from "@/app/data";
+import { NationFlag } from "./NationFlag";
 
 const continents = getNationsByContinent();
 
@@ -32,7 +33,7 @@ export function Sidebar() {
                   href={`/nation/${n.slug}`}
                   className="flex items-center gap-2.5 rounded-md py-1.5 pl-4 pr-2 no-underline transition hover:bg-surface-2"
                 >
-                  <span className="text-lg leading-none">{n.flag}</span>
+                  <NationFlag src={n.flagImg} name={n.name} width={20} />
                   <span className="truncate text-sm font-medium text-ink-foreground">{n.name}</span>
                 </Link>
               ))}

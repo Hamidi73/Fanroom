@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getNation, getFixturesByNationSlug } from "@/app/data";
-import { AppShell, SiteFooter, FixtureCard, RoomCard, type RoomCardData } from "@/app/components";
+import { AppShell, SiteFooter, FixtureCard, RoomCard, NationFlag, type RoomCardData } from "@/app/components";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata({
@@ -71,8 +71,8 @@ export default async function NationPage({
           }}
         >
           <div className="flex flex-wrap items-center gap-4">
-            <span className="flex h-16 w-16 items-center justify-center rounded-xl bg-black/30 text-4xl">
-              {nation.flag}
+            <span className="flex h-16 w-20 items-center justify-center rounded-xl bg-black/30">
+              <NationFlag src={nation.flagImg} name={nation.name} width={56} wave className="rounded" />
             </span>
             <div>
               <h1 className="display text-3xl sm:text-4xl">{nation.name}</h1>

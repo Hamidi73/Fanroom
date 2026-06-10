@@ -15,11 +15,12 @@ import {
   featuredGiftForNation,
   getGift,
   RARITY,
-  ECONOMY,
   type Gift,
   type GiftPackId,
 } from "@/lib/gifts";
+import { emojiArt } from "@/lib/gifts";
 import { STICKER_PACKS, stickersInPack, type StickerPackId } from "@/lib/stickers";
+import { GiftIcon, Coin } from "./GiftIcon";
 import { useRoomGifts } from "./RoomGiftsProvider";
 
 type DrawerTab = GiftPackId | StickerPackId | "featured";
@@ -54,10 +55,10 @@ export function GiftDrawer({
     return (
       <Link
         href="/login"
-        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-2xl shadow-lg shadow-accent/30 transition hover:bg-accent-strong lg:left-5 lg:right-auto"
+        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent shadow-lg shadow-accent/30 transition hover:bg-accent-strong lg:left-5 lg:right-auto"
         aria-label="Log in to send gifts"
       >
-        🎁
+        <Image src={emojiArt("🎁")} alt="" width={30} height={30} unoptimized />
       </Link>
     );
   }
@@ -81,10 +82,10 @@ export function GiftDrawer({
           right-hand rail; mobile keeps the familiar bottom-right spot. */}
       <button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-2xl shadow-lg shadow-accent/30 transition hover:scale-105 hover:bg-accent-strong lg:left-5 lg:right-auto"
+        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent shadow-lg shadow-accent/30 transition hover:scale-105 hover:bg-accent-strong lg:left-5 lg:right-auto"
         aria-label="Send a gift"
       >
-        🎁
+        <Image src={emojiArt("🎁")} alt="" width={30} height={30} unoptimized />
       </button>
 
       {open && (
@@ -96,13 +97,13 @@ export function GiftDrawer({
             {/* Header: balance + recharge + mute */}
             <div className="flex items-center justify-between border-b border-line px-4 py-3">
               <button onClick={openStore} className="flex items-center gap-1.5 rounded-lg bg-surface-2 px-3 py-1.5 text-sm font-bold text-ink-foreground transition hover:bg-surface">
-                <span>{ECONOMY.coinSymbol}</span>
+                <Coin size={18} />
                 <span>{balance.toLocaleString()}</span>
                 <span className="ml-1 text-accent-soft">+ Recharge</span>
               </button>
               <div className="flex items-center gap-1">
                 <button onClick={toggleMuted} aria-label={muted ? "Unmute" : "Mute"} className="rounded-lg px-2 py-1.5 text-muted hover:bg-surface-2 hover:text-ink-foreground">
-                  {muted ? "🔇" : "🔊"}
+                  <SpeakerIcon muted={muted} />
                 </button>
                 <button onClick={() => setOpen(false)} aria-label="Close" className="rounded-lg px-2 py-1.5 text-muted hover:bg-surface-2 hover:text-ink-foreground">
                   ✕
@@ -131,7 +132,7 @@ export function GiftDrawer({
                       tab === t.id ? "bg-accent text-white" : "text-muted hover:bg-surface-2 hover:text-ink-foreground"
                     }`}
                   >
-                    <span>{t.icon}</span>
+                    <Image src={emojiArt(t.icon)} alt="" width={15} height={15} unoptimized />
                     {t.label}
                   </button>
                 ))}
@@ -166,8 +167,8 @@ export function GiftDrawer({
                         className="h-20 w-full rounded-lg object-cover transition group-hover:scale-[1.04]"
                       />
                       <span className="line-clamp-1 w-full text-[10px] font-semibold text-ink-foreground">{st.name}</span>
-                      <span className={`flex items-center gap-0.5 text-[11px] font-black ${affordable ? "text-accent-soft" : "text-muted"}`}>
-                        {ECONOMY.coinSymbol} {st.priceRoars.toLocaleString()}
+                      <span className={`flex items-center gap-1 text-[11px] font-black ${affordable ? "text-accent-soft" : "text-muted"}`}>
+                        <Coin size={12} /> {st.priceRoars.toLocaleString()}
                       </span>
                     </button>
                   );
@@ -195,13 +196,13 @@ export function GiftDrawer({
                         {g.icon}
                       </span>
                     ) : (
-                      <span className="text-3xl transition group-hover:scale-110" style={{ filter: `drop-shadow(0 0 6px ${RARITY[g.rarity].glow})` }}>
-                        {g.icon}
+                      <span className="flex h-9 items-center transition group-hover:scale-110" style={{ filter: `drop-shadow(0 0 6px ${RARITY[g.rarity].glow})` }}>
+                        <GiftIcon gift={g} size={34} wave={false} />
                       </span>
                     )}
                     <span className="line-clamp-1 w-full text-[10px] font-semibold text-ink-foreground">{g.name}</span>
-                    <span className={`flex items-center gap-0.5 text-[11px] font-black ${affordable ? "text-accent-soft" : "text-muted"}`}>
-                      {ECONOMY.coinSymbol} {g.priceRoars.toLocaleString()}
+                    <span className={`flex items-center gap-1 text-[11px] font-black ${affordable ? "text-accent-soft" : "text-muted"}`}>
+                      <Coin size={12} /> {g.priceRoars.toLocaleString()}
                     </span>
                   </button>
                 );
@@ -231,6 +232,19 @@ export function GiftDrawer({
         </div>
       )}
     </>
+  );
+}
+
+function SpeakerIcon({ muted }: { muted: boolean }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M2 6v4h2.5L8 13V3L4.5 6H2Z" fill="currentColor" />
+      {muted ? (
+        <path d="m10.5 6 4 4m0-4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      ) : (
+        <path d="M10.5 5.5a3.5 3.5 0 0 1 0 5M12.3 4a6 6 0 0 1 0 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      )}
+    </svg>
   );
 }
 
