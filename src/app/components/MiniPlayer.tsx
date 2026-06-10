@@ -116,7 +116,7 @@ export function MiniPlayer() {
       tabIndex={0}
       onClick={() => router.push(`/rooms/${room.roomId}`)}
       onKeyDown={(e) => e.key === "Enter" && router.push(`/rooms/${room.roomId}`)}
-      className="fixed bottom-4 right-4 z-40 w-72 cursor-pointer overflow-hidden rounded-xl border border-line bg-ink shadow-2xl shadow-black/60 transition hover:border-accent/60 sm:w-80"
+      className="fixed bottom-4 right-4 z-40 w-60 cursor-pointer overflow-hidden rounded-xl border border-line bg-ink shadow-2xl shadow-black/60 transition hover:border-accent/60 sm:w-72"
       aria-label={`Return to ${room.title}`}
     >
       <div className="flex items-center justify-between gap-2 border-b border-line bg-ink-deep px-3 py-1.5">

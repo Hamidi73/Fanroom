@@ -28,7 +28,7 @@ export function NationFlag({
         alt={`${name} flag`}
         width={width}
         height={Math.round(width * 0.7)}
-        unoptimized
+        sizes={`${width}px`}
         className="h-auto w-full"
       />
     </span>

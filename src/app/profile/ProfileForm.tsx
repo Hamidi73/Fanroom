@@ -48,10 +48,15 @@ export function ProfileForm({
     const supabase = createClient();
     const { data: userData } = await supabase.auth.getUser();
     const uid = userData.user?.id;
+    if (!uid) {
+      setNameMsg({ kind: "err", text: "Session expired — please log in again." });
+      setNameBusy(false);
+      return;
+    }
     const { error: profileErr } = await supabase
       .from("profiles")
       .update({ display_name: trimmed })
-      .eq("id", uid ?? "");
+      .eq("id", uid);
     const { error: metaErr } = await supabase.auth.updateUser({ data: { display_name: trimmed } });
     setNameBusy(false);
     if (profileErr || metaErr) {

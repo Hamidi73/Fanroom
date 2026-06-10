@@ -32,17 +32,17 @@ export function TopNav({ rightSlot }: { rightSlot?: ReactNode }) {
         </nav>
       </div>
 
-      <form onSubmit={onSearch} className="mx-auto hidden w-full max-w-md items-center sm:flex">
+      <form onSubmit={onSearch} className="mx-auto flex min-w-0 flex-1 items-center sm:max-w-md">
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search rooms"
-          className="h-9 w-full rounded-l-lg border border-line bg-surface px-3 text-sm text-ink-foreground outline-none placeholder:text-muted focus:border-accent/60"
+          className="h-9 min-w-0 flex-1 rounded-l-lg border border-line bg-surface px-2.5 text-sm text-ink-foreground outline-none placeholder:text-muted focus:border-accent/60 sm:px-3"
         />
         <button
           type="submit"
           aria-label="Search"
-          className="flex h-9 items-center rounded-r-lg border border-l-0 border-line bg-surface-2 px-3 text-muted transition hover:text-ink-foreground"
+          className="flex h-9 shrink-0 items-center rounded-r-lg border border-l-0 border-line bg-surface-2 px-2.5 text-muted transition hover:text-ink-foreground sm:px-3"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.6" />

@@ -11,19 +11,31 @@ import { createClient } from "@/lib/supabase/client";
 export function RoomHostControls({ roomId, status }: { roomId: string; status: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const closed = status === "Closed";
 
   const setStatus = async (next: string) => {
     setBusy(true);
-    await createClient().from("rooms").update({ status: next }).eq("id", roomId);
+    setError(null);
+    const { error: dbErr } = await createClient().from("rooms").update({ status: next }).eq("id", roomId);
     setBusy(false);
+    if (dbErr) {
+      setError("Couldn't update room status — try again.");
+      return;
+    }
     router.refresh();
   };
 
   const remove = async () => {
     if (!confirm("Delete this room permanently? Its chat and members will be removed.")) return;
     setBusy(true);
-    await createClient().from("rooms").delete().eq("id", roomId);
+    setError(null);
+    const { error: dbErr } = await createClient().from("rooms").delete().eq("id", roomId);
+    if (dbErr) {
+      setBusy(false);
+      setError("Couldn't delete the room — try again.");
+      return;
+    }
     router.push("/rooms");
     router.refresh();
   };
@@ -55,6 +67,7 @@ export function RoomHostControls({ roomId, status }: { roomId: string; status: s
       >
         Delete room
       </button>
+      {error && <p className="w-full text-xs text-red-400">{error}</p>}
     </div>
   );
 }

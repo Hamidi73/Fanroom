@@ -224,7 +224,7 @@ export default async function RoomDetailPage({
           </div>
 
           {/* Chat rail — sticky and full height on desktop */}
-          <section className="order-2 flex h-[70vh] min-h-[480px] flex-col overflow-hidden rounded-xl border border-line bg-panel lg:sticky lg:top-[4.25rem] lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:h-[calc(100vh-5.5rem)]">
+          <section className="order-2 flex h-[55vh] min-h-[300px] flex-col overflow-hidden rounded-xl border border-line bg-panel sm:h-[65vh] sm:min-h-[420px] lg:sticky lg:top-[4.25rem] lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:h-[calc(100vh-5.5rem)]">
             <RoomChat
               roomId={room.id}
               initial={initialChat}

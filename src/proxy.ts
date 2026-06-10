@@ -1,5 +1,5 @@
 // Refreshes the Supabase auth session on every request so Server Components
-// always see an up-to-date user. (Standard @supabase/ssr middleware pattern.)
+// always see an up-to-date user. (Standard @supabase/ssr proxy pattern.)
 //
 // Hardened: if the Supabase env vars are missing, or the auth call fails for any
 // reason, we let the request through untouched instead of 500-ing every route.
@@ -7,7 +7,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

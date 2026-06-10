@@ -32,3 +32,4 @@ export * from "./RoomGiftsProvider";
 export * from "./GiftDrawer";
 export * from "./PaymentNotice";
 export * from "./ShareRoomButton";
+export * from "./MiniPlayerShell";
