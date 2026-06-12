@@ -5,9 +5,11 @@
 import Link from "next/link";
 import type { Fixture } from "@/app/data";
 
-function statusBadge(status: Fixture["status"]) {
-  if (status === "live") return { label: "● Live", className: "bg-live text-white" };
-  if (status === "finished") return { label: "Full time", className: "bg-surface-2 text-muted" };
+function statusBadge(fixture: Fixture) {
+  if (fixture.status === "live")
+    return { label: `● ${fixture.minute ?? "Live"}`, className: "bg-live text-white" };
+  if (fixture.status === "finished")
+    return { label: "Full time", className: "bg-surface-2 text-muted" };
   return { label: "Scheduled", className: "bg-surface-2 text-online" };
 }
 
@@ -21,7 +23,7 @@ function TeamName({ name, slug }: { name: string; slug: string }) {
 }
 
 export function FixtureCard({ fixture }: { fixture: Fixture }) {
-  const badge = statusBadge(fixture.status);
+  const badge = statusBadge(fixture);
   const hasScore = fixture.homeScore !== null && fixture.awayScore !== null;
 
   return (

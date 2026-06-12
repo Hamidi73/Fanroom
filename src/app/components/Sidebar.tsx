@@ -1,12 +1,10 @@
-// Left navigation rail (browse pages). Primary links on top, then the nations
-// grouped into collapsible continent sections — like a streaming app's left
-// sidebar. Hidden on small screens; the top nav covers navigation there.
+// Left navigation rail (browse pages). Primary links on top, then the World
+// Cup groups (A–L) as collapsible dropdowns — each holds today's matches
+// (live score + minute) and the group's nations. Hidden on small screens; the
+// top nav covers navigation there.
 
 import Link from "next/link";
-import { getNationsByContinent } from "@/app/data";
-import { NationFlag } from "./NationFlag";
-
-const continents = getNationsByContinent();
+import { GroupFixtures } from "./GroupFixtures";
 
 export function Sidebar() {
   return (
@@ -16,31 +14,8 @@ export function Sidebar() {
         <SideLink href="/rooms/new" label="Create a room" icon="plus" />
       </nav>
 
-      <p className="mt-5 px-4 text-[11px] font-bold uppercase tracking-wider text-muted">
-        Nations
-      </p>
-      <nav className="mt-1 px-2">
-        {continents.map(({ continent, nations }) => (
-          <details key={continent} className="group">
-            <summary className="flex cursor-pointer list-none items-center justify-between rounded-md px-2 py-1.5 text-sm font-semibold text-ink-foreground transition hover:bg-surface-2 [&::-webkit-details-marker]:hidden">
-              <span>{continent}</span>
-              <Chevron />
-            </summary>
-            <div className="mb-1 mt-0.5">
-              {nations.map((n) => (
-                <Link
-                  key={n.slug}
-                  href={`/nation/${n.slug}`}
-                  className="flex items-center gap-2.5 rounded-md py-1.5 pl-4 pr-2 no-underline transition hover:bg-surface-2"
-                >
-                  <NationFlag src={n.flagImg} name={n.name} width={20} />
-                  <span className="truncate text-sm font-medium text-ink-foreground">{n.name}</span>
-                </Link>
-              ))}
-            </div>
-          </details>
-        ))}
-      </nav>
+      {/* Group dropdowns with today's matches — polls for live scores. */}
+      <GroupFixtures />
     </aside>
   );
 }
@@ -54,22 +29,6 @@ function SideLink({ href, label, icon }: { href: string; label: string; icon: "b
       <span className="text-muted">{ICONS[icon]}</span>
       {label}
     </Link>
-  );
-}
-
-// Caret that rotates when its parent <details> is open (Tailwind group-open).
-function Chevron() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-      className="shrink-0 text-muted transition-transform group-open:rotate-90"
-    >
-      <path d="m6 4 4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
   );
 }
 

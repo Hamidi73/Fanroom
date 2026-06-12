@@ -45,7 +45,17 @@ function SectionHeader({ title, href, cta }: { title: string; href?: string; cta
   );
 }
 
-export function HomeClient({ fixtures, rooms = [] }: { fixtures: Fixture[]; rooms?: RoomCardData[] }) {
+export function HomeClient({
+  fixtures,
+  live = [],
+  results = [],
+  rooms = [],
+}: {
+  fixtures: Fixture[];
+  live?: Fixture[];
+  results?: Fixture[];
+  rooms?: RoomCardData[];
+}) {
   const [language, setLanguage] = useState<Language>("English");
   const t = getTranslations(language);
   const hasRooms = rooms.length > 0;
@@ -201,7 +211,20 @@ export function HomeClient({ fixtures, rooms = [] }: { fixtures: Fixture[]; room
           </div>
         </div>
 
-        {/* Upcoming matches */}
+        {/* Live matches — the sidebar group rail covers these on desktop, so
+            this strip only shows where the sidebar is hidden (mobile/tablet). */}
+        {live.length > 0 && (
+          <div className="mt-10 lg:hidden">
+            <SectionHeader title="Live matches" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              {live.map((fixture) => (
+                <FixtureCard key={fixture.id} fixture={fixture} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Upcoming matches — games drop out the moment they kick off */}
         <div className="mt-10">
           <SectionHeader title="Upcoming matches" />
           {fixtures.length === 0 ? (
@@ -216,6 +239,18 @@ export function HomeClient({ fixtures, rooms = [] }: { fixtures: Fixture[]; room
             </div>
           )}
         </div>
+
+        {/* Recent results — finished games land here (newest first) */}
+        {results.length > 0 && (
+          <div className="mt-10">
+            <SectionHeader title="Recent results" />
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {results.map((fixture) => (
+                <FixtureCard key={fixture.id} fixture={fixture} />
+              ))}
+            </div>
+          </div>
+        )}
 
       </div>
 

@@ -3,7 +3,7 @@
 // shell which owns the language switcher. When rooms exist they're featured front
 // and centre; until then the client shows inviting placeholders.
 
-import { getUpcomingFixtures } from "@/app/data";
+import { getLiveFixtures, getRecentResults, getUpcomingFixtures } from "@/app/data";
 import { createClient } from "@/lib/supabase/server";
 import { LiveRefresh, type RoomCardData } from "@/app/components";
 import { HomeClient } from "./HomeClient";
@@ -13,8 +13,11 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   const supabase = await createClient();
 
-  const [fixtures, roomsRes] = await Promise.all([
+  // The three fixture getters share one cached fetch — no duplicate requests.
+  const [fixtures, live, results, roomsRes] = await Promise.all([
     getUpcomingFixtures(9),
+    getLiveFixtures(),
+    getRecentResults(9),
     supabase
       .from("rooms")
       .select(
@@ -32,7 +35,7 @@ export default async function Home() {
       {/* New rooms, closed rooms, member counts and fixture scores update
           live — no manual reload needed. */}
       <LiveRefresh />
-      <HomeClient fixtures={fixtures} rooms={rooms} />
+      <HomeClient fixtures={fixtures} live={live} results={results} rooms={rooms} />
     </>
   );
 }
