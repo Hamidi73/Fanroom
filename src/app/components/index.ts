@@ -35,3 +35,5 @@ export * from "./ShareRoomButton";
 export * from "./MiniPlayerShell";
 export * from "./GroupFixtures";
 export * from "./Reveal";
+export * from "./ClipControls";
+export * from "./WalletConnect";

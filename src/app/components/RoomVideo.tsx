@@ -20,6 +20,7 @@ import {
   useTracks,
 } from "@livekit/components-react";
 import { Track } from "livekit-client";
+import { ClipControls } from "./ClipControls";
 
 function Frame({ children }: { children: React.ReactNode }) {
   return (
@@ -39,9 +40,21 @@ function Placeholder({ text }: { text: string }) {
   );
 }
 
-function Stage({ canPublish, preview }: { canPublish: boolean; preview: boolean }) {
+function Stage({
+  canPublish,
+  preview,
+  roomId,
+}: {
+  canPublish: boolean;
+  preview: boolean;
+  roomId: string;
+}) {
   const tracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: false }]);
+  const audioTracks = useTracks([{ source: Track.Source.Microphone, withPlaceholder: false }]);
   const live = tracks.length > 0;
+  // Raw media tracks feed the rolling clip buffer (members + host only).
+  const videoTrack = tracks[0]?.publication?.track?.mediaStreamTrack ?? null;
+  const audioTrack = audioTracks[0]?.publication?.track?.mediaStreamTrack ?? null;
   return (
     <>
       <div className="relative aspect-video bg-black">
@@ -75,6 +88,10 @@ function Stage({ canPublish, preview }: { canPublish: boolean; preview: boolean 
           variation="minimal"
           controls={{ camera: true, microphone: true, screenShare: false, chat: false, leave: false }}
         />
+      )}
+      {/* Clip the stream (members + host; preview viewers must join first). */}
+      {live && !preview && (
+        <ClipControls videoTrack={videoTrack} audioTrack={audioTrack} roomId={roomId} />
       )}
       {!preview && <RoomAudioRenderer />}
     </>
@@ -123,7 +140,7 @@ export function RoomVideo({ roomId, canWatch }: { roomId: string; canWatch: bool
   return (
     <Frame>
       <LiveKitRoom token={state.token} serverUrl={state.url} connect video={false} audio={false}>
-        <Stage canPublish={state.canPublish} preview={state.preview} />
+        <Stage canPublish={state.canPublish} preview={state.preview} roomId={roomId} />
       </LiveKitRoom>
     </Frame>
   );

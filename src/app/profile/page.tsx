@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader, SiteFooter, ConnectPayouts, DeleteAccountCard } from "@/app/components";
+import { AppHeader, SiteFooter, ConnectPayouts, DeleteAccountCard, WalletConnect } from "@/app/components";
 import { getConnectInfo } from "@/lib/connect";
 import { ProfileForm } from "./ProfileForm";
 
@@ -29,7 +29,7 @@ export default async function ProfilePage({
   const payout = payoutsConfigured ? await getConnectInfo(user.id) : { accountId: null, enabled: false };
 
   const [{ data: profile }, { data: hostedData }, { data: joinedData }] = await Promise.all([
-    supabase.from("profiles").select("display_name,is_admin,created_at").eq("id", user.id).single(),
+    supabase.from("profiles").select("display_name,is_admin,created_at,wallet_address").eq("id", user.id).single(),
     supabase.from("rooms").select("id,title,status").eq("host_id", user.id).order("created_at", { ascending: false }),
     supabase
       .from("room_members")
@@ -127,6 +127,11 @@ export default async function ProfilePage({
             </div>
           </section>
         )}
+
+        {/* Crypto wallet (Phantom) */}
+        <section className="mt-6 rounded-xl border border-line bg-panel p-6 sm:p-8">
+          <WalletConnect userId={user.id} initialAddress={profile?.wallet_address ?? null} />
+        </section>
 
         {/* My rooms */}
         <section className="mt-6 grid gap-6 sm:grid-cols-2">
