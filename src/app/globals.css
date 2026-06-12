@@ -1,29 +1,39 @@
 @import "tailwindcss";
 
 /*
-  Design tokens for the whole site — a single, dark, Twitch-inspired system.
+  Design tokens for the whole site — a dark "concert darkroom" stage in the
+  World Cup colours: near-black canvas, white as the dominant high-contrast
+  tone, and one gold signal accent. Flat, almost shadowless, squared corners.
 
   Use them as normal Tailwind utilities, e.g. `bg-surface`, `text-accent`,
   `border-line`, `font-display`. Change a value here and it updates everywhere.
 */
 @theme {
-  /* Surfaces (dark neutral, like a streaming app) */
-  --color-ink: #0e0e10;            /* page background                   */
-  --color-ink-deep: #0a0a0b;       /* deepest background (room/video)   */
-  --color-ink-foreground: #efeff1; /* default text                      */
-  --color-surface: #18181b;        /* cards / panels                    */
-  --color-surface-2: #1f1f23;      /* hover / raised panels             */
-  --color-panel: #18181b;          /* alias used on room/nation pages   */
-  --color-panel-2: #131316;        /* darker inset panels               */
-  --color-line: #2a2a2e;           /* borders / dividers                */
+  /* Surfaces (obsidian canvas → graphite tiers; definition comes from
+     hairlines and gray shifts, not elevation) */
+  --color-ink: #121212;            /* page background (obsidian)        */
+  --color-ink-deep: #0c0c0c;       /* deepest background (room/video)   */
+  --color-ink-foreground: #ffffff; /* default text                      */
+  --color-surface: #1d1d1d;        /* cards / panels                    */
+  --color-surface-2: #2a2a2a;      /* hover / raised panels (graphite)  */
+  --color-panel: #1d1d1d;          /* alias used on room/nation pages   */
+  --color-panel-2: #171717;        /* darker inset panels               */
+  --color-line: #303030;           /* borders / dividers                */
 
-  /* Brand */
-  --color-accent: #9147ff;         /* primary purple (Twitch-like)      */
-  --color-accent-strong: #772ce8;  /* hover/pressed purple              */
-  --color-accent-soft: #bf94ff;    /* light purple for text-on-dark     */
-  --color-muted: #adadb8;          /* secondary / caption text          */
+  /* Brand — World Cup gold */
+  --color-accent: #d4af37;         /* primary gold                      */
+  --color-accent-strong: #b8932b;  /* hover/pressed gold                */
+  --color-accent-soft: #e8cd6e;    /* light gold for text-on-dark       */
+  --color-muted: #999999;          /* secondary / caption text (fog)    */
   --color-live: #eb0400;           /* live red                          */
   --color-online: #00c389;         /* scheduled / online green          */
+
+  /* Squared corners — part of the identity (no pills, no large radii) */
+  --radius-md: 4px;
+  --radius-lg: 4px;
+  --radius-xl: 4px;
+  --radius-2xl: 6px;
+  --radius-3xl: 8px;
 
   /* Fonts (families are loaded in app/layout.tsx) */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -42,14 +52,14 @@
   /* Thin dark scrollbars, like a streaming app. */
   * {
     scrollbar-width: thin;
-    scrollbar-color: #2a2a2e transparent;
+    scrollbar-color: #303030 transparent;
   }
   *::-webkit-scrollbar {
     width: 10px;
     height: 10px;
   }
   *::-webkit-scrollbar-thumb {
-    background: #2a2a2e;
+    background: #303030;
     border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: padding-box;
@@ -61,6 +71,15 @@
   font-family: var(--font-display);
   font-weight: 800;
   letter-spacing: -0.02em;
+}
+
+/* Editorial hero headline — whisper-thin at display scale (the design system
+   inverts the usual convention: restraint instead of shouting). Only for the
+   large above-the-fold headline; never below display size. */
+.display-hero {
+  font-family: var(--font-display);
+  font-weight: 200;
+  letter-spacing: -0.01em;
 }
 
 /* Pulsing red "live" dot. */
@@ -119,8 +138,8 @@
   100% { background-position: 250% 0; }
 }
 @keyframes fr-glow {
-  0%, 100% { box-shadow: 0 0 0 1px rgba(145, 71, 255, 0.5), 0 0 22px rgba(145, 71, 255, 0.45); }
-  50%      { box-shadow: 0 0 0 1px rgba(224, 163, 255, 0.95), 0 0 42px rgba(145, 71, 255, 0.9); }
+  0%, 100% { box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.5), 0 0 22px rgba(212, 175, 55, 0.45); }
+  50%      { box-shadow: 0 0 0 1px rgba(240, 220, 150, 0.95), 0 0 42px rgba(212, 175, 55, 0.9); }
 }
 @keyframes fr-sparkle {
   0%, 100% { opacity: 0.25; transform: scale(0.7) rotate(0deg); }
@@ -157,27 +176,27 @@
   animation: fr-alert-out 0.4s ease-in forwards;
 }
 
-/* Spotlight ($2) — subtle frosted card, thin purple edge. */
+/* Spotlight ($2) — subtle frosted card, thin gold edge. */
 .stream-alert--spotlight {
-  background: rgba(24, 24, 27, 0.74);
+  background: rgba(24, 24, 24, 0.74);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(145, 71, 255, 0.4);
+  border: 1px solid rgba(212, 175, 55, 0.4);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 /* Featured ($5) — animated gradient border + shimmer sweep. */
 .stream-alert--featured {
   background:
-    linear-gradient(rgba(18, 14, 26, 0.9), rgba(18, 14, 26, 0.9)) padding-box,
-    linear-gradient(120deg, #9147ff, #bf94ff, #9147ff) border-box;
+    linear-gradient(rgba(24, 21, 12, 0.9), rgba(24, 21, 12, 0.9)) padding-box,
+    linear-gradient(120deg, #d4af37, #f0dc96, #d4af37) border-box;
   border: 1.5px solid transparent;
-  box-shadow: 0 0 26px rgba(145, 71, 255, 0.45);
+  box-shadow: 0 0 26px rgba(212, 175, 55, 0.45);
 }
 .stream-alert--featured::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(100deg, transparent 30%, rgba(191, 148, 255, 0.28) 50%, transparent 70%);
+  background: linear-gradient(100deg, transparent 30%, rgba(240, 220, 150, 0.28) 50%, transparent 70%);
   background-size: 220% 100%;
   animation: fr-shimmer 2.6s linear infinite;
   pointer-events: none;
@@ -185,7 +204,7 @@
 
 /* Headliner ($10) — bold gradient fill, pop-in, pulsing glow, sparkles. */
 .stream-alert--headliner {
-  background: linear-gradient(125deg, #772ce8 0%, #9147ff 45%, #e0a3ff 100%);
+  background: linear-gradient(125deg, #b8932b 0%, #d4af37 45%, #f0dc96 100%);
   border: 1px solid rgba(255, 255, 255, 0.25);
   animation:
     fr-alert-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1) both,

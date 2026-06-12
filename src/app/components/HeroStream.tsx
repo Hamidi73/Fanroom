@@ -18,7 +18,7 @@ export function HeroStream({ room }: { room: LeaderRoom | null }) {
 
   const gradient = nation
     ? `radial-gradient(circle at 30% 25%, ${nation.theme.accent}, transparent 60%), linear-gradient(150deg, ${nation.theme.border}, #0e0e10 90%)`
-    : "radial-gradient(circle at 30% 25%, rgba(145,71,255,0.35), transparent 60%), linear-gradient(150deg, #26203a, #0e0e10 90%)";
+    : "radial-gradient(circle at 30% 25%, rgba(212,175,55,0.30), transparent 60%), linear-gradient(150deg, #2a2410, #121212 90%)";
 
   if (!room) {
     return (
@@ -72,7 +72,7 @@ export function HeroStream({ room }: { room: LeaderRoom | null }) {
       <div className="absolute bottom-3 left-3 right-3">
         <p className="truncate text-lg font-bold text-white">{room.title}</p>
         <p className="truncate text-xs text-white/70">{room.hostName}</p>
-        <span className="mt-2 inline-flex items-center rounded-lg bg-accent px-4 py-2 text-sm font-bold text-white transition group-hover:bg-accent-strong">
+        <span className="mt-2 inline-flex items-center rounded-lg bg-accent px-4 py-2 text-sm font-bold text-black transition group-hover:bg-accent-strong">
           {live ? "Watch live" : "Open room"}
         </span>
       </div>

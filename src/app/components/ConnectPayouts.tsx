@@ -33,7 +33,7 @@ export function ConnectPayouts({ hasAccount }: { hasAccount: boolean }) {
       <button
         onClick={start}
         disabled={busy}
-        className="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-white transition hover:bg-accent-strong disabled:opacity-60"
+        className="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-black transition hover:bg-accent-strong disabled:opacity-60"
       >
         {busy ? "Opening Stripe…" : hasAccount ? "Finish payout setup" : "Set up payouts with Stripe"}
       </button>

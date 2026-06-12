@@ -36,7 +36,7 @@ export const TIERS: Tier[] = [
     label: "Headliner",
     amountCents: 1000,
     ring: "border-accent bg-accent/15",
-    badge: "bg-accent text-white",
+    badge: "bg-accent text-black",
     alertDurationMs: 30000,
   },
 ];

@@ -129,7 +129,7 @@ export function GiftDrawer({
                     key={t.id}
                     onClick={() => setTab(t.id)}
                     className={`flex shrink-0 items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
-                      tab === t.id ? "bg-accent text-white" : "text-muted hover:bg-surface-2 hover:text-ink-foreground"
+                      tab === t.id ? "bg-accent text-black" : "text-muted hover:bg-surface-2 hover:text-ink-foreground"
                     }`}
                   >
                     <Image src={emojiArt(t.icon)} alt="" width={15} height={15} unoptimized />
@@ -219,7 +219,7 @@ export function GiftDrawer({
                       key={m}
                       onClick={() => setMult(m)}
                       className={`rounded-lg px-3 py-1.5 text-sm font-black transition ${
-                        mult === m ? "bg-accent text-white" : "bg-surface-2 text-muted hover:text-ink-foreground"
+                        mult === m ? "bg-accent text-black" : "bg-surface-2 text-muted hover:text-ink-foreground"
                       }`}
                     >
                       ×{m}

@@ -9,8 +9,9 @@
 //      UPDATEs (last_active_at) are filtered out by tracking each room's
 //      status — otherwise every viewer's 60s touch_room ping would refresh
 //      every open page.
-//   2. A gentle interval (default 60s) re-pulls non-realtime data — fixture
-//      scores revalidate server-side every minute.
+//   2. A gentle interval (default 30s) re-pulls non-realtime data — live
+//      fixture scores revalidate server-side every 30s, the schedule every
+//      minute, so scores/minutes/results stay current without manual reloads.
 //
 // Refreshes are coalesced and skipped while the tab is hidden (it refreshes
 // once on return instead).
@@ -19,7 +20,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export function LiveRefresh({ intervalMs = 60_000 }: { intervalMs?: number }) {
+export function LiveRefresh({ intervalMs = 30_000 }: { intervalMs?: number }) {
   const router = useRouter();
 
   useEffect(() => {

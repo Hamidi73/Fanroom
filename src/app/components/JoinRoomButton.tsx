@@ -40,7 +40,7 @@ export function JoinRoomButton({
     return (
       <Link
         href="/login"
-        className="inline-flex rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-white transition hover:bg-accent-soft"
+        className="inline-flex rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-black transition hover:bg-accent-soft"
       >
         Log in to join
       </Link>
@@ -85,7 +85,7 @@ export function JoinRoomButton({
         className={`inline-flex rounded-lg px-6 py-3 text-sm font-semibold transition disabled:opacity-60 ${
           isMember
             ? "border border-white/20 bg-white/5 text-white hover:bg-white/10"
-            : "bg-accent text-white hover:bg-accent-soft"
+            : "bg-accent text-black hover:bg-accent-soft"
         }`}
       >
         {busy ? "…" : isMember ? "Leave room" : "Join room"}

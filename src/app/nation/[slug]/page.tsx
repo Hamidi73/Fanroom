@@ -52,7 +52,7 @@ export default async function NationPage({
         <div className="mx-auto max-w-xl px-5 py-20 text-center">
           <h1 className="display text-3xl">Nation not found</h1>
           <p className="mt-3 text-sm text-muted">Try a known route like /nation/morocco or /nation/brazil.</p>
-          <Link href="/" className="mt-6 inline-flex rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-white no-underline transition hover:bg-accent-strong">
+          <Link href="/" className="mt-6 inline-flex rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-black no-underline transition hover:bg-accent-strong">
             Back home
           </Link>
         </div>
@@ -89,7 +89,7 @@ export default async function NationPage({
             </div>
           )}
           <div className="mt-5 flex flex-wrap gap-3">
-            <Link href="/rooms/new" className="inline-flex items-center rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-white no-underline transition hover:bg-accent-strong">
+            <Link href="/rooms/new" className="inline-flex items-center rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-black no-underline transition hover:bg-accent-strong">
               Host a {nation.name} room
             </Link>
             <Link href="/rooms" className="inline-flex items-center rounded-lg border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-ink-foreground no-underline transition hover:bg-surface-2">

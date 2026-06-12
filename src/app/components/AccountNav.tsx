@@ -76,7 +76,7 @@ export function AccountNav() {
         <Link href="/login" className="text-sm font-medium text-muted no-underline hover:text-ink-foreground">
           Log in
         </Link>
-        <Link href="/signup" className="rounded-lg bg-accent px-3.5 py-1.5 text-sm font-bold text-white no-underline">
+        <Link href="/signup" className="rounded-lg bg-white px-3.5 py-1.5 text-sm font-bold text-ink no-underline transition hover:bg-[#e6e6e6]">
           Sign up
         </Link>
       </span>

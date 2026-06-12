@@ -90,7 +90,7 @@ export function CoinStore({
               className="relative flex flex-col items-center gap-1 rounded-xl border border-line bg-surface p-3 text-center transition hover:border-accent/60 hover:bg-surface-2 disabled:opacity-60"
             >
               {b.badge && (
-                <span className="absolute -top-2 rounded-full bg-accent px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-white">
+                <span className="absolute -top-2 rounded-full bg-accent px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-black">
                   {b.badge === "popular" ? "Popular" : "Best value"}
                 </span>
               )}

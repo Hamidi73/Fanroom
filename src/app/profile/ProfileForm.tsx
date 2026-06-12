@@ -101,7 +101,7 @@ export function ProfileForm({
         <button
           type="submit"
           disabled={nameBusy || name.trim() === initialName.trim()}
-          className="self-start rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+          className="self-start rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-black disabled:opacity-50"
         >
           {nameBusy ? "Saving…" : "Save name"}
         </button>

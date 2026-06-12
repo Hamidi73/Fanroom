@@ -86,7 +86,7 @@ export default function SignupPage() {
 
             {error && <p className="text-sm text-red-400">{error}</p>}
 
-            <button type="submit" disabled={busy} className="mt-1 w-full rounded-lg bg-accent py-3 text-[15px] font-bold text-white disabled:opacity-60">
+            <button type="submit" disabled={busy} className="mt-1 w-full rounded-lg bg-accent py-3 text-[15px] font-bold text-black disabled:opacity-60">
               {busy ? "Creating…" : "Create account"}
             </button>
           </form>

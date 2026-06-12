@@ -75,7 +75,7 @@ export default async function ProfilePage({
           {isAdmin && (
             <Link
               href="/admin"
-              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-white no-underline transition hover:bg-accent-strong"
+              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-black no-underline transition hover:bg-accent-strong"
             >
               Open admin dashboard
             </Link>

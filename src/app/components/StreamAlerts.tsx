@@ -59,7 +59,7 @@ const TIER_UI: Record<string, { cls: string; icon: string; sparkles: boolean; co
   headliner: { cls: "stream-alert--headliner", icon: "crown", sparkles: true, confetti: 36 },
 };
 
-const CONFETTI_COLORS = ["#9147ff", "#bf94ff", "#e0a3ff", "#ffffff", "#ffd56b", "#5ce1e6"];
+const CONFETTI_COLORS = ["#d4af37", "#f0dc96", "#e8cd6e", "#ffffff", "#ffd56b", "#b8932b"];
 
 const PRE_DELAY = 10000; // wait before an alert appears on the feed (and between alerts)
 const EXIT_MS = 450; // must match the fr-alert-out duration in globals.css
@@ -203,7 +203,7 @@ export function StreamAlerts({ roomId }: { roomId: string }) {
           <div className="relative flex items-center justify-between gap-2">
             <span
               className={`inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide ${
-                isHeadliner ? "text-white" : "text-accent-soft"
+                isHeadliner ? "text-black" : "text-accent-soft"
               }`}
             >
               {ui.icon === "crown" ? (
@@ -215,14 +215,14 @@ export function StreamAlerts({ roomId }: { roomId: string }) {
             </span>
             <span
               className={`rounded-md px-2 py-0.5 text-xs font-bold ${
-                isHeadliner ? "bg-white/25 text-white" : "bg-accent/25 text-accent-soft"
+                isHeadliner ? "bg-black/20 text-black" : "bg-accent/25 text-accent-soft"
               }`}
             >
               {formatAmount(current.amountCents)}
             </span>
           </div>
-          <p className="relative mt-1 text-sm font-bold text-white">{current.name}</p>
-          <p className={`relative text-sm ${isHeadliner ? "text-white/95" : "text-ink-foreground/90"}`}>
+          <p className={`relative mt-1 text-sm font-bold ${isHeadliner ? "text-black" : "text-white"}`}>{current.name}</p>
+          <p className={`relative text-sm ${isHeadliner ? "text-black/85" : "text-ink-foreground/90"}`}>
             {current.body}
           </p>
         </div>

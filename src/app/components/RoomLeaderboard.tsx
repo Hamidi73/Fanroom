@@ -92,7 +92,7 @@ export function RoomLeaderboard({ initial }: { initial: LeaderRoom[] }) {
                 >
                   <span
                     className={`flex h-6 w-6 shrink-0 items-center justify-center rounded text-xs font-bold ${
-                      i === 0 ? "bg-accent text-white" : "bg-surface-2 text-muted"
+                      i === 0 ? "bg-accent text-black" : "bg-surface-2 text-muted"
                     }`}
                   >
                     {i + 1}

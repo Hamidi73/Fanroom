@@ -233,7 +233,7 @@ export function RoomChat({
         {unseen > 0 && (
           <button
             onClick={jumpToLatest}
-            className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3.5 py-1.5 text-xs font-bold text-white shadow-lg transition hover:bg-accent-strong"
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3.5 py-1.5 text-xs font-bold text-black shadow-lg transition hover:bg-accent-strong"
           >
             ↓ {unseen} new message{unseen === 1 ? "" : "s"}
           </button>
@@ -258,7 +258,7 @@ export function RoomChat({
               />
               <button
                 onClick={send}
-                className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-strong"
+                className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-accent-strong"
               >
                 Send
               </button>
@@ -302,7 +302,7 @@ export function RoomChat({
                         <button
                           onClick={() => startCheckout("stripe")}
                           disabled={payBusy}
-                          className="flex-1 rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-white transition hover:bg-accent-strong disabled:opacity-60"
+                          className="flex-1 rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-black transition hover:bg-accent-strong disabled:opacity-60"
                         >
                           {payBusy ? "Starting…" : "Pay with card"}
                         </button>

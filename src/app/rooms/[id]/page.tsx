@@ -59,7 +59,7 @@ export default async function RoomDetailPage({
         <div className="mx-auto max-w-xl px-5 py-20 text-center">
           <h1 className="display text-3xl">Room not found</h1>
           <p className="mt-3 text-sm text-muted">This room doesn&apos;t exist or was removed.</p>
-          <Link href="/rooms" className="mt-6 inline-flex rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-white">
+          <Link href="/rooms" className="mt-6 inline-flex rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-black">
             Browse rooms
           </Link>
         </div>
@@ -151,7 +151,7 @@ export default async function RoomDetailPage({
               <div className="flex aspect-video items-center justify-center rounded-xl border border-line bg-black px-6 text-center">
                 <div>
                   <p className="text-sm font-bold text-white/80">This room has been closed by the host.</p>
-                  <Link href="/rooms" className="mt-3 inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-bold text-white no-underline">
+                  <Link href="/rooms" className="mt-3 inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-bold text-black no-underline">
                     Find another room
                   </Link>
                 </div>

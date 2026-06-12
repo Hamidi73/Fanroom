@@ -12,7 +12,7 @@ import { getNation } from "@/app/data/nations";
 import type { GroupLive, GroupMatch } from "@/app/data/fixtures";
 import { NationFlag } from "./NationFlag";
 
-const POLL_MS = 45_000;
+const POLL_MS = 30_000;
 
 export function GroupFixtures() {
   const [groups, setGroups] = useState<GroupLive[]>([]);
@@ -33,9 +33,16 @@ export function GroupFixtures() {
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") void load();
     }, POLL_MS);
+    // Coming back to the tab pulls fresh scores immediately (the interval
+    // skips ticks while hidden).
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void load();
+    };
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       alive = false;
       clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
 

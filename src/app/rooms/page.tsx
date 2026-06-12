@@ -54,7 +54,7 @@ export default async function RoomsPage({
           </div>
           <Link
             href="/rooms/new"
-            className="inline-flex shrink-0 items-center rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-white no-underline transition hover:bg-accent-strong"
+            className="inline-flex shrink-0 items-center rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-black no-underline transition hover:bg-accent-strong"
           >
             + Create a room
           </Link>
