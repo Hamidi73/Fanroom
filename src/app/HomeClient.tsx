@@ -23,6 +23,7 @@ import {
   HeroStream,
   FixtureCard,
   NationFlag,
+  Reveal,
   type RoomCardData,
   type LeaderRoom,
 } from "@/app/components";
@@ -137,19 +138,22 @@ export function HomeClient({
           />
           {hasRooms ? (
             <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 xl:grid-cols-3">
-              {featured.map((room) => (
-                <RoomCard key={room.id} room={room} />
+              {featured.map((room, i) => (
+                <Reveal key={room.id} delay={(i % 3) * 60}>
+                  <RoomCard room={room} />
+                </Reveal>
               ))}
             </div>
           ) : (
             <>
               <div className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3">
-                {PLACEHOLDER_NATIONS.map((n) => (
-                  <Link key={n.slug} href="/rooms/new" className="group block no-underline">
+                {PLACEHOLDER_NATIONS.map((n, i) => (
+                  <Reveal key={n.slug} delay={(i % 3) * 60}>
+                  <Link href="/rooms/new" className="group block no-underline">
                     <div
                       className="relative flex aspect-video items-center justify-center overflow-hidden rounded-lg border border-line transition group-hover:border-accent/60"
                       style={{
-                        backgroundImage: `radial-gradient(circle at 25% 20%, ${n.theme.accent}, transparent 60%), linear-gradient(150deg, ${n.theme.border}, #0e0e10 90%)`,
+                        backgroundImage: `radial-gradient(circle at 25% 20%, ${n.theme.accent}, transparent 60%), linear-gradient(150deg, ${n.theme.border}, #121212 90%)`,
                       }}
                     >
                       <span className="absolute left-2 top-2 rounded bg-black/60 px-1.5 py-0.5 text-[11px] font-bold text-white/80">
@@ -164,6 +168,7 @@ export function HomeClient({
                     </p>
                     <p className="truncate text-xs text-muted">Be the creator everyone joins</p>
                   </Link>
+                  </Reveal>
                 ))}
               </div>
               <div className="mt-6 flex flex-col items-center gap-3 rounded-xl border border-line bg-surface p-6 text-center sm:flex-row sm:justify-between sm:text-left">
@@ -199,14 +204,16 @@ export function HomeClient({
               { n: "1", t: "Pick a match or nation", d: "Find the game you care about or your country's hub." },
               { n: "2", t: "Join a fan room", d: "Hop into a creator-led watch-along in one click — free." },
               { n: "3", t: "React live", d: "Chat, celebrate, and watch the host on camera together." },
-            ].map((s) => (
-              <div key={s.n} className="rounded-xl border border-line bg-surface p-5">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/20 text-sm font-bold text-accent-soft">
-                  {s.n}
-                </span>
-                <p className="mt-3 text-base font-bold text-ink-foreground">{s.t}</p>
-                <p className="mt-1 text-sm text-muted">{s.d}</p>
-              </div>
+            ].map((s, i) => (
+              <Reveal key={s.n} delay={i * 90}>
+                <div className="h-full rounded-xl border border-line bg-surface p-5">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/20 text-sm font-bold text-accent-soft">
+                    {s.n}
+                  </span>
+                  <p className="mt-3 text-base font-bold text-ink-foreground">{s.t}</p>
+                  <p className="mt-1 text-sm text-muted">{s.d}</p>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -217,8 +224,10 @@ export function HomeClient({
           <div className="mt-10 lg:hidden">
             <SectionHeader title="Live matches" />
             <div className="grid gap-4 sm:grid-cols-2">
-              {live.map((fixture) => (
-                <FixtureCard key={fixture.id} fixture={fixture} />
+              {live.map((fixture, i) => (
+                <Reveal key={fixture.id} delay={(i % 2) * 60}>
+                  <FixtureCard fixture={fixture} />
+                </Reveal>
               ))}
             </div>
           </div>
@@ -233,8 +242,10 @@ export function HomeClient({
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {fixtures.map((fixture) => (
-                <FixtureCard key={fixture.id} fixture={fixture} />
+              {fixtures.map((fixture, i) => (
+                <Reveal key={fixture.id} delay={(i % 3) * 60}>
+                  <FixtureCard fixture={fixture} />
+                </Reveal>
               ))}
             </div>
           )}
@@ -245,8 +256,10 @@ export function HomeClient({
           <div className="mt-10">
             <SectionHeader title="Recent results" />
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {results.map((fixture) => (
-                <FixtureCard key={fixture.id} fixture={fixture} />
+              {results.map((fixture, i) => (
+                <Reveal key={fixture.id} delay={(i % 3) * 60}>
+                  <FixtureCard fixture={fixture} />
+                </Reveal>
               ))}
             </div>
           </div>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell, SiteFooter, RoomCard, LiveRefresh, type RoomCardData } from "@/app/components";
+import { AppShell, SiteFooter, RoomCard, LiveRefresh, Reveal, type RoomCardData } from "@/app/components";
 
 export const metadata: Metadata = { title: "Browse rooms | FanRoom Global" };
 export const dynamic = "force-dynamic";
@@ -77,8 +77,10 @@ export default async function RoomsPage({
           </div>
         ) : (
           <div className="mt-7 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {rooms.map((room) => (
-              <RoomCard key={room.id} room={room} />
+            {rooms.map((room, i) => (
+              <Reveal key={room.id} delay={(i % 4) * 60}>
+                <RoomCard room={room} />
+              </Reveal>
             ))}
           </div>
         )}

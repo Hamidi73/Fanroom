@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getNation, getFixturesByNationSlug } from "@/app/data";
-import { AppShell, SiteFooter, FixtureCard, RoomCard, NationFlag, LiveRefresh, type RoomCardData } from "@/app/components";
+import { AppShell, SiteFooter, FixtureCard, RoomCard, NationFlag, LiveRefresh, Reveal, type RoomCardData } from "@/app/components";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata({
@@ -127,8 +127,10 @@ export default async function NationPage({
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {fixtures.map((fixture) => (
-                <FixtureCard key={fixture.id} fixture={fixture} />
+              {fixtures.map((fixture, i) => (
+                <Reveal key={fixture.id} delay={(i % 3) * 60}>
+                  <FixtureCard fixture={fixture} />
+                </Reveal>
               ))}
             </div>
           )}
