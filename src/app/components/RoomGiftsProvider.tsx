@@ -16,7 +16,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { getGift, COMBO, type Gift } from "@/lib/gifts";
-import { getSticker, stickerBody, giftBody, type Sticker } from "@/lib/stickers";
+import { getSticker, type Sticker } from "@/lib/stickers";
 import { playGiftSound, setGiftSoundMuted } from "@/lib/giftSound";
 import { CoinStore } from "./CoinStore";
 import { GiftIcon } from "./GiftIcon";
@@ -84,7 +84,6 @@ export function RoomGiftsProvider({
   const [muted, setMuted] = useState(false);
 
   const supabaseRef = useRef(createClient());
-  const userIdRef = useRef<string | null>(null);
   const sendRef = useRef<((event: GiftEvent) => void) | null>(null);
   const sendStickerRef = useRef<((event: StickerEvent) => void) | null>(null);
   const comboRef = useRef<{ giftId: string; count: number; at: number }>({ giftId: "", count: 0, at: 0 });
@@ -97,9 +96,6 @@ export function RoomGiftsProvider({
     if (!loggedIn) return;
     const supabase = supabaseRef.current;
     let active = true;
-    void supabase.auth.getUser().then(({ data }) => {
-      if (active) userIdRef.current = data.user?.id ?? null;
-    });
     const refresh = async () => {
       const { data, error } = await supabase.rpc("get_or_seed_wallet");
       if (active && !error && data != null) setBalance(Number(data));
@@ -188,17 +184,6 @@ export function RoomGiftsProvider({
     [balance],
   );
 
-  // Persist a send into the room's chat history (gifts/stickers shouldn't be
-  // screen-only moments — they show up as chat lines like on TikTok/Twitch).
-  const postChatLine = useCallback(
-    (body: string) => {
-      const userId = userIdRef.current;
-      if (!userId) return;
-      void supabaseRef.current.from("messages").insert({ room_id: roomId, user_id: userId, body });
-    },
-    [roomId],
-  );
-
   const sendGift = useCallback(
     (giftId: string, mult = 1) => {
       const gift = getGift(giftId);
@@ -209,14 +194,20 @@ export function RoomGiftsProvider({
         return;
       }
 
-      // Optimistic debit for snappy UX; the server is the source of truth.
+      // One atomic server RPC: it looks up the price, debits Roars, AND posts
+      // the chat line — so a gift line can't exist without a paid debit, and
+      // the amount is never client-controlled. Optimistic UI, then reconcile.
       setBalance((b) => b - cost);
-      void supabaseRef.current.rpc("spend_roars", { amount: cost }).then(({ error }) => {
-        if (error) {
-          setBalance((b) => b + cost); // refund on failure (e.g. insufficient)
-          setStoreOpen(true);
-        }
-      });
+      void supabaseRef.current
+        .rpc("send_gift", { p_room_id: roomId, p_gift_id: giftId, p_qty: mult })
+        .then(({ data, error }) => {
+          if (error) {
+            setBalance((b) => b + cost); // refund on failure (e.g. insufficient)
+            setStoreOpen(true);
+          } else if (data != null) {
+            setBalance(Number(data)); // server is the source of truth
+          }
+        });
 
       // Combo: consecutive sends of the same gift within the window stack up.
       const now = Date.now();
@@ -228,9 +219,8 @@ export function RoomGiftsProvider({
       comboTimer.current = setTimeout(() => setCombo(null), COMBO.windowMs);
 
       sendRef.current?.({ giftId, sender: senderName, mult, combo: count });
-      postChatLine(giftBody(giftId, mult));
     },
-    [balance, senderName, postChatLine],
+    [balance, senderName, roomId],
   );
 
   const sendSticker = useCallback(
@@ -242,16 +232,19 @@ export function RoomGiftsProvider({
         return;
       }
       setBalance((b) => b - sticker.priceRoars);
-      void supabaseRef.current.rpc("spend_roars", { amount: sticker.priceRoars }).then(({ error }) => {
-        if (error) {
-          setBalance((b) => b + sticker.priceRoars);
-          setStoreOpen(true);
-        }
-      });
+      void supabaseRef.current
+        .rpc("send_sticker", { p_room_id: roomId, p_sticker_id: stickerId })
+        .then(({ data, error }) => {
+          if (error) {
+            setBalance((b) => b + sticker.priceRoars);
+            setStoreOpen(true);
+          } else if (data != null) {
+            setBalance(Number(data));
+          }
+        });
       sendStickerRef.current?.({ stickerId, sender: senderName });
-      postChatLine(stickerBody(stickerId)); // the sticker lives on in chat
     },
-    [balance, senderName, postChatLine],
+    [balance, senderName, roomId],
   );
 
   const openStore = useCallback(() => setStoreOpen(true), []);

@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored, pre-minified static assets (e.g. ffmpeg-core) — not our source.
+    "public/**",
   ]),
 ]);
 

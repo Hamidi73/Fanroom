@@ -45,26 +45,30 @@ export function ProfileForm({
       return;
     }
     setNameBusy(true);
-    const supabase = createClient();
-    const { data: userData } = await supabase.auth.getUser();
-    const uid = userData.user?.id;
-    if (!uid) {
-      setNameMsg({ kind: "err", text: "Session expired — please log in again." });
+    try {
+      const supabase = createClient();
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData.user?.id;
+      if (!uid) {
+        setNameMsg({ kind: "err", text: "Session expired — please log in again." });
+        return;
+      }
+      const { error: profileErr } = await supabase
+        .from("profiles")
+        .update({ display_name: trimmed })
+        .eq("id", uid);
+      const { error: metaErr } = await supabase.auth.updateUser({ data: { display_name: trimmed } });
+      if (profileErr || metaErr) {
+        setNameMsg({ kind: "err", text: (profileErr ?? metaErr)!.message });
+        return;
+      }
+      setNameMsg({ kind: "ok", text: "Display name updated." });
+      router.refresh();
+    } catch {
+      setNameMsg({ kind: "err", text: "Couldn't reach the server — try again." });
+    } finally {
       setNameBusy(false);
-      return;
     }
-    const { error: profileErr } = await supabase
-      .from("profiles")
-      .update({ display_name: trimmed })
-      .eq("id", uid);
-    const { error: metaErr } = await supabase.auth.updateUser({ data: { display_name: trimmed } });
-    setNameBusy(false);
-    if (profileErr || metaErr) {
-      setNameMsg({ kind: "err", text: (profileErr ?? metaErr)!.message });
-      return;
-    }
-    setNameMsg({ kind: "ok", text: "Display name updated." });
-    router.refresh();
   };
 
   const savePassword = async (e: FormEvent) => {
@@ -79,15 +83,20 @@ export function ProfileForm({
       return;
     }
     setPwBusy(true);
-    const { error } = await createClient().auth.updateUser({ password });
-    setPwBusy(false);
-    if (error) {
-      setPwMsg({ kind: "err", text: error.message });
-      return;
+    try {
+      const { error } = await createClient().auth.updateUser({ password });
+      if (error) {
+        setPwMsg({ kind: "err", text: error.message });
+        return;
+      }
+      setPassword("");
+      setConfirm("");
+      setPwMsg({ kind: "ok", text: "Password updated." });
+    } catch {
+      setPwMsg({ kind: "err", text: "Couldn't reach the server — try again." });
+    } finally {
+      setPwBusy(false);
     }
-    setPassword("");
-    setConfirm("");
-    setPwMsg({ kind: "ok", text: "Password updated." });
   };
 
   return (

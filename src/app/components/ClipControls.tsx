@@ -18,7 +18,10 @@ const WINDOWS = [
   { label: "Last 20 min", ms: 20 * 60_000 },
 ];
 
-const FFMPEG_CORE = "https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd";
+// Self-hosted under /public/ffmpeg (same-origin) — no third-party CDN at
+// clip time, so an unpkg outage can't break clipping and there's no external
+// supply-chain dependency. Files are copied from @ffmpeg/core@0.12.10.
+const FFMPEG_CORE = "/ffmpeg";
 
 type Phase =
   | { kind: "idle" }

@@ -4,10 +4,21 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
 import { fulfillDonation } from "@/lib/payments";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  // Generous per-IP cap (signature is the real gate; this just blunts a flood
+  // of forged requests trying to burn CPU on HMAC verification).
+  const rl = await rateLimit(`whcrypto:${clientIp(request)}`, 300, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Too many requests." },
+      { status: 429, headers: { "retry-after": String(rl.retryAfter) } },
+    );
+  }
+
   const secret = process.env.COINBASE_COMMERCE_WEBHOOK_SECRET;
   if (!secret) return NextResponse.json({ error: "Not configured" }, { status: 503 });
 

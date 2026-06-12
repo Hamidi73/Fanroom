@@ -23,15 +23,20 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setBusy(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    setBusy(false);
-    if (error) {
-      setError(error.message);
-      return;
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) {
+        setError(error.message);
+        return;
+      }
+      router.push("/rooms");
+      router.refresh();
+    } catch {
+      setError("Couldn't reach the server — check your connection and try again.");
+    } finally {
+      setBusy(false);
     }
-    router.push("/rooms");
-    router.refresh();
   };
 
   return (

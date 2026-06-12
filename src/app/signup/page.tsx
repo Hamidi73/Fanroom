@@ -27,24 +27,28 @@ export default function SignupPage() {
     e.preventDefault();
     setError(null);
     setBusy(true);
-    const supabase = createClient();
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: { data: { display_name: displayName.trim() } },
-    });
-    setBusy(false);
-
-    if (error) {
-      setError(error.message);
-      return;
-    }
-    if (data.session) {
-      router.push("/rooms");
-      router.refresh();
-    } else {
-      // Email confirmation is enabled on the project.
-      setNeedsConfirm(true);
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: { data: { display_name: displayName.trim() } },
+      });
+      if (error) {
+        setError(error.message);
+        return;
+      }
+      if (data.session) {
+        router.push("/rooms");
+        router.refresh();
+      } else {
+        // Email confirmation is enabled on the project.
+        setNeedsConfirm(true);
+      }
+    } catch {
+      setError("Couldn't reach the server — check your connection and try again.");
+    } finally {
+      setBusy(false);
     }
   };
 

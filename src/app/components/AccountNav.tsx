@@ -36,8 +36,9 @@ export function AccountNav() {
         if (active) setIsAdmin(false);
         return;
       }
-      const { data } = await supabase.from("profiles").select("is_admin").eq("id", userId).single();
-      if (active) setIsAdmin(!!data?.is_admin);
+      // is_admin column is no longer client-readable — use the SECURITY DEFINER fn.
+      const { data } = await supabase.rpc("is_current_user_admin");
+      if (active) setIsAdmin(data === true);
     };
 
     supabase.auth.getUser().then(({ data }) => {

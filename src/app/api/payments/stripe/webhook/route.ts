@@ -4,10 +4,22 @@
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { fulfillDonation, creditCoins } from "@/lib/payments";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  // Generous per-IP cap. Legit Stripe webhooks arrive in modest signed bursts
+  // (and retry with backoff), so this never affects them — it only blunts a
+  // flood of forged requests trying to burn CPU on signature verification.
+  const rl = await rateLimit(`whstripe:${clientIp(request)}`, 300, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Too many requests." },
+      { status: 429, headers: { "retry-after": String(rl.retryAfter) } },
+    );
+  }
+
   const stripe = getStripe();
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!stripe || !secret) {

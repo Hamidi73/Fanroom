@@ -11,6 +11,7 @@ import { NextResponse } from "next/server";
 import nacl from "tweetnacl";
 import bs58 from "bs58";
 import { createClient } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/admin";
 import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
@@ -73,7 +74,12 @@ export async function POST(request: Request) {
   }
   if (!ok) return NextResponse.json({ error: "Signature check failed." }, { status: 400 });
 
-  const { error } = await supabase
+  // Write with the service-role client: the authenticated role has no UPDATE
+  // grant on wallet_address (only display_name), so a user-scoped write is
+  // denied at the column level. Ownership is already proven by the signature.
+  const admin = getAdminClient();
+  if (!admin) return NextResponse.json({ error: "Wallet linking is not configured." }, { status: 503 });
+  const { error } = await admin
     .from("profiles")
     .update({ wallet_address: address })
     .eq("id", user.id);
@@ -93,7 +99,9 @@ export async function DELETE(request: Request) {
   const user = userData.user;
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
-  const { error } = await supabase
+  const admin = getAdminClient();
+  if (!admin) return NextResponse.json({ error: "Wallet linking is not configured." }, { status: 503 });
+  const { error } = await admin
     .from("profiles")
     .update({ wallet_address: null })
     .eq("id", user.id);

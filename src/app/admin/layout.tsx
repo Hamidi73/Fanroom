@@ -11,8 +11,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   let isAdmin = false;
   if (user) {
-    const { data } = await supabase.from("profiles").select("is_admin").eq("id", user.id).single();
-    isAdmin = !!data?.is_admin;
+    // Read admin status via the SECURITY DEFINER fn — the is_admin column is no
+    // longer SELECT-able by the authenticated role (harden_profiles migration).
+    const { data } = await supabase.rpc("is_current_user_admin");
+    isAdmin = data === true;
   }
 
   if (!isAdmin) {

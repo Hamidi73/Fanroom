@@ -28,14 +28,25 @@ export default async function ProfilePage({
   const payoutsConfigured = !!process.env.STRIPE_SECRET_KEY;
   const payout = payoutsConfigured ? await getConnectInfo(user.id) : { accountId: null, enabled: false };
 
-  const [{ data: profile }, { data: hostedData }, { data: joinedData }] = await Promise.all([
-    supabase.from("profiles").select("display_name,is_admin,created_at,wallet_address").eq("id", user.id).single(),
+  // is_admin and wallet_address are no longer column-readable by the authenticated
+  // role (harden_profiles migration) — fetch them via SECURITY DEFINER RPCs.
+  const [
+    { data: profile },
+    { data: isAdminData },
+    { data: walletData },
+    { data: hostedData },
+    { data: joinedData },
+  ] = await Promise.all([
+    supabase.from("profiles").select("display_name,created_at").eq("id", user.id).single(),
+    supabase.rpc("is_current_user_admin"),
+    supabase.rpc("get_my_wallet_address"),
     supabase.from("rooms").select("id,title,status").eq("host_id", user.id).order("created_at", { ascending: false }),
     supabase
       .from("room_members")
       .select("rooms(id,title,status)")
       .eq("user_id", user.id),
   ]);
+  const walletAddress = (walletData as string | null) ?? null;
 
   const hosted = (hostedData ?? []) as RoomRef[];
   const hostedIds = new Set(hosted.map((r) => r.id));
@@ -44,7 +55,7 @@ export default async function ProfilePage({
     .filter((r): r is RoomRef => !!r && !hostedIds.has(r.id));
 
   const displayName = profile?.display_name ?? user.user_metadata?.display_name ?? "Fan";
-  const isAdmin = !!profile?.is_admin;
+  const isAdmin = isAdminData === true;
   const joinedSite = profile?.created_at ?? user.created_at;
   const provider = user.app_metadata?.provider ?? "email";
 
@@ -130,7 +141,7 @@ export default async function ProfilePage({
 
         {/* Crypto wallet (Phantom) */}
         <section className="mt-6 rounded-xl border border-line bg-panel p-6 sm:p-8">
-          <WalletConnect userId={user.id} initialAddress={profile?.wallet_address ?? null} />
+          <WalletConnect userId={user.id} initialAddress={walletAddress} />
         </section>
 
         {/* My rooms */}

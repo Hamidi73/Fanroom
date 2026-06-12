@@ -5,10 +5,22 @@
 
 import { NextResponse } from "next/server";
 import { getGroupsToday } from "@/app/data";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Generous per-IP cap: the client polls every 30s, so 60/min leaves huge
+  // headroom for legit use while blunting a flood that would recompute the
+  // grouping on every hit.
+  const rl = await rateLimit(`live:${clientIp(request)}`, 60, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Too many requests." },
+      { status: 429, headers: { "retry-after": String(rl.retryAfter) } },
+    );
+  }
+
   const groups = await getGroupsToday();
   return NextResponse.json(
     { groups },

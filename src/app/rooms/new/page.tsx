@@ -37,35 +37,63 @@ export default function NewRoomPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    setBusy(true);
-    const supabase = createClient();
-    const { data: userData } = await supabase.auth.getUser();
-    const user = userData.user;
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-    const { data: room, error: insertError } = await supabase
-      .from("rooms")
-      .insert({
-        host_id: user.id,
-        title: title.trim(),
-        nation_slug: nation || null,
-        match: match.trim() || null,
-        language: language.trim() || null,
-      })
-      .select("id")
-      .single();
 
-    if (insertError || !room) {
-      setError(insertError?.message ?? "Could not create the room.");
-      setBusy(false);
+    // Client-side guard (the server enforces this too via DB constraints).
+    const cleanTitle = title.trim();
+    if (cleanTitle.length < 3 || cleanTitle.length > 80) {
+      setError("Room title must be between 3 and 80 characters.");
       return;
     }
-    // Host auto-joins their own room.
-    await supabase.from("room_members").insert({ room_id: room.id, user_id: user.id });
-    router.push(`/rooms/${room.id}`);
-    router.refresh();
+
+    setBusy(true);
+    try {
+      const supabase = createClient();
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData.user;
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+      const { data: room, error: insertError } = await supabase
+        .from("rooms")
+        .insert({
+          host_id: user.id,
+          title: cleanTitle,
+          nation_slug: nation || null,
+          match: match.trim() || null,
+          language: language.trim() || null,
+        })
+        .select("id")
+        .single();
+
+      if (insertError || !room) {
+        // Map the DB guardrails (CHECK constraints / room-cap trigger) to
+        // friendly copy; fall back to the raw message otherwise.
+        const msg = insertError?.message ?? "";
+        if (/maximum number of open rooms/i.test(msg)) {
+          setError("You already have the maximum number of open rooms. Close one first.");
+        } else if (/rooms_title_len|rooms_match_len|rooms_language_len|check constraint/i.test(msg)) {
+          setError("Please shorten your room details and try again.");
+        } else {
+          setError(msg || "Could not create the room.");
+        }
+        setBusy(false);
+        return;
+      }
+      // Host auto-joins their own room. Non-fatal if it fails — the room page
+      // auto-joins on load — but don't silently swallow it.
+      const { error: joinError } = await supabase
+        .from("room_members")
+        .insert({ room_id: room.id, user_id: user.id });
+      if (joinError) {
+        console.warn("Auto-join failed, will retry on room load:", joinError.message);
+      }
+      router.push(`/rooms/${room.id}`);
+      router.refresh();
+    } catch {
+      setError("Couldn't reach the server — check your connection and try again.");
+      setBusy(false);
+    }
   };
 
   if (checking) {
