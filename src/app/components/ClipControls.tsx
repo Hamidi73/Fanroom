@@ -18,10 +18,13 @@ const WINDOWS = [
   { label: "Last 20 min", ms: 20 * 60_000 },
 ];
 
-// Self-hosted under /public/ffmpeg (same-origin) — no third-party CDN at
-// clip time, so an unpkg outage can't break clipping and there's no external
-// supply-chain dependency. Files are copied from @ffmpeg/core@0.12.10.
-const FFMPEG_CORE = "/ffmpeg";
+// Self-hosted under /public/ffmpeg (same-origin). We load the ESM core in a
+// same-origin module worker via an explicit `classWorkerURL`, which sidesteps
+// Next/Turbopack's `new URL('./worker.js', import.meta.url)` bundling (that was
+// silently failing, so clips never produced). No third-party CDN at clip time.
+const FFMPEG_WORKER_URL = "/ffmpeg/worker.js";
+const FFMPEG_CORE_URL = "/ffmpeg/esm/ffmpeg-core.js";
+const FFMPEG_WASM_URL = "/ffmpeg/esm/ffmpeg-core.wasm";
 
 type Phase =
   | { kind: "idle" }
@@ -84,8 +87,10 @@ export function ClipControls({
       const stamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, "-");
       download(blob, `fanroom-clip-${roomId.slice(0, 8)}-${stamp}.${buf.extension}`);
       setPhase({ kind: "idle" });
-    } catch {
-      setPhase({ kind: "error", note: "Couldn't create the clip — try again." });
+    } catch (e) {
+      console.error("Clip failed:", e);
+      const detail = e instanceof Error && e.message ? ` (${e.message})` : "";
+      setPhase({ kind: "error", note: `Couldn't create the clip — try again.${detail}` });
     }
   };
 
@@ -149,7 +154,7 @@ export function ClipControls({
 // ── ffmpeg.wasm (lazy) ────────────────────────────────────────────────────────
 
 type FFmpegInstance = {
-  load: (opts: { coreURL: string; wasmURL: string }) => Promise<boolean>;
+  load: (opts: { coreURL: string; wasmURL: string; classWorkerURL: string }) => Promise<boolean>;
   writeFile: (path: string, data: Uint8Array | string) => Promise<boolean>;
   readFile: (path: string) => Promise<Uint8Array | string>;
   exec: (args: string[]) => Promise<number>;
@@ -160,14 +165,14 @@ let ffmpegPromise: Promise<FFmpegInstance> | null = null;
 function loadFFmpeg(): Promise<FFmpegInstance> {
   if (!ffmpegPromise) {
     ffmpegPromise = (async () => {
-      const [{ FFmpeg }, { toBlobURL }] = await Promise.all([
-        import("@ffmpeg/ffmpeg"),
-        import("@ffmpeg/util"),
-      ]);
+      const { FFmpeg } = await import("@ffmpeg/ffmpeg");
       const ffmpeg = new FFmpeg() as unknown as FFmpegInstance;
+      // Same-origin module worker + ESM core. Pass the URLs directly (no blob):
+      // the worker resolves them same-origin and locates the wasm itself.
       await ffmpeg.load({
-        coreURL: await toBlobURL(`${FFMPEG_CORE}/ffmpeg-core.js`, "text/javascript"),
-        wasmURL: await toBlobURL(`${FFMPEG_CORE}/ffmpeg-core.wasm`, "application/wasm"),
+        classWorkerURL: FFMPEG_WORKER_URL,
+        coreURL: FFMPEG_CORE_URL,
+        wasmURL: FFMPEG_WASM_URL,
       });
       return ffmpeg;
     })();

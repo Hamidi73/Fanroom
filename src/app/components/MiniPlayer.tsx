@@ -21,7 +21,7 @@ import { Track } from "livekit-client";
 import { createClient } from "@/lib/supabase/client";
 import { subscribeActiveRoom, getActiveRoomRaw, clearActiveRoom, type ActiveRoom } from "@/lib/activeRoom";
 
-const HEARTBEAT_MS = 60_000;
+const HEARTBEAT_MS = 30_000;
 
 function MiniStage({ role }: { role: ActiveRoom["role"] }) {
   const tracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: false }]);
@@ -97,16 +97,19 @@ export function MiniPlayer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, room?.roomId, room?.role, connReady]);
 
-  // Keep the room marked active while it plays in the corner.
+  // Keep the room marked active while it plays in the corner. A HOST who
+  // navigated away is still broadcasting here, so their heartbeat keeps the
+  // room open (p_is_host); viewers only refresh general activity.
   useEffect(() => {
     if (!visible || !room) return;
     const supabase = createClient();
-    const beat = () => void supabase.rpc("touch_room", { p_room_id: room.roomId });
+    const isHost = room.role === "host";
+    const beat = () => void supabase.rpc("touch_room", { p_room_id: room.roomId, p_is_host: isHost });
     beat();
     const timer = setInterval(beat, HEARTBEAT_MS);
     return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible, room?.roomId]);
+  }, [visible, room?.roomId, room?.role]);
 
   if (!visible || !room || !connReady || !conn) return null;
 
