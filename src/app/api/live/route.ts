@@ -4,7 +4,7 @@
 // never hits the external sources more than the revalidate windows allow.
 
 import { NextResponse } from "next/server";
-import { getGroupsToday } from "@/app/data";
+import { getLiveSidebarData } from "@/app/data";
 import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
@@ -21,9 +21,9 @@ export async function GET(request: Request) {
     );
   }
 
-  const groups = await getGroupsToday();
+  const data = await getLiveSidebarData();
   return NextResponse.json(
-    { groups },
+    data,
     { headers: { "cache-control": "public, max-age=30, stale-while-revalidate=60" } },
   );
 }

@@ -354,16 +354,25 @@ export async function getFixtureById(id: string): Promise<Fixture | undefined> {
   return all.find((f) => f.id === id);
 }
 
-/**
- * Groups A–L for the sidebar rail: each group's nations plus today's matches
- * (live first, with minute + score). Yesterday's games drop out here and show
- * up in the homepage "Recent results" section instead.
- */
-export async function getGroupsToday(): Promise<GroupLive[]> {
-  const all = await fetchFixtures();
-  const today = new Date().toISOString().slice(0, 10);
-  const groups = new Map<string, GroupLive>();
+// Slim a full Fixture down to the sidebar match shape.
+function toGroupMatch(f: Fixture): GroupMatch {
+  return {
+    id: f.id,
+    teamA: f.teamA,
+    teamB: f.teamB,
+    teamASlug: f.teamASlug,
+    teamBSlug: f.teamBSlug,
+    status: f.status,
+    minute: f.minute,
+    homeScore: f.homeScore,
+    awayScore: f.awayScore,
+    time: f.time,
+    date: f.date,
+  };
+}
 
+function buildGroups(all: Fixture[], today: string): GroupLive[] {
+  const groups = new Map<string, GroupLive>();
   for (const f of all) {
     if (!f.group) continue;
     let g = groups.get(f.group);
@@ -378,19 +387,7 @@ export async function getGroupsToday(): Promise<GroupLive[]> {
       if (t.slug && !g.teams.some((x) => x.slug === t.slug)) g.teams.push(t);
     }
     if (f.status === "live" || f.date === today) {
-      g.matches.push({
-        id: f.id,
-        teamA: f.teamA,
-        teamB: f.teamB,
-        teamASlug: f.teamASlug,
-        teamBSlug: f.teamBSlug,
-        status: f.status,
-        minute: f.minute,
-        homeScore: f.homeScore,
-        awayScore: f.awayScore,
-        time: f.time,
-        date: f.date,
-      });
+      g.matches.push(toGroupMatch(f));
     }
   }
 
@@ -403,4 +400,37 @@ export async function getGroupsToday(): Promise<GroupLive[]> {
       ),
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * Groups A–L for the sidebar rail: each group's nations plus today's matches
+ * (live first, with minute + score). Yesterday's games drop out here and show
+ * up in the homepage "Recent results" section instead.
+ */
+export async function getGroupsToday(): Promise<GroupLive[]> {
+  const all = await fetchFixtures();
+  return buildGroups(all, new Date().toISOString().slice(0, 10));
+}
+
+/**
+ * Everything the live sidebar needs from ONE fetch:
+ *   • groups        — the A–L group dropdowns (today's matches inside each)
+ *   • live          — every match in play right now (any stage), live first
+ *   • todayScheduled— today's not-yet-kicked-off matches, by kickoff time
+ */
+export async function getLiveSidebarData(): Promise<{
+  groups: GroupLive[];
+  live: GroupMatch[];
+  todayScheduled: GroupMatch[];
+}> {
+  const all = await fetchFixtures();
+  const today = new Date().toISOString().slice(0, 10);
+
+  const live = all.filter((f) => f.status === "live").map(toGroupMatch);
+  const todayScheduled = all
+    .filter((f) => f.status === "scheduled" && f.date === today)
+    .sort((a, b) => a.time.localeCompare(b.time))
+    .map(toGroupMatch);
+
+  return { groups: buildGroups(all, today), live, todayScheduled };
 }

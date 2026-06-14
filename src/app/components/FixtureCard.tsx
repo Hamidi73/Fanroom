@@ -37,17 +37,20 @@ export function FixtureCard({ fixture }: { fixture: Fixture }) {
         </span>
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-3">
-        <h3 className="text-lg font-bold">
+      <div className="mt-3">
+        {/* Inline scoreline: "Argentina 1 - 1 Algeria". Scheduled games (no
+            score yet) show "vs" between the teams instead. */}
+        <h3 className="flex flex-wrap items-center gap-x-2 gap-y-1 text-lg font-bold">
           <TeamName name={fixture.teamA} slug={fixture.teamASlug} />
-          <span className="text-muted"> vs </span>
+          {hasScore ? (
+            <span className="font-extrabold tabular-nums text-ink-foreground">
+              {fixture.homeScore} - {fixture.awayScore}
+            </span>
+          ) : (
+            <span className="text-muted">vs</span>
+          )}
           <TeamName name={fixture.teamB} slug={fixture.teamBSlug} />
         </h3>
-        {hasScore && (
-          <span className="shrink-0 text-lg font-extrabold text-ink-foreground">
-            {fixture.homeScore}–{fixture.awayScore}
-          </span>
-        )}
       </div>
 
       <div className="mt-3 space-y-0.5 text-sm text-muted">

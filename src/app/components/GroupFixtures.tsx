@@ -1,10 +1,12 @@
 "use client";
 
-// Sidebar "Groups" rail: one collapsible dropdown per World Cup group (A–L).
-// Today's matches sit at the top of each group — live ones show just the two
-// teams, the live score and the live minute — and the group's four nations
-// link to their hubs below. Polls /api/live so scores and minutes tick along
-// without a page refresh; a group with a live match auto-expands.
+// Sidebar live rail. Polls /api/live (every 30s + on tab refocus) so scores,
+// minutes and fixtures tick along without a page refresh. Renders, top to
+// bottom:
+//   1. "Live now"      — every match in play, inline score + live minute
+//                        (auto-expanded; only shown when something is live).
+//   2. "Today's matches" — today's not-yet-started fixtures with kickoff time.
+//   3. "Groups" A–L    — each group's nations + today's matches inside it.
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -14,8 +16,10 @@ import { NationFlag } from "./NationFlag";
 
 const POLL_MS = 30_000;
 
+type LiveData = { groups: GroupLive[]; live: GroupMatch[]; todayScheduled: GroupMatch[] };
+
 export function GroupFixtures() {
-  const [groups, setGroups] = useState<GroupLive[]>([]);
+  const [data, setData] = useState<LiveData | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -23,8 +27,13 @@ export function GroupFixtures() {
       try {
         const res = await fetch("/api/live");
         if (!res.ok) return;
-        const data: { groups?: GroupLive[] } = await res.json();
-        if (alive && Array.isArray(data?.groups)) setGroups(data.groups);
+        const json = (await res.json()) as Partial<LiveData>;
+        if (!alive) return;
+        setData({
+          groups: Array.isArray(json.groups) ? json.groups : [],
+          live: Array.isArray(json.live) ? json.live : [],
+          todayScheduled: Array.isArray(json.todayScheduled) ? json.todayScheduled : [],
+        });
       } catch {
         // Transient network hiccup — keep showing the last data, retry next tick.
       }
@@ -33,8 +42,6 @@ export function GroupFixtures() {
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") void load();
     }, POLL_MS);
-    // Coming back to the tab pulls fresh scores immediately (the interval
-    // skips ticks while hidden).
     const onVisible = () => {
       if (document.visibilityState === "visible") void load();
     };
@@ -46,80 +53,139 @@ export function GroupFixtures() {
     };
   }, []);
 
-  if (groups.length === 0) return null;
+  if (!data) return null;
+  const { groups, live, todayScheduled } = data;
 
   return (
     <>
-      <p className="mt-5 px-4 text-[11px] font-bold uppercase tracking-wider text-muted">
-        Groups
-      </p>
-      <nav className="mt-1 px-2">
-        {groups.map((g) => {
-          const hasLive = g.matches.some((m) => m.status === "live");
-          return (
-            <details key={g.name} className="group" open={hasLive || undefined}>
+      {/* 1. Live now */}
+      {live.length > 0 && (
+        <>
+          <SectionLabel>Live now</SectionLabel>
+          <nav className="mt-1 px-2">
+            <details className="group" open>
               <summary className="flex cursor-pointer list-none items-center justify-between rounded-md px-2 py-1.5 text-sm font-semibold text-ink-foreground transition hover:bg-surface-2 [&::-webkit-details-marker]:hidden">
                 <span className="flex items-center gap-2">
-                  {g.name}
-                  {hasLive && <span className="live-dot" />}
+                  <span className="live-dot" />
+                  {live.length} live
                 </span>
                 <Chevron />
               </summary>
               <div className="mb-1 mt-0.5">
-                {g.matches.map((m) => (
-                  <MatchLine key={m.id} m={m} />
+                {live.map((m) => (
+                  <SidebarMatch key={m.id} m={m} />
                 ))}
-                {g.teams.map((t) => {
-                  const n = getNation(t.slug);
-                  return (
-                    <Link
-                      key={t.slug}
-                      href={`/nation/${t.slug}`}
-                      className="flex items-center gap-2.5 rounded-md py-1.5 pl-4 pr-2 no-underline transition hover:bg-surface-2"
-                    >
-                      {n && <NationFlag src={n.flagImg} name={n.name} width={20} />}
-                      <span className="truncate text-sm font-medium text-ink-foreground">
-                        {t.name}
-                      </span>
-                    </Link>
-                  );
-                })}
               </div>
             </details>
-          );
-        })}
-      </nav>
+          </nav>
+        </>
+      )}
+
+      {/* 2. Today's scheduled matches */}
+      {todayScheduled.length > 0 && (
+        <>
+          <SectionLabel>Today&apos;s matches</SectionLabel>
+          <nav className="mt-1 px-2">
+            <details className="group" open={live.length === 0 || undefined}>
+              <summary className="flex cursor-pointer list-none items-center justify-between rounded-md px-2 py-1.5 text-sm font-semibold text-ink-foreground transition hover:bg-surface-2 [&::-webkit-details-marker]:hidden">
+                <span>{todayScheduled.length} scheduled today</span>
+                <Chevron />
+              </summary>
+              <div className="mb-1 mt-0.5">
+                {todayScheduled.map((m) => (
+                  <SidebarMatch key={m.id} m={m} />
+                ))}
+              </div>
+            </details>
+          </nav>
+        </>
+      )}
+
+      {/* 3. Groups A–L */}
+      {groups.length > 0 && (
+        <>
+          <SectionLabel>Groups</SectionLabel>
+          <nav className="mt-1 px-2">
+            {groups.map((g) => {
+              const hasLive = g.matches.some((m) => m.status === "live");
+              return (
+                <details key={g.name} className="group" open={hasLive || undefined}>
+                  <summary className="flex cursor-pointer list-none items-center justify-between rounded-md px-2 py-1.5 text-sm font-semibold text-ink-foreground transition hover:bg-surface-2 [&::-webkit-details-marker]:hidden">
+                    <span className="flex items-center gap-2">
+                      {g.name}
+                      {hasLive && <span className="live-dot" />}
+                    </span>
+                    <Chevron />
+                  </summary>
+                  <div className="mb-1 mt-0.5">
+                    {g.matches.map((m) => (
+                      <SidebarMatch key={m.id} m={m} />
+                    ))}
+                    {g.teams.map((t) => {
+                      const n = getNation(t.slug);
+                      return (
+                        <Link
+                          key={t.slug}
+                          href={`/nation/${t.slug}`}
+                          className="flex items-center gap-2.5 rounded-md py-1.5 pl-4 pr-2 no-underline transition hover:bg-surface-2"
+                        >
+                          {n && <NationFlag src={n.flagImg} name={n.name} width={20} />}
+                          <span className="truncate text-sm font-medium text-ink-foreground">
+                            {t.name}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </details>
+              );
+            })}
+          </nav>
+        </>
+      )}
     </>
   );
 }
 
-// One of today's matches, kept deliberately minimal: teams, score, minute.
-function MatchLine({ m }: { m: GroupMatch }) {
-  const tag =
-    m.status === "live" ? (
-      <span className="font-bold text-live">● {m.minute ?? "Live"}</span>
-    ) : m.status === "finished" ? (
-      <span className="font-bold text-muted">Full time</span>
-    ) : (
-      <span className="font-bold text-muted">
-        Today{m.time !== "TBD" ? ` · ${m.time}` : ""}
-      </span>
-    );
-
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-1 mb-1 rounded-md bg-surface-2/60 px-2.5 py-1.5">
-      <div className="mb-1 text-[10px] uppercase tracking-wide">{tag}</div>
-      <TeamRow name={m.teamA} score={m.homeScore} />
-      <TeamRow name={m.teamB} score={m.awayScore} />
-    </div>
+    <p className="mt-5 px-4 text-[11px] font-bold uppercase tracking-wider text-muted">
+      {children}
+    </p>
   );
 }
 
-function TeamRow({ name, score }: { name: string; score: number | null }) {
+// Inline scoreline used everywhere in the rail: "[flag] Argentina 1 - 1 Algeria
+// [flag]", with the live minute / kickoff time / "Full time" beneath.
+function SidebarMatch({ m }: { m: GroupMatch }) {
+  const a = getNation(m.teamASlug);
+  const b = getNation(m.teamBSlug);
+  const hasScore = m.homeScore !== null && m.awayScore !== null;
+
   return (
-    <div className="flex items-center justify-between gap-2 text-xs">
-      <span className="min-w-0 truncate font-medium text-ink-foreground">{name}</span>
-      <span className="shrink-0 font-bold text-ink-foreground">{score ?? ""}</span>
+    <div className="mx-1 mb-1 rounded-md bg-surface-2/60 px-2 py-1.5">
+      <div className="flex items-center gap-1.5 text-xs">
+        {a && <NationFlag src={a.flagImg} name={a.name} width={16} />}
+        <span className="min-w-0 flex-1 truncate font-medium text-ink-foreground">{m.teamA}</span>
+        {hasScore ? (
+          <span className="shrink-0 font-bold tabular-nums text-ink-foreground">
+            {m.homeScore} - {m.awayScore}
+          </span>
+        ) : (
+          <span className="shrink-0 text-muted">vs</span>
+        )}
+        <span className="min-w-0 flex-1 truncate text-right font-medium text-ink-foreground">{m.teamB}</span>
+        {b && <NationFlag src={b.flagImg} name={b.name} width={16} />}
+      </div>
+      <div className="mt-0.5 text-center text-[10px] font-bold uppercase tracking-wide">
+        {m.status === "live" ? (
+          <span className="text-live">● {m.minute ?? "Live"}</span>
+        ) : m.status === "finished" ? (
+          <span className="text-muted">Full time</span>
+        ) : (
+          <span className="text-muted">{m.time !== "TBD" ? m.time : "Today"}</span>
+        )}
+      </div>
     </div>
   );
 }
