@@ -24,6 +24,7 @@ import type { ChatLine } from "@/lib/types";
 import { TIERS, getTier, formatAmount } from "@/lib/tiers";
 import { parseStickerBody, parseGiftBody } from "@/lib/stickers";
 import { getGift } from "@/lib/gifts";
+import { censorText } from "@/lib/profanity";
 import { GiftIcon } from "./GiftIcon";
 
 type NewRow = {
@@ -157,21 +158,22 @@ export function RoomChat({
   }, [messages.length]);
 
   const send = async () => {
-    const body = input.trim();
-    if (!body || !currentUserId) return;
+    const raw = input.trim();
+    if (!raw || !currentUserId) return;
+    const body = censorText(raw); // store the cleaned message
     setSendError(null);
     setInput("");
     const { error } = await supabaseRef.current
       .from("messages")
       .insert({ room_id: roomId, user_id: currentUserId, body });
     if (error) {
-      setInput(body); // give the message back instead of losing it
+      setInput(raw); // give the message back instead of losing it
       setSendError("Couldn't send — try again.");
     }
   };
 
   const startCheckout = async (provider: "stripe" | "crypto") => {
-    const body = input.trim();
+    const body = censorText(input.trim()); // clean the paid message too
     setPayError(null);
     if (!body) {
       setPayError("Type your message first.");
@@ -398,7 +400,9 @@ function MessageBody({ body }: { body: string }) {
     );
   }
 
-  return <p className="break-words text-sm text-ink-foreground/85">{body}</p>;
+  // Plain text — censored at render so every viewer sees a clean line,
+  // regardless of what's stored or how it was inserted.
+  return <p className="break-words text-sm text-ink-foreground/85">{censorText(body)}</p>;
 }
 
 function HostBadge() {
@@ -425,7 +429,7 @@ function HighlightedMessage({ msg, isYou, isHost }: { msg: ChatLine; isYou: bool
         {isHost && <HostBadge />}
         {isYou && <span className="font-normal text-muted">· you</span>}
       </p>
-      <p className="break-words text-sm text-ink-foreground/90">{msg.body}</p>
+      <p className="break-words text-sm text-ink-foreground/90">{censorText(msg.body)}</p>
     </div>
   );
 }
