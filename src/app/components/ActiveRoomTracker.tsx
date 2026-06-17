@@ -3,9 +3,10 @@
 // Mounted on every room page. Two jobs:
 //   1. Remember this room (localStorage) so the global MiniPlayer can keep the
 //      stream playing as a floating window when the viewer browses away.
-//   2. Heartbeat `touch_room` — the HOST's heartbeat (p_is_host) is what keeps
-//      a room open. A room is auto-deleted 5 minutes after the host stops
-//      being present (left without closing, or the room emptied out).
+//   2. Heartbeat `touch_room` every 30s — ANY present participant (host or
+//      viewer) keeps the room alive. A room is auto-deleted only after 5
+//      minutes with nobody present. (p_is_host also stamps host presence for
+//      analytics, but closing is based on total inactivity.)
 
 import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";

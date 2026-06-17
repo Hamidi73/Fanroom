@@ -18,13 +18,16 @@ const WINDOWS = [
   { label: "Last 20 min", ms: 20 * 60_000 },
 ];
 
-// Self-hosted under /public/ffmpeg (same-origin). We load the ESM core in a
-// same-origin module worker via an explicit `classWorkerURL`, which sidesteps
-// Next/Turbopack's `new URL('./worker.js', import.meta.url)` bundling (that was
-// silently failing, so clips never produced). No third-party CDN at clip time.
-const FFMPEG_WORKER_URL = "/ffmpeg/worker.js";
-const FFMPEG_CORE_URL = "/ffmpeg/esm/ffmpeg-core.js";
-const FFMPEG_WASM_URL = "/ffmpeg/esm/ffmpeg-core.wasm";
+// Self-hosted under /public/ffmpeg (same-origin), loaded as an ESM module
+// worker via an explicit `classWorkerURL`. The URLs MUST be absolute (include
+// the origin): @ffmpeg/ffmpeg builds the worker with
+// `new URL(classWorkerURL, import.meta.url)`, and in the Turbopack bundle
+// `import.meta.url` is a file:// URL — so a root-relative path resolved to
+// `file:///ffmpeg/worker.js` and the Worker was blocked. Absolute URLs ignore
+// that base. (Paths are joined with window.location.origin at call time.)
+const FFMPEG_WORKER_PATH = "/ffmpeg/worker.js";
+const FFMPEG_CORE_PATH = "/ffmpeg/esm/ffmpeg-core.js";
+const FFMPEG_WASM_PATH = "/ffmpeg/esm/ffmpeg-core.wasm";
 
 type Phase =
   | { kind: "idle" }
@@ -167,12 +170,12 @@ function loadFFmpeg(): Promise<FFmpegInstance> {
     ffmpegPromise = (async () => {
       const { FFmpeg } = await import("@ffmpeg/ffmpeg");
       const ffmpeg = new FFmpeg() as unknown as FFmpegInstance;
-      // Same-origin module worker + ESM core. Pass the URLs directly (no blob):
-      // the worker resolves them same-origin and locates the wasm itself.
+      // Absolute origin URLs (see note above) — required for the worker to load.
+      const origin = window.location.origin;
       await ffmpeg.load({
-        classWorkerURL: FFMPEG_WORKER_URL,
-        coreURL: FFMPEG_CORE_URL,
-        wasmURL: FFMPEG_WASM_URL,
+        classWorkerURL: `${origin}${FFMPEG_WORKER_PATH}`,
+        coreURL: `${origin}${FFMPEG_CORE_PATH}`,
+        wasmURL: `${origin}${FFMPEG_WASM_PATH}`,
       });
       return ffmpeg;
     })();
