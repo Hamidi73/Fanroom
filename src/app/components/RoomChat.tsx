@@ -213,10 +213,12 @@ export function RoomChat({
             <p className="py-6 text-center text-sm text-muted">No messages yet. Say hello!</p>
           ) : (
             messages.map((msg) =>
-              msg.highlight ? (
+              msg.body === "[follow]" ? (
+                <FollowNotice key={msg.id} name={msg.name} isYou={msg.user_id === currentUserId} />
+              ) : msg.highlight ? (
                 <HighlightedMessage key={msg.id} msg={msg} isYou={msg.user_id === currentUserId} isHost={msg.user_id === hostId} />
               ) : (
-                <div key={msg.id} className="space-y-0.5 border-b border-white/5 pb-2.5 last:border-b-0">
+                <div key={msg.id} className="space-y-0.5 border-b border-line pb-2.5 last:border-b-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="flex min-w-0 items-center gap-1.5 text-sm font-semibold text-accent-soft">
                       <span className="truncate">{msg.name}</span>
@@ -245,7 +247,7 @@ export function RoomChat({
       {/* Composer */}
       <div className="border-t border-line px-4 py-3">
         {closed ? (
-          <p className="rounded-lg bg-white/5 px-4 py-3 text-center text-sm text-muted">This room is closed.</p>
+          <p className="rounded-lg bg-surface-2 px-4 py-3 text-center text-sm text-muted">This room is closed.</p>
         ) : canPost ? (
           <div className="space-y-2.5">
             <div className="flex gap-2">
@@ -256,7 +258,7 @@ export function RoomChat({
                 onKeyDown={(e) => e.key === "Enter" && send()}
                 placeholder="Send a message…"
                 maxLength={300}
-                className="min-w-0 flex-1 rounded-lg border border-line bg-white/5 px-3.5 py-2.5 text-sm text-white placeholder-white/40 outline-none transition focus:border-accent/40 focus:bg-white/10"
+                className="min-w-0 flex-1 rounded-lg border border-line bg-surface-2 px-3.5 py-2.5 text-sm text-ink-foreground placeholder-muted outline-none transition focus:border-accent/40 focus:bg-surface"
               />
               <button
                 onClick={send}
@@ -268,7 +270,7 @@ export function RoomChat({
             {sendError && <p className="text-xs text-red-400">{sendError}</p>}
 
             {canHighlight && (
-              <div className="rounded-lg border border-line bg-white/[0.03]">
+              <div className="rounded-lg border border-line bg-surface-2">
                 <button
                   onClick={() => setShowHighlight((s) => !s)}
                   className="flex w-full items-center justify-between px-3.5 py-2 text-sm font-semibold text-accent-soft"
@@ -290,7 +292,7 @@ export function RoomChat({
                           className={`rounded-lg border px-2 py-2 text-center transition ${
                             tierId === t.id
                               ? "border-accent bg-accent/10"
-                              : "border-line bg-white/[0.02] hover:bg-white/5"
+                              : "border-line bg-surface-2 hover:bg-surface"
                           }`}
                         >
                           <span className="block text-sm font-bold text-ink-foreground">{t.label}</span>
@@ -334,7 +336,7 @@ export function RoomChat({
             )}
           </div>
         ) : (
-          <p className="rounded-lg bg-white/5 px-4 py-3 text-center text-sm text-muted">
+          <p className="rounded-lg bg-surface-2 px-4 py-3 text-center text-sm text-muted">
             {currentUserId ? (
               "Join the room to chat."
             ) : (
@@ -364,7 +366,7 @@ function MessageBody({ body }: { body: string }) {
         width={180}
         height={180}
         unoptimized
-        className="mt-1 h-auto w-40 rounded-lg border border-white/10 shadow-md"
+        className="mt-1 h-auto w-40 rounded-lg border border-line shadow-md"
       />
     );
   }
@@ -410,6 +412,22 @@ function HostBadge() {
     <span className="shrink-0 rounded bg-live px-1 py-px text-[9px] font-black uppercase tracking-wide text-white">
       Host
     </span>
+  );
+}
+
+// System line posted when someone follows the host (chat-only — paid alerts are
+// the on-screen ones). Centered, muted, with a gold heart.
+function FollowNotice({ name, isYou }: { name: string; isYou: boolean }) {
+  return (
+    <p className="flex items-center justify-center gap-1.5 py-0.5 text-center text-xs text-muted">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" className="shrink-0 text-accent-soft">
+        <path d="M8 13.5S2 9.8 2 5.9A3.1 3.1 0 0 1 8 4.4a3.1 3.1 0 0 1 6 1.5C14 9.8 8 13.5 8 13.5Z" />
+      </svg>
+      <span>
+        <span className="font-semibold text-accent-soft">{isYou ? "You" : name}</span>{" "}
+        started following the host
+      </span>
+    </p>
   );
 }
 

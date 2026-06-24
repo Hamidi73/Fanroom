@@ -73,7 +73,7 @@ export function RoomMembers({
   return (
     <>
       <p className="text-xs font-bold uppercase tracking-wide text-muted">In this room</p>
-      <h2 className="mt-2 text-lg font-bold text-white">
+      <h2 className="mt-2 text-lg font-bold text-ink-foreground">
         {members.length} member{members.length === 1 ? "" : "s"}
       </h2>
       <ul className="mt-4 space-y-2">
@@ -83,13 +83,13 @@ export function RoomMembers({
           members.map((m) => (
             <li
               key={m.user_id}
-              className="flex items-center gap-2 rounded-xl bg-white/5 px-3 py-2 text-sm text-ink-foreground"
+              className="flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2 text-sm text-ink-foreground"
             >
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent/20 text-xs font-bold text-accent-soft">
                 {(m.display_name ?? "F").slice(0, 1).toUpperCase()}
               </span>
               {m.display_name ?? "Fan"}
-              {m.user_id === hostId && <span className="text-xs text-accent">host</span>}
+              {m.user_id === hostId && <span className="text-xs text-accent-soft">host</span>}
             </li>
           ))
         )}

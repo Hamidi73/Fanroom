@@ -36,6 +36,7 @@ export default async function ProfilePage({
     { data: walletData },
     { data: hostedData },
     { data: joinedData },
+    { data: followData },
   ] = await Promise.all([
     supabase.from("profiles").select("display_name,created_at").eq("id", user.id).single(),
     supabase.rpc("is_current_user_admin"),
@@ -45,8 +46,11 @@ export default async function ProfilePage({
       .from("room_members")
       .select("rooms(id,title,status)")
       .eq("user_id", user.id),
+    // How many people follow this user (across all their rooms).
+    supabase.rpc("get_follow_state", { p_creator_id: user.id }),
   ]);
   const walletAddress = (walletData as string | null) ?? null;
+  const followerCount = (followData as { followers?: number } | null)?.followers ?? 0;
 
   const hosted = (hostedData ?? []) as RoomRef[];
   const hostedIds = new Set(hosted.map((r) => r.id));
@@ -66,18 +70,22 @@ export default async function ProfilePage({
         {/* Header */}
         <section className="rounded-xl border border-line bg-panel p-6  sm:p-8">
           <div className="flex items-center gap-4">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-accent/20 text-2xl font-bold text-accent">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-accent/20 text-2xl font-bold text-accent-soft">
               {displayName.slice(0, 1).toUpperCase()}
             </span>
             <div className="min-w-0">
-              <h1 className="truncate text-2xl font-bold text-white sm:text-3xl">{displayName}</h1>
+              <h1 className="truncate text-2xl font-bold text-ink-foreground sm:text-3xl">{displayName}</h1>
               <p className="truncate text-sm text-muted">{user.email}</p>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
+                <span className="font-semibold text-ink-foreground">
+                  {followerCount.toLocaleString()} {followerCount === 1 ? "follower" : "followers"}
+                </span>
+                <span>·</span>
                 <span>Joined {new Date(joinedSite).toLocaleDateString()}</span>
                 <span>·</span>
                 <span>Signed in via {provider === "email" ? "email" : provider}</span>
                 {isAdmin && (
-                  <span className="rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-bold text-accent">admin</span>
+                  <span className="rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-bold text-accent-soft">admin</span>
                 )}
               </div>
             </div>
@@ -175,7 +183,7 @@ function RoomList({
       {rooms.length === 0 ? (
         <div className="mt-3">
           <p className="text-sm text-muted">Nothing here yet.</p>
-          <Link href={emptyHref} className="mt-3 inline-flex text-sm font-semibold text-accent">
+          <Link href={emptyHref} className="mt-3 inline-flex text-sm font-semibold text-accent-soft">
             {emptyCta} →
           </Link>
         </div>
@@ -185,12 +193,12 @@ function RoomList({
             <li key={r.id}>
               <Link
                 href={`/rooms/${r.id}`}
-                className="flex items-center justify-between gap-3 rounded-xl bg-white/5 px-3 py-2 transition hover:bg-white/10"
+                className="flex items-center justify-between gap-3 rounded-xl bg-surface-2 px-3 py-2 transition hover:bg-surface"
               >
-                <span className="min-w-0 flex-1 truncate text-sm font-semibold text-white">{r.title}</span>
+                <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink-foreground">{r.title}</span>
                 <span
                   className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-bold ${
-                    r.status === "Closed" ? "bg-white/10 text-muted" : "bg-accent/15 text-accent-soft"
+                    r.status === "Closed" ? "bg-surface text-muted" : "bg-accent/15 text-accent-soft"
                   }`}
                 >
                   {r.status}

@@ -68,7 +68,7 @@ export default async function NationPage({
         <section
           className="overflow-hidden rounded-xl border border-line p-6 sm:p-8"
           style={{
-            backgroundImage: `radial-gradient(circle at 12% 20%, ${nation.theme.accent}, transparent 45%), linear-gradient(150deg, ${nation.theme.border}, #0e0e10 85%)`,
+            backgroundImage: `radial-gradient(circle at 12% 20%, ${nation.theme.accent}, transparent 45%), linear-gradient(150deg, ${nation.theme.border}, var(--color-ink) 85%)`,
           }}
         >
           <div className="flex flex-wrap items-center gap-4">

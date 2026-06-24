@@ -40,6 +40,29 @@
   --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
+/* ── Light mode ────────────────────────────────────────────────────────────
+   The whole UI is themed through the tokens above, so light mode is just a set
+   of overrides for the same variables on <html data-theme="light">. Anything
+   using bg-ink / bg-surface / text-ink-foreground / border-line / text-muted /
+   text-accent(-soft) flips automatically. (Colours fixed to the video — gift
+   overlays, the LIVE badge, the player frame — stay dark on purpose.)
+   The toggle lives in the top nav; the no-FOUC script is in app/layout.tsx. */
+html[data-theme="light"] {
+  --color-ink: #f7f8fa;            /* page canvas (near-white)          */
+  --color-ink-deep: #eef1f5;       /* room / nation / profile page bg   */
+  --color-ink-foreground: #16181d; /* default text (near-black)         */
+  --color-surface: #ffffff;        /* cards / panels                    */
+  --color-surface-2: #eceff3;      /* hover / raised panels             */
+  --color-panel: #ffffff;          /* room / nation panels              */
+  --color-panel-2: #f1f3f7;        /* darker inset panels               */
+  --color-line: #e1e5ec;           /* borders / dividers (hairline)     */
+  --color-accent: #c19a2e;         /* deeper gold so it reads on white  */
+  --color-accent-strong: #a07d18;  /* hover/pressed gold                */
+  --color-accent-soft: #8a6a12;    /* gold text on light surfaces       */
+  --color-muted: #5c6470;          /* secondary / caption text          */
+  --color-online: #07976a;         /* darker green for contrast on white*/
+}
+
 @layer base {
   html {
     background-color: var(--color-ink);
@@ -49,7 +72,7 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
-  /* Thin dark scrollbars, like a streaming app. */
+  /* Thin scrollbars, like a streaming app. */
   * {
     scrollbar-width: thin;
     scrollbar-color: #303030 transparent;
@@ -63,6 +86,12 @@
     border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: padding-box;
+  }
+  html[data-theme="light"] * {
+    scrollbar-color: #c4cad4 transparent;
+  }
+  html[data-theme="light"] *::-webkit-scrollbar-thumb {
+    background: #c4cad4;
   }
 }
 

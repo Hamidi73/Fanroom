@@ -58,11 +58,11 @@ export function AdminPanel({ users, rooms }: { users: AdminUser[]; rooms: AdminR
             <p className="p-6 text-sm text-muted">No users yet.</p>
           ) : (
             users.map((u) => (
-              <div key={u.id} className="flex items-center justify-between gap-4 border-b border-white/5 px-4 py-3 last:border-b-0">
+              <div key={u.id} className="flex items-center justify-between gap-4 border-b border-line px-4 py-3 last:border-b-0">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-white">
+                  <p className="truncate text-sm font-semibold text-ink-foreground">
                     {u.display_name}
-                    {u.is_admin && <span className="ml-2 rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-bold text-accent">admin</span>}
+                    {u.is_admin && <span className="ml-2 rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-bold text-accent-soft">admin</span>}
                   </p>
                   <p className="truncate text-xs text-muted">{u.email} · joined {new Date(u.created_at).toLocaleDateString()}</p>
                 </div>
@@ -90,9 +90,9 @@ export function AdminPanel({ users, rooms }: { users: AdminUser[]; rooms: AdminR
             rooms.map((r) => {
               const closed = r.status === "Closed";
               return (
-                <div key={r.id} className="flex items-center justify-between gap-4 border-b border-white/5 px-4 py-3 last:border-b-0">
+                <div key={r.id} className="flex items-center justify-between gap-4 border-b border-line px-4 py-3 last:border-b-0">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-white">{r.title}</p>
+                    <p className="truncate text-sm font-semibold text-ink-foreground">{r.title}</p>
                     <p className="truncate text-xs text-muted">
                       {r.status} · host {r.host?.display_name ?? "—"}
                     </p>
@@ -101,7 +101,7 @@ export function AdminPanel({ users, rooms }: { users: AdminUser[]; rooms: AdminR
                     <button
                       onClick={() => setRoom(r.id, closed ? "Live Soon" : "Closed")}
                       disabled={busy === `r:${r.id}`}
-                      className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10 disabled:opacity-40"
+                      className="rounded-lg border border-line bg-surface-2 px-3 py-1.5 text-xs font-semibold text-ink-foreground transition hover:bg-surface disabled:opacity-40"
                     >
                       {closed ? "Reopen" : "Close"}
                     </button>

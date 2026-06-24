@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Logo } from "./Logo";
 import { AccountNav } from "./AccountNav";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function TopNav({ rightSlot }: { rightSlot?: ReactNode }) {
   const router = useRouter();
@@ -51,8 +52,9 @@ export function TopNav({ rightSlot }: { rightSlot?: ReactNode }) {
         </button>
       </form>
 
-      <div className="ml-auto flex items-center gap-3">
+      <div className="ml-auto flex items-center gap-2 sm:gap-3">
         {rightSlot}
+        <ThemeToggle />
         <AccountNav />
       </div>
     </header>

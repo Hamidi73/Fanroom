@@ -32,11 +32,14 @@ function formatCount(n: number): string {
 
 export function FollowButton({
   creatorId,
+  roomId,
   isLoggedIn,
   initialFollowing,
   initialFollowers,
 }: {
   creatorId: string;
+  /** When set, a new follow posts a "started following" notice in this room's chat. */
+  roomId?: string;
   isLoggedIn: boolean;
   initialFollowing: boolean;
   initialFollowers: number;
@@ -88,7 +91,10 @@ export function FollowButton({
     setFollowing(next);
     setFollowers((c) => Math.max(0, c + (next ? 1 : -1)));
 
-    const { data, error } = await createClient().rpc("toggle_follow", { p_creator_id: creatorId });
+    const { data, error } = await createClient().rpc("toggle_follow", {
+      p_creator_id: creatorId,
+      ...(roomId ? { p_room_id: roomId } : {}),
+    });
     setBusy(false);
     pending.current = false;
     if (error) {

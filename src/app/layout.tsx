@@ -27,7 +27,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    <html lang="en" data-theme="dark" suppressHydrationWarning className={`${inter.variable} h-full antialiased`}>
+      <head>
+        {/* Apply the saved light/dark preference before first paint so there's
+            no flash of the wrong theme (the toggle writes localStorage.theme).
+            Default is dark — the brand look — when nothing is stored. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("theme");document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark")}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body className="flex min-h-full flex-col bg-ink font-sans text-ink-foreground">
         {children}
         {/* Floating mini-player: keeps your room's stream (and a host's

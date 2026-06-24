@@ -79,7 +79,7 @@ export default async function AdminDashboard() {
           {stats.map((s) => (
             <div key={s.label} className="rounded-lg border border-line bg-panel p-5">
               <p className="text-xs uppercase tracking-wider text-muted">{s.label}</p>
-              <p className="display mt-2 text-4xl text-white">{s.value}</p>
+              <p className="display mt-2 text-4xl text-ink-foreground">{s.value}</p>
               <p className="mt-1 text-xs text-muted">{s.sub}</p>
             </div>
           ))}
@@ -91,10 +91,10 @@ export default async function AdminDashboard() {
           className="mt-6 flex items-center justify-between gap-4 rounded-lg border border-accent/30 bg-accent/10 p-5 transition hover:bg-accent/15"
         >
           <div>
-            <p className="text-base font-bold text-white">Members &amp; Rooms</p>
+            <p className="text-base font-bold text-ink-foreground">Members &amp; Rooms</p>
             <p className="mt-1 text-sm text-muted">Delete accounts, and close, reopen, or delete any room.</p>
           </div>
-          <span className="shrink-0 text-accent">Manage →</span>
+          <span className="shrink-0 text-accent-soft">Manage →</span>
         </Link>
 
         {/* Recent activity */}
@@ -102,19 +102,19 @@ export default async function AdminDashboard() {
           <section className="rounded-lg border border-line bg-panel p-5">
             <div className="flex items-center justify-between">
               <h2 className="display text-xl">Newest members</h2>
-              <Link href="/admin/manage" className="text-xs text-accent">View all</Link>
+              <Link href="/admin/manage" className="text-xs text-accent-soft">View all</Link>
             </div>
             <ul className="mt-4 space-y-2">
               {recentUsers.length === 0 ? (
                 <li className="text-sm text-muted">No members yet.</li>
               ) : (
                 recentUsers.map((u) => (
-                  <li key={u.id} className="flex items-center justify-between gap-3 rounded-xl bg-white/5 px-3 py-2">
+                  <li key={u.id} className="flex items-center justify-between gap-3 rounded-xl bg-surface-2 px-3 py-2">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-white">
+                      <p className="truncate text-sm font-semibold text-ink-foreground">
                         {u.display_name}
                         {u.is_admin && (
-                          <span className="ml-2 rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-bold text-accent">admin</span>
+                          <span className="ml-2 rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-bold text-accent-soft">admin</span>
                         )}
                       </p>
                       <p className="truncate text-xs text-muted">{u.email}</p>
@@ -129,21 +129,21 @@ export default async function AdminDashboard() {
           <section className="rounded-lg border border-line bg-panel p-5">
             <div className="flex items-center justify-between">
               <h2 className="display text-xl">Newest rooms</h2>
-              <Link href="/admin/manage" className="text-xs text-accent">View all</Link>
+              <Link href="/admin/manage" className="text-xs text-accent-soft">View all</Link>
             </div>
             <ul className="mt-4 space-y-2">
               {recentRooms.length === 0 ? (
                 <li className="text-sm text-muted">No rooms yet.</li>
               ) : (
                 recentRooms.map((r) => (
-                  <li key={r.id} className="flex items-center justify-between gap-3 rounded-xl bg-white/5 px-3 py-2">
-                    <Link href={`/rooms/${r.id}`} className="min-w-0 flex-1 truncate text-sm font-semibold text-white hover:text-accent">
+                  <li key={r.id} className="flex items-center justify-between gap-3 rounded-xl bg-surface-2 px-3 py-2">
+                    <Link href={`/rooms/${r.id}`} className="min-w-0 flex-1 truncate text-sm font-semibold text-ink-foreground hover:text-accent-soft">
                       {r.title}
                     </Link>
                     <span
                       className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-bold ${
                         r.status === "Closed"
-                          ? "bg-white/10 text-muted"
+                          ? "bg-surface-2 text-muted"
                           : "bg-accent/15 text-accent-soft"
                       }`}
                     >
@@ -159,7 +159,7 @@ export default async function AdminDashboard() {
         {/* Compliance reminder */}
         <div className="mt-8 rounded-lg border border-line bg-surface p-5">
           <p className="text-sm text-muted">
-            <span className="font-semibold text-white">No match footage.</span>{" "}
+            <span className="font-semibold text-ink-foreground">No match footage.</span>{" "}
             Creator rooms are only for reactions, commentary, live chat, and community.
           </p>
         </div>

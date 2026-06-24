@@ -32,7 +32,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 Log in
               </Link>
             )}
-            <Link href="/" className="rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-white">
+            <Link href="/" className="rounded-lg border border-line px-5 py-2.5 text-sm font-semibold text-ink-foreground">
               Back home
             </Link>
           </div>

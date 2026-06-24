@@ -30,7 +30,7 @@ export function JoinRoomButton({
 
   if (isClosed) {
     return (
-      <span className="inline-flex rounded-lg border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-muted">
+      <span className="inline-flex rounded-lg border border-line bg-surface-2 px-6 py-3 text-sm font-semibold text-muted">
         Room closed
       </span>
     );
@@ -49,7 +49,7 @@ export function JoinRoomButton({
 
   if (joining && !isMember) {
     return (
-      <span className="inline-flex rounded-lg border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-muted">
+      <span className="inline-flex rounded-lg border border-line bg-surface-2 px-6 py-3 text-sm font-semibold text-muted">
         Joining…
       </span>
     );
@@ -84,7 +84,7 @@ export function JoinRoomButton({
         disabled={busy}
         className={`inline-flex rounded-lg px-6 py-3 text-sm font-semibold transition disabled:opacity-60 ${
           isMember
-            ? "border border-white/20 bg-white/5 text-white hover:bg-white/10"
+            ? "border border-line bg-surface-2 text-ink-foreground hover:bg-surface"
             : "bg-accent text-black hover:bg-accent-soft"
         }`}
       >

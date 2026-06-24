@@ -12,7 +12,7 @@ import { AppHeader } from "@/app/components/AppHeader";
 import { GoogleButton } from "@/app/components/GoogleButton";
 
 const inputClass =
-  "mt-1.5 w-full rounded-[10px] border border-line bg-[#07070d] px-3.5 py-2.5 text-sm text-white outline-none focus:border-accent/50";
+  "mt-1.5 w-full rounded-[10px] border border-line bg-ink-deep px-3.5 py-2.5 text-sm text-ink-foreground outline-none focus:border-accent/50";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -70,21 +70,21 @@ export default function SignupPage() {
               <GoogleButton next="/rooms" />
             </div>
             <div className="my-5 flex items-center gap-3 text-xs text-muted">
-              <span className="h-px flex-1 bg-white/10" />
+              <span className="h-px flex-1 bg-surface-2" />
               or with email
-              <span className="h-px flex-1 bg-white/10" />
+              <span className="h-px flex-1 bg-surface-2" />
             </div>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <label className="text-[13px] text-muted">
-              <span className="text-white">Display name</span>
+              <span className="text-ink-foreground">Display name</span>
               <input className={inputClass} value={displayName} onChange={(e) => setDisplayName(e.target.value)} required minLength={2} />
             </label>
             <label className="text-[13px] text-muted">
-              <span className="text-white">Email</span>
+              <span className="text-ink-foreground">Email</span>
               <input type="email" className={inputClass} value={email} onChange={(e) => setEmail(e.target.value)} required />
             </label>
             <label className="text-[13px] text-muted">
-              <span className="text-white">Password</span>
+              <span className="text-ink-foreground">Password</span>
               <input type="password" className={inputClass} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             </label>
 
@@ -98,7 +98,7 @@ export default function SignupPage() {
         )}
 
         <p className="mt-6 text-sm text-muted">
-          Already have an account? <Link href="/login" className="text-accent">Log in</Link>
+          Already have an account? <Link href="/login" className="text-accent-soft">Log in</Link>
         </p>
       </div>
     </main>

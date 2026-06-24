@@ -12,7 +12,7 @@ import { AppHeader } from "@/app/components/AppHeader";
 
 const nations = getAllNations();
 const inputClass =
-  "mt-1.5 w-full rounded-[10px] border border-line bg-[#07070d] px-3.5 py-2.5 text-sm text-white outline-none focus:border-accent/50";
+  "mt-1.5 w-full rounded-[10px] border border-line bg-ink-deep px-3.5 py-2.5 text-sm text-ink-foreground outline-none focus:border-accent/50";
 
 export default function NewRoomPage() {
   const router = useRouter();
@@ -113,7 +113,7 @@ export default function NewRoomPage() {
           <h1 className="display text-3xl">Log in to host a room</h1>
           <p className="mt-3 text-sm text-muted">You need an account to create a fan room.</p>
           <div className="mt-6 flex justify-center gap-3">
-            <Link href="/login" className="rounded-lg border border-white/20 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white">Log in</Link>
+            <Link href="/login" className="rounded-lg border border-line bg-surface-2 px-5 py-2.5 text-sm font-semibold text-ink-foreground">Log in</Link>
             <Link href="/signup" className="rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-black">Sign up</Link>
           </div>
         </div>
@@ -130,11 +130,11 @@ export default function NewRoomPage() {
 
         <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
           <label className="text-[13px] text-muted">
-            <span className="text-white">Room title</span>
+            <span className="text-ink-foreground">Room title</span>
             <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} required minLength={3} placeholder="Atlas Pride Watch Party" />
           </label>
           <label className="text-[13px] text-muted">
-            <span className="text-white">Nation</span>
+            <span className="text-ink-foreground">Nation</span>
             <select className={inputClass} value={nation} onChange={(e) => setNation(e.target.value)}>
               <option value="">— optional —</option>
               {nations.map((n) => (
@@ -143,11 +143,11 @@ export default function NewRoomPage() {
             </select>
           </label>
           <label className="text-[13px] text-muted">
-            <span className="text-white">Match (optional)</span>
+            <span className="text-ink-foreground">Match (optional)</span>
             <input className={inputClass} value={match} onChange={(e) => setMatch(e.target.value)} placeholder="Morocco vs Spain" />
           </label>
           <label className="text-[13px] text-muted">
-            <span className="text-white">Language (optional)</span>
+            <span className="text-ink-foreground">Language (optional)</span>
             <input className={inputClass} value={language} onChange={(e) => setLanguage(e.target.value)} placeholder="Arabic" />
           </label>
 

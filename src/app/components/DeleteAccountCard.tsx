@@ -56,7 +56,7 @@ export function DeleteAccountCard() {
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               placeholder="DELETE"
-              className="mt-1.5 w-full max-w-xs rounded-lg border border-red-500/30 bg-black/30 px-3 py-2 text-sm text-white outline-none placeholder:text-white/30 focus:border-red-400/60"
+              className="mt-1.5 w-full max-w-xs rounded-lg border border-red-500/30 bg-ink-deep px-3 py-2 text-sm text-ink-foreground outline-none placeholder:text-muted focus:border-red-400/60"
             />
           </label>
           {error && <p className="text-xs text-red-400">{error}</p>}

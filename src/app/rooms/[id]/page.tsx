@@ -215,6 +215,7 @@ export default async function RoomDetailPage({
                   {!isHost && (
                     <FollowButton
                       creatorId={room.host_id}
+                      roomId={room.id}
                       isLoggedIn={!!user}
                       initialFollowing={follow.following}
                       initialFollowers={follow.followers}

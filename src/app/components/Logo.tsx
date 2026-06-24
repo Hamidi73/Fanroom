@@ -26,7 +26,7 @@ export function Logo({ className = "" }: { className?: string }) {
       {/* Wordmark hides on the smallest screens so the top-nav search stays
           usable; the monogram alone carries the brand there. */}
       <span className="hidden text-[17px] font-extrabold tracking-tight text-ink-foreground sm:inline">
-        Fan<span className="text-accent">Room</span>
+        Fan<span className="text-accent-soft">Room</span>
       </span>
     </Link>
   );

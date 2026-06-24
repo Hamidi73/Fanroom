@@ -108,7 +108,7 @@ export function HomeClient({
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
                   href="/rooms"
-                  className="inline-flex items-center rounded-lg bg-white px-6 py-3 text-sm font-bold text-ink no-underline transition hover:bg-[#e6e6e6]"
+                  className="inline-flex items-center rounded-lg bg-ink-foreground px-6 py-3 text-sm font-bold text-ink no-underline transition hover:opacity-90"
                 >
                   {hasRooms ? "Watch a live room" : "Browse rooms"}
                 </Link>
@@ -182,7 +182,7 @@ export function HomeClient({
                   <Link href="/rooms/new" className="inline-flex items-center rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-black no-underline transition hover:bg-accent-strong">
                     Host a room
                   </Link>
-                  <Link href="/rooms" className="inline-flex items-center rounded-lg border border-line bg-surface-2 px-5 py-2.5 text-sm font-semibold text-ink-foreground no-underline transition hover:bg-white/5">
+                  <Link href="/rooms" className="inline-flex items-center rounded-lg border border-line bg-surface-2 px-5 py-2.5 text-sm font-semibold text-ink-foreground no-underline transition hover:bg-surface">
                     Browse
                   </Link>
                 </div>

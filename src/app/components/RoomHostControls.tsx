@@ -41,7 +41,7 @@ export function RoomHostControls({ roomId, status }: { roomId: string; status: s
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-[1.25rem] border border-line bg-white/5 px-4 py-3">
+    <div className="flex flex-wrap items-center gap-3 rounded-[1.25rem] border border-line bg-surface-2 px-4 py-3">
       <span className="text-xs uppercase tracking-[0.25em] text-muted">Host controls</span>
       {closed ? (
         <button

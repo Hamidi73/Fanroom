@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 const inputClass =
-  "mt-1.5 w-full rounded-[10px] border border-line bg-[#07070d] px-3.5 py-2.5 text-sm text-white outline-none focus:border-accent/50";
+  "mt-1.5 w-full rounded-[10px] border border-line bg-ink-deep px-3.5 py-2.5 text-sm text-ink-foreground outline-none focus:border-accent/50";
 
 function Note({ kind, children }: { kind: "ok" | "err"; children: React.ReactNode }) {
   return (
@@ -103,7 +103,7 @@ export function ProfileForm({
     <div className="space-y-8">
       <form onSubmit={saveName} className="flex flex-col gap-3">
         <label className="text-[13px] text-muted">
-          <span className="text-white">Display name</span>
+          <span className="text-ink-foreground">Display name</span>
           <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} minLength={2} required />
         </label>
         {nameMsg && <Note kind={nameMsg.kind}>{nameMsg.text}</Note>}
@@ -119,9 +119,9 @@ export function ProfileForm({
       <div className="border-t border-line pt-6">
         {canSetPassword ? (
           <form onSubmit={savePassword} className="flex flex-col gap-3">
-            <p className="text-sm font-semibold text-white">Change password</p>
+            <p className="text-sm font-semibold text-ink-foreground">Change password</p>
             <label className="text-[13px] text-muted">
-              <span className="text-white">New password</span>
+              <span className="text-ink-foreground">New password</span>
               <input
                 type="password"
                 className={inputClass}
@@ -132,7 +132,7 @@ export function ProfileForm({
               />
             </label>
             <label className="text-[13px] text-muted">
-              <span className="text-white">Confirm new password</span>
+              <span className="text-ink-foreground">Confirm new password</span>
               <input
                 type="password"
                 className={inputClass}
@@ -145,7 +145,7 @@ export function ProfileForm({
             <button
               type="submit"
               disabled={pwBusy || !password}
-              className="self-start rounded-lg border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-50"
+              className="self-start rounded-lg border border-line bg-surface-2 px-5 py-2.5 text-sm font-semibold text-ink-foreground transition hover:bg-surface disabled:opacity-50"
             >
               {pwBusy ? "Updating…" : "Update password"}
             </button>
