@@ -1,14 +1,17 @@
 "use client";
 
-// The gift tray. A floating 🎁 button opens a bottom-sheet drawer with pack
-// tabs (Reactions / Atmosphere / Legendary / Mythic + the six continent packs
-// of nation legends), a gift grid, and a ×1/×5/×10 combo multiplier — the
-// streaming-app pattern (TikTok/Bigo). The room's own nation legend is pinned
-// in a "Featured" tab so its fans see their gift first.
+// The gift tray: a bottom-sheet drawer with pack tabs (Reactions / Atmosphere /
+// Legendary / Mythic + the six continent packs of nation legends), a gift grid,
+// and a ×1/×5/×10 combo multiplier — the streaming-app pattern (TikTok/Bigo).
+// The room's own nation legend is pinned in a "Featured" tab so its fans see
+// their gift first.
+//
+// It is opened by the inline "Gift" button in the room action bar (Twitch
+// places gifting next to Follow/Subscribe), so the open state lives in
+// RoomGiftsProvider and this component only renders the panel.
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import {
   activePacks,
   giftsInPack,
@@ -39,7 +42,6 @@ export function GiftDrawer({
   isLoggedIn: boolean;
   isClosed: boolean;
 }) {
-  const [open, setOpen] = useState(false);
   const [mult, setMult] = useState<(typeof MULTIPLIERS)[number]>(1);
   const featured = featuredGiftForNation(nationSlug);
   const [tab, setTab] = useState<DrawerTab>(featured ? "featured" : "reactions");
@@ -47,21 +49,13 @@ export function GiftDrawer({
   const tabStripRef = useRef<HTMLDivElement>(null);
   const scrollTabs = (dir: number) => tabStripRef.current?.scrollBy({ left: dir * 160, behavior: "smooth" });
 
-  const { balance, canAfford, canAffordSticker, sendGift, sendSticker, openStore, muted, toggleMuted } = useRoomGifts();
+  const { balance, canAfford, canAffordSticker, sendGift, sendSticker, openStore, muted, toggleMuted, drawerOpen, closeDrawer } =
+    useRoomGifts();
 
-  if (isClosed) return null;
-
-  if (!isLoggedIn) {
-    return (
-      <Link
-        href="/login"
-        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent shadow-lg shadow-accent/30 transition hover:bg-accent-strong lg:left-5 lg:right-auto"
-        aria-label="Log in to send gifts"
-      >
-        <Image src={emojiArt("🎁")} alt="" width={30} height={30} unoptimized />
-      </Link>
-    );
-  }
+  // The drawer panel never renders for closed rooms or logged-out viewers — the
+  // inline "Gift" button in the action bar handles those cases (hidden / "Log
+  // in to gift"). It's only ever opened via that button.
+  if (isClosed || !isLoggedIn) return null;
 
   const tabs: { id: DrawerTab; label: string; icon: string }[] = [
     ...(featured ? [{ id: "featured" as const, label: "Featured", icon: "⭐" }] : []),
@@ -78,18 +72,8 @@ export function GiftDrawer({
 
   return (
     <>
-      {/* Desktop: bottom-LEFT so it never covers the chat composer in the
-          right-hand rail; mobile keeps the familiar bottom-right spot. */}
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent shadow-lg shadow-accent/30 transition hover:scale-105 hover:bg-accent-strong lg:left-5 lg:right-auto"
-        aria-label="Send a gift"
-      >
-        <Image src={emojiArt("🎁")} alt="" width={30} height={30} unoptimized />
-      </button>
-
-      {open && (
-        <div className="fixed inset-0 z-[55] flex items-end justify-center sm:justify-end lg:justify-start" onClick={() => setOpen(false)}>
+      {drawerOpen && (
+        <div className="fixed inset-0 z-[55] flex items-end justify-center sm:justify-end lg:justify-start" onClick={closeDrawer}>
           <div
             className="flex max-h-[80vh] w-full max-w-md flex-col rounded-t-2xl border border-line bg-ink-deep shadow-2xl sm:m-4 sm:rounded-2xl"
             onClick={(e) => e.stopPropagation()}
@@ -105,7 +89,7 @@ export function GiftDrawer({
                 <button onClick={toggleMuted} aria-label={muted ? "Unmute" : "Mute"} className="rounded-lg px-2 py-1.5 text-muted hover:bg-surface-2 hover:text-ink-foreground">
                   <SpeakerIcon muted={muted} />
                 </button>
-                <button onClick={() => setOpen(false)} aria-label="Close" className="rounded-lg px-2 py-1.5 text-muted hover:bg-surface-2 hover:text-ink-foreground">
+                <button onClick={closeDrawer} aria-label="Close" className="rounded-lg px-2 py-1.5 text-muted hover:bg-surface-2 hover:text-ink-foreground">
                   ✕
                 </button>
               </div>

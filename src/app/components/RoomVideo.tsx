@@ -9,7 +9,7 @@
 // A LIVE pill sits on the video whenever the host's camera is actually on.
 // Gracefully shows a message if LiveKit isn't configured.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "@livekit/components-styles";
 import {
   LiveKitRoom,
@@ -30,13 +30,77 @@ function Frame({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Placeholder({ text }: { text: string }) {
+function Placeholder({ text, overlay }: { text: string; overlay?: React.ReactNode }) {
   return (
     <Frame>
-      <div className="flex aspect-video items-center justify-center bg-gradient-to-b from-slate-900 to-slate-950 px-6 text-center text-sm text-white/60">
+      <div className="relative flex aspect-video items-center justify-center bg-gradient-to-b from-slate-900 to-slate-950 px-6 text-center text-sm text-white/60">
         {text}
+        {overlay}
       </div>
     </Frame>
+  );
+}
+
+// Expand/collapse the stream to fill the screen (Twitch-style). Targets the
+// passed element via the Fullscreen API, with webkit fallbacks for Safari.
+// Browsers that block element-fullscreen (older iOS Safari) simply no-op.
+function FullscreenButton({ targetRef }: { targetRef: React.RefObject<HTMLDivElement | null> }) {
+  const [isFull, setIsFull] = useState(false);
+
+  useEffect(() => {
+    const onChange = () => {
+      const fsEl =
+        document.fullscreenElement ??
+        (document as unknown as { webkitFullscreenElement?: Element }).webkitFullscreenElement ??
+        null;
+      setIsFull(!!fsEl);
+    };
+    document.addEventListener("fullscreenchange", onChange);
+    document.addEventListener("webkitfullscreenchange", onChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      document.removeEventListener("webkitfullscreenchange", onChange);
+    };
+  }, []);
+
+  const toggle = () => {
+    const el = targetRef.current;
+    if (!el) return;
+    const doc = document as Document & { webkitExitFullscreen?: () => Promise<void> };
+    const node = el as HTMLDivElement & { webkitRequestFullscreen?: () => Promise<void> };
+    const active =
+      document.fullscreenElement ??
+      (document as unknown as { webkitFullscreenElement?: Element }).webkitFullscreenElement ??
+      null;
+    // Fullscreen requests can throw synchronously OR reject async (iOS Safari
+    // doesn't support element fullscreen) — swallow both so nothing crashes.
+    try {
+      const run = active
+        ? (doc.exitFullscreen ?? doc.webkitExitFullscreen)?.call(doc)
+        : (node.requestFullscreen ?? node.webkitRequestFullscreen)?.call(node);
+      void Promise.resolve(run).catch(() => {});
+    } catch {
+      /* fullscreen denied — ignore */
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={isFull ? "Exit full screen" : "Full screen"}
+      className="absolute bottom-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-md bg-black/60 text-white/90 backdrop-blur-sm transition hover:bg-black/80"
+    >
+      {isFull ? (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M6 2v2.5a1.5 1.5 0 0 1-1.5 1.5H2M10 2v2.5A1.5 1.5 0 0 0 11.5 6H14M6 14v-2.5A1.5 1.5 0 0 0 4.5 10H2M10 14v-2.5a1.5 1.5 0 0 1 1.5-1.5H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ) : (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 5.5V3a1 1 0 0 1 1-1h2.5M14 5.5V3a1 1 0 0 0-1-1h-2.5M2 10.5V13a1 1 0 0 0 1 1h2.5M14 10.5V13a1 1 0 0 1-1 1h-2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+    </button>
   );
 }
 
@@ -44,10 +108,12 @@ function Stage({
   canPublish,
   preview,
   roomId,
+  overlay,
 }: {
   canPublish: boolean;
   preview: boolean;
   roomId: string;
+  overlay?: React.ReactNode;
 }) {
   const tracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: false }]);
   const audioTracks = useTracks([{ source: Track.Source.Microphone, withPlaceholder: false }]);
@@ -55,9 +121,10 @@ function Stage({
   // Raw media tracks feed the rolling clip buffer (members + host only).
   const videoTrack = tracks[0]?.publication?.track?.mediaStreamTrack ?? null;
   const audioTrack = audioTracks[0]?.publication?.track?.mediaStreamTrack ?? null;
+  const stageRef = useRef<HTMLDivElement>(null);
   return (
     <>
-      <div className="relative aspect-video bg-black">
+      <div ref={stageRef} className="fr-stage relative aspect-video bg-black">
         {live ? (
           <GridLayout tracks={tracks}>
             <ParticipantTile />
@@ -82,6 +149,15 @@ function Stage({
             Muted preview — join the room for sound
           </span>
         )}
+
+        {/* Paid/gift alert pop-overs live INSIDE the fullscreen element so they
+            stay visible when the stream is expanded (the Fullscreen API only
+            paints the fullscreened subtree). */}
+        {overlay}
+
+        {/* Expand the stream to fill the screen (works for hosts, members, and
+            muted-preview viewers alike). */}
+        <FullscreenButton targetRef={stageRef} />
       </div>
       {canPublish && (
         <ControlBar
@@ -98,7 +174,16 @@ function Stage({
   );
 }
 
-export function RoomVideo({ roomId, canWatch }: { roomId: string; canWatch: boolean }) {
+export function RoomVideo({
+  roomId,
+  canWatch,
+  overlay,
+}: {
+  roomId: string;
+  canWatch: boolean;
+  /** Rendered inside the player so it survives fullscreen (e.g. StreamAlerts). */
+  overlay?: React.ReactNode;
+}) {
   const [state, setState] = useState<
     | { kind: "loading" }
     | { kind: "error"; message: string }
@@ -134,13 +219,13 @@ export function RoomVideo({ roomId, canWatch }: { roomId: string; canWatch: bool
     };
   }, [roomId, canWatch]);
 
-  if (state.kind === "loading") return <Placeholder text="Connecting to live video…" />;
-  if (state.kind === "error") return <Placeholder text={state.message} />;
+  if (state.kind === "loading") return <Placeholder text="Connecting to live video…" overlay={overlay} />;
+  if (state.kind === "error") return <Placeholder text={state.message} overlay={overlay} />;
 
   return (
     <Frame>
       <LiveKitRoom token={state.token} serverUrl={state.url} connect video={false} audio={false}>
-        <Stage canPublish={state.canPublish} preview={state.preview} roomId={roomId} />
+        <Stage canPublish={state.canPublish} preview={state.preview} roomId={roomId} overlay={overlay} />
       </LiveKitRoom>
     </Frame>
   );

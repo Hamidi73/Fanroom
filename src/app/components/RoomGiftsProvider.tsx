@@ -32,12 +32,16 @@ type RoomGiftsContextValue = {
   balance: number;
   combo: { giftId: string; count: number } | null;
   muted: boolean;
+  drawerOpen: boolean;
   sendGift: (giftId: string, mult?: number) => void;
   sendSticker: (stickerId: string) => void;
   canAfford: (giftId: string, mult?: number) => boolean;
   canAffordSticker: (stickerId: string) => boolean;
   openStore: () => void;
   toggleMuted: () => void;
+  openDrawer: () => void;
+  closeDrawer: () => void;
+  toggleDrawer: () => void;
 };
 
 const Ctx = createContext<RoomGiftsContextValue | null>(null);
@@ -82,6 +86,9 @@ export function RoomGiftsProvider({
   const [combo, setCombo] = useState<{ giftId: string; count: number } | null>(null);
   const [storeOpen, setStoreOpen] = useState(false);
   const [muted, setMuted] = useState(false);
+  // The gift tray's open state lives here so the inline "Gift" button in the
+  // room action bar (Twitch-style) and the drawer itself share one source.
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const supabaseRef = useRef(createClient());
   const sendRef = useRef<((event: GiftEvent) => void) | null>(null);
@@ -254,10 +261,27 @@ export function RoomGiftsProvider({
       return !m;
     });
   }, []);
+  const openDrawer = useCallback(() => setDrawerOpen(true), []);
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+  const toggleDrawer = useCallback(() => setDrawerOpen((o) => !o), []);
 
   return (
     <Ctx.Provider
-      value={{ balance, combo, muted, sendGift, sendSticker, canAfford, canAffordSticker, openStore, toggleMuted }}
+      value={{
+        balance,
+        combo,
+        muted,
+        drawerOpen,
+        sendGift,
+        sendSticker,
+        canAfford,
+        canAffordSticker,
+        openStore,
+        toggleMuted,
+        openDrawer,
+        closeDrawer,
+        toggleDrawer,
+      }}
     >
       {children}
 

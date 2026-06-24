@@ -373,3 +373,60 @@ begin
 end; $$;
 revoke execute on function public.credit_coins(uuid) from anon, authenticated, public;
 grant execute on function public.credit_coins(uuid) to service_role;
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 0007  follows  (free follow relationship — viewer follows a creator/host)
+-- ─────────────────────────────────────────────────────────────────────────
+-- RLS is enabled with NO policies: the follow graph is RPC-only, so "who
+-- follows whom" is never exposed through the publishable key while anyone can
+-- still read a creator's follower count via get_follow_state.
+create table if not exists public.follows (
+  follower_id uuid not null references auth.users(id) on delete cascade,
+  creator_id  uuid not null references auth.users(id) on delete cascade,
+  created_at  timestamptz not null default now(),
+  primary key (follower_id, creator_id),
+  constraint follows_no_self_follow check (follower_id <> creator_id)
+);
+alter table public.follows enable row level security;
+-- Defense in depth (matches donations/wallets/coin_purchases): revoke the
+-- default table grants so the follow graph is RPC-only even if RLS is toggled.
+revoke select, insert, update, delete on public.follows from anon, authenticated;
+create index if not exists follows_creator_idx on public.follows (creator_id);
+
+create or replace function public.get_follow_state(p_creator_id uuid)
+returns json language sql security definer set search_path = public stable as $$
+  select json_build_object(
+    'followers', (select count(*) from public.follows f where f.creator_id = p_creator_id),
+    'following', (
+      auth.uid() is not null and exists (
+        select 1 from public.follows f
+        where f.creator_id = p_creator_id and f.follower_id = auth.uid()
+      )
+    )
+  );
+$$;
+grant execute on function public.get_follow_state(uuid) to anon, authenticated;
+
+create or replace function public.toggle_follow(p_creator_id uuid)
+returns json language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid(); now_following boolean;
+begin
+  if uid is null then raise exception 'not authenticated'; end if;
+  if p_creator_id is null then raise exception 'missing creator'; end if;
+  if uid = p_creator_id then raise exception 'cannot follow yourself'; end if;
+  if not exists (select 1 from auth.users u where u.id = p_creator_id) then
+    raise exception 'unknown creator';
+  end if;
+  if exists (select 1 from public.follows f where f.creator_id = p_creator_id and f.follower_id = uid) then
+    delete from public.follows f where f.creator_id = p_creator_id and f.follower_id = uid;
+    now_following := false;
+  else
+    insert into public.follows (follower_id, creator_id) values (uid, p_creator_id) on conflict do nothing;
+    now_following := true;
+  end if;
+  return json_build_object(
+    'followers', (select count(*) from public.follows f where f.creator_id = p_creator_id),
+    'following', now_following
+  );
+end; $$;
+grant execute on function public.toggle_follow(uuid) to authenticated;

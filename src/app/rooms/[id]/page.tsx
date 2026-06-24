@@ -13,6 +13,8 @@ import {
   StreamAlerts,
   RoomGiftsProvider,
   GiftDrawer,
+  GiftButton,
+  FollowButton,
   PaymentNotice,
   ShareRoomButton,
   AutoJoinRoom,
@@ -67,7 +69,7 @@ export default async function RoomDetailPage({
     );
   }
 
-  const [{ data: userData }, { data: memberData }, { data: messageData }] = await Promise.all([
+  const [{ data: userData }, { data: memberData }, { data: messageData }, { data: followData }] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from("room_members").select("user_id,profiles(display_name)").eq("room_id", id),
     supabase
@@ -75,6 +77,8 @@ export default async function RoomDetailPage({
       .select("id,body,created_at,user_id,highlight,amount_cents,tier,profiles(display_name)")
       .eq("room_id", id)
       .order("created_at", { ascending: true }),
+    // Follower count + whether the current viewer follows this host (RPC-gated).
+    supabase.rpc("get_follow_state", { p_creator_id: room.host_id }),
   ]);
 
   // Paid highlights are available whenever Stripe is configured. If the room's
@@ -91,6 +95,7 @@ export default async function RoomDetailPage({
   const isClosed = room.status === "Closed";
   const nation = room.nation_slug ? getNation(room.nation_slug) : undefined;
   const hostName = room.host?.display_name ?? "a creator";
+  const follow = (followData ?? { followers: 0, following: false }) as { followers: number; following: boolean };
 
   // Gift overlays show the sender's CURRENT display name (the profiles row is
   // the source of truth — auth metadata can go stale after a rename).
@@ -159,9 +164,14 @@ export default async function RoomDetailPage({
             ) : (
               <section className="relative">
                 {/* Anyone can peek (muted preview); members get sound. Paid
-                    highlighted messages pop over it as tier-specific alerts. */}
-                <RoomVideo roomId={room.id} canWatch={isMember || isHost} />
-                <StreamAlerts roomId={room.id} />
+                    highlighted messages pop over it as tier-specific alerts —
+                    passed as the player overlay so they stay visible in
+                    fullscreen. */}
+                <RoomVideo
+                  roomId={room.id}
+                  canWatch={isMember || isHost}
+                  overlay={<StreamAlerts roomId={room.id} />}
+                />
               </section>
             )}
 
@@ -199,7 +209,18 @@ export default async function RoomDetailPage({
                   </div>
                 </div>
 
+                {/* Action bar (Twitch layout): Follow + Gift sit next to Share
+                    and the primary Join button. The host can't follow itself. */}
                 <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  {!isHost && (
+                    <FollowButton
+                      creatorId={room.host_id}
+                      isLoggedIn={!!user}
+                      initialFollowing={follow.following}
+                      initialFollowers={follow.followers}
+                    />
+                  )}
+                  <GiftButton isLoggedIn={!!user} isClosed={isClosed} />
                   <ShareRoomButton title={room.title} />
                   <JoinRoomButton
                     roomId={room.id}

@@ -140,6 +140,35 @@
   border-radius: 4px;
 }
 
+/* Room video stage. When the user expands the player, the browser blows the
+   element up to fill the screen — drop the 16:9 box so the video uses the whole
+   viewport. The LiveKit tile defaults to object-fit:cover, which would crop the
+   frame edges once the stage takes the screen's aspect ratio, so force `contain`
+   to letterbox and keep the whole stream visible. Zero the grid padding/gap too
+   so there's no black gutter around the video at fullscreen. */
+.fr-stage:fullscreen,
+.fr-stage:-webkit-full-screen {
+  width: 100vw;
+  height: 100vh;
+  aspect-ratio: auto;
+  background: #000;
+}
+.fr-stage:fullscreen .lk-grid-layout,
+.fr-stage:-webkit-full-screen .lk-grid-layout {
+  padding: 0;
+  gap: 0;
+}
+.fr-stage:fullscreen .lk-participant-tile,
+.fr-stage:-webkit-full-screen .lk-participant-tile {
+  width: 100%;
+  height: 100%;
+}
+.fr-stage:fullscreen .lk-participant-media-video,
+.fr-stage:-webkit-full-screen .lk-participant-media-video {
+  object-fit: contain;
+  background: #000;
+}
+
 /* ── On-stream paid-message alerts (Twitch-style) ──────────────────────────
    A paid (highlighted) chat message also pops over the live video as an
    animated banner. Each tier has a distinct look — the more you pay, the

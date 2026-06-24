@@ -30,6 +30,8 @@ export * from "./StreamAlerts";
 export * from "./ConnectPayouts";
 export * from "./RoomGiftsProvider";
 export * from "./GiftDrawer";
+export * from "./GiftButton";
+export * from "./FollowButton";
 export * from "./PaymentNotice";
 export * from "./ShareRoomButton";
 export * from "./MiniPlayerShell";
