@@ -8,6 +8,7 @@ export * from "./AppShell";
 export * from "./SiteFooter";
 export * from "./AppHeader";
 export * from "./AccountNav";
+export * from "./SocialLinks";
 export * from "./GoogleButton";
 export * from "./NationCard";
 export * from "./RoomCard";
