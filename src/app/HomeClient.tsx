@@ -95,8 +95,10 @@ export function HomeClient({
   return (
     <AppShell rightSlot={languagePicker}>
       <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-6">
-        {/* Hero — value prop + one dominant CTA, with the top stream playing live */}
-        <section className="relative overflow-hidden rounded-xl border border-line bg-[radial-gradient(circle_at_15%_20%,rgba(212,175,55,0.22),transparent_45%),linear-gradient(150deg,#221c0e,#121212_80%)] p-6 sm:p-8">
+        {/* Hero — value prop + one dominant CTA, with the top stream playing live.
+            Always dark (gold gradient + white text) regardless of the page
+            theme: data-theme="dark" keeps its tokens dark in light mode too. */}
+        <section data-theme="dark" className="relative overflow-hidden rounded-xl border border-line bg-[radial-gradient(circle_at_15%_20%,rgba(212,175,55,0.22),transparent_45%),linear-gradient(150deg,#221c0e,#121212_80%)] p-6 sm:p-8 text-ink-foreground">
           <div className="grid items-center gap-8 lg:grid-cols-[1fr_minmax(0,520px)]">
             <div>
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-accent-soft">
