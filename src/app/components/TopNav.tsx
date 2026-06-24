@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { Logo } from "./Logo";
 import { AccountNav } from "./AccountNav";
 import { ThemeToggle } from "./ThemeToggle";
+import { SocialLinks } from "./SocialLinks";
 
 export function TopNav({ rightSlot }: { rightSlot?: ReactNode }) {
   const router = useRouter();
@@ -23,6 +24,7 @@ export function TopNav({ rightSlot }: { rightSlot?: ReactNode }) {
   };
 
   return (
+    <>
     <header className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b border-line bg-ink/95 px-3 backdrop-blur-md sm:px-4">
       <div className="flex items-center gap-5">
         <Logo />
@@ -58,5 +60,7 @@ export function TopNav({ rightSlot }: { rightSlot?: ReactNode }) {
         <AccountNav />
       </div>
     </header>
+    <SocialLinks />
+    </>
   );
 }
